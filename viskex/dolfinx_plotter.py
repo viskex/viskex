@@ -18,6 +18,9 @@ from viskex.base_plotter import BasePlotter
 from viskex.plotly_plotter import PlotlyPlotter
 from viskex.pyvista_plotter import PyvistaPlotter
 
+if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
+    dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
+
 
 class DolfinxPlotter(BasePlotter):
     """viskex plotter interfacing dolfinx."""
@@ -25,7 +28,7 @@ class DolfinxPlotter(BasePlotter):
     _plotly_plotter = PlotlyPlotter()
     _pyvista_plotter = PyvistaPlotter()
 
-    def plot_mesh(self, mesh: dolfinx.mesh.Mesh) -> typing.Union[
+    def plot_mesh(self, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -34,12 +37,16 @@ class DolfinxPlotter(BasePlotter):
         ----------
         mesh
             A dolfinx mesh to be plotted.
+        dim
+            Plot entities associated to this dimension. If not provided, the topological dimension is used.
 
         Returns
         -------
         :
             A widget representing a plot of the mesh.
         """
+        if dim is None:
+            dim = mesh.topology.dim
         if mesh.topology.dim == 1:
             vertices = mesh.geometry.x[:, 0]
             assert np.all(vertices[1:] >= vertices[:-1])
@@ -48,9 +55,9 @@ class DolfinxPlotter(BasePlotter):
             expected_cells = np.repeat(np.arange(vertices.shape[0], dtype=np.int32), 2)
             expected_cells = np.delete(np.delete(expected_cells, 0), -1)
             assert np.array_equal(cells, expected_cells)
-            return self._plotly_plotter.plot_mesh(vertices)
+            return self._plotly_plotter.plot_mesh(vertices, dim)
         else:
-            pyvista_grid = self._dolfinx_mesh_to_pyvista_grid(mesh, mesh.topology.dim)
+            pyvista_grid = self._dolfinx_mesh_to_pyvista_grid(mesh, dim)
             return self._pyvista_plotter.plot_mesh(pyvista_grid)
 
     def plot_mesh_entities(self, mesh, dim: int, entities) -> None:

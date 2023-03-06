@@ -18,7 +18,7 @@ class BasePlotter(abc.ABC):
     """viskex base plotter."""
 
     @abc.abstractmethod
-    def plot_mesh(self, mesh: Mesh) -> PlotterWidget:
+    def plot_mesh(self, mesh: Mesh, dim: typing.Optional[int] = None) -> PlotterWidget:
         """Plot a mesh."""
         pass  # pragma: no cover
 

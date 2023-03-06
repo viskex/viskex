@@ -38,7 +38,7 @@ plot_mesh_dispatcher = plum.Dispatcher()
 
 if has_dolfinx:
     @plot_mesh_dispatcher
-    def _plot_mesh(mesh: dolfinx.mesh.Mesh) -> typing.Union[
+    def _plot_mesh(mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -47,17 +47,19 @@ if has_dolfinx:
         ----------
         mesh
             A dolfinx mesh to be plotted.
+        dim
+            Plot entities associated to this dimension. If not provided, the topological dimension is used.
 
         Returns
         -------
         :
             A widget representing a plot of the mesh.
         """
-        return _dolfinx_plotter_instance.plot_mesh(mesh)
+        return _dolfinx_plotter_instance.plot_mesh(mesh, dim)
 
 if has_firedrake:
     @plot_mesh_dispatcher  # type: ignore[no-redef]
-    def _plot_mesh(mesh: firedrake.MeshGeometry)  -> typing.Union[  # noqa: F811
+    def _plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None)  -> typing.Union[  # noqa: F811
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
@@ -66,24 +68,26 @@ if has_firedrake:
         ----------
         mesh
             A firedrake mesh to be plotted.
+        dim
+            Plot entities associated to this dimension. If not provided, the topological dimension is used.
 
         Returns
         -------
         :
             A widget representing a plot of the mesh.
         """
-        return _firedrake_plotter_instance.plot_mesh(mesh)
+        return _firedrake_plotter_instance.plot_mesh(mesh, dim)
 
 if has_dolfinx:
     @typing.overload
-    def plot_mesh(mesh: dolfinx.mesh.Mesh) -> typing.Union[
+    def plot_mesh(mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """Stub of plot_mesh for type checking. See the concrete implementation above."""
         ...  # pragma: no cover
 
 if has_firedrake:
     @typing.overload
-    def plot_mesh(mesh: firedrake.MeshGeometry)  -> typing.Union[
+    def plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None)  -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """Stub of plot_mesh for type checking. See the concrete implementation above."""
         ...  # pragma: no cover
