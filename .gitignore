@@ -1,0 +1,11 @@
+*~
+*.bak
+*.cache
+*.egg
+*.egg-info
+*.py[cod]
+.coverage*
+.eggs
+.pytest_cache
+build
+dist
