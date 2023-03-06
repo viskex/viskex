@@ -4,3 +4,5 @@
 #
 # SPDX-License-Identifier: MIT
 """viskex main module."""
+
+from viskex.free_functions import plot_mesh
