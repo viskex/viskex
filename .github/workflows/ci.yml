@@ -56,6 +56,25 @@ jobs:
           echo "publish_to_website=false" >> $GITHUB_OUTPUT
       - name: Install viskex
         run: python3 -m pip install .[docs,lint,tests,tutorials]
+      - name: Update mypy configuration
+        run: |
+          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+            sed -i 's@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$)@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$|^viskex/firedrake_plotter\\\.py\$)@g' setup.cfg
+            echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'mypy = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
+          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
+            echo "[mypy-dolfinx]" >> setup.cfg
+            echo "ignore_missing_imports = True" >> setup.cfg
+            echo "[mypy-dolfinx.*]" >> setup.cfg
+            echo "ignore_missing_imports = True" >> setup.cfg
+            sed -i 's@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$)@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$|^viskex/dolfinx_plotter\\\.py\$)@g' setup.cfg
+            echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'mypy = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
+          else
+            echo "Invalid backend"
+            exit 1
+          fi
+        shell: bash
       - name: Run flake8 and mypy checks on python files
         run: |
           python3 -m flake8 .
