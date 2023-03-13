@@ -23,7 +23,6 @@ else:
     import dolfinx.fem
     import dolfinx.mesh
     from viskex.dolfinx_plotter import DolfinxPlotter
-    _dolfinx_plotter_instance = DolfinxPlotter()
 
 try:
     import firedrake  # noqa: F401
@@ -32,7 +31,6 @@ except ImportError:
 else:
     has_firedrake = True
     from viskex.firedrake_plotter import FiredrakePlotter
-    _firedrake_plotter_instance = FiredrakePlotter()
 
 plot_mesh_dispatcher = plum.Dispatcher()
 
@@ -62,7 +60,7 @@ if has_dolfinx:
         :
             A widget representing a plot of the mesh.
         """
-        return _dolfinx_plotter_instance.plot_mesh(mesh, dim)
+        return DolfinxPlotter.plot_mesh(mesh, dim)
 
 if has_firedrake:
     @plot_mesh_dispatcher  # type: ignore[no-redef]
@@ -83,7 +81,7 @@ if has_firedrake:
         :
             A widget representing a plot of the mesh.
         """
-        return _firedrake_plotter_instance.plot_mesh(mesh, dim)
+        return FiredrakePlotter.plot_mesh(mesh, dim)
 
 if has_dolfinx:
     @typing.overload
@@ -151,7 +149,7 @@ if has_dolfinx:
         :
             A widget representing a plot of the mesh entities.
         """
-        return _dolfinx_plotter_instance.plot_mesh_entities(mesh, dim, name, indices, values)
+        return DolfinxPlotter.plot_mesh_entities(mesh, dim, name, indices, values)
 
 if has_firedrake:
     @plot_mesh_entities_dispatcher  # type: ignore[no-redef]
@@ -185,7 +183,7 @@ if has_firedrake:
         :
             A widget representing a plot of the mesh entities.
         """
-        return _firedrake_plotter_instance.plot_mesh_entities(mesh, dim, name, indices, values)
+        return FiredrakePlotter.plot_mesh_entities(mesh, dim, name, indices, values)
 
 if has_dolfinx:
     @typing.overload
@@ -237,7 +235,7 @@ if has_dolfinx:
         :
             A widget representing a plot of the mesh entities.
         """
-        return _dolfinx_plotter_instance.plot_mesh_tags(mesh_tags, name)
+        return DolfinxPlotter.plot_mesh_tags(mesh_tags, name)
 
 if has_firedrake:
     def plot_mesh_sets(mesh: firedrake.MeshGeometry, dim: int, name: str) -> typing.Union[
@@ -259,7 +257,7 @@ if has_firedrake:
         :
             A widget representing a plot of the mesh entities.
         """
-        return _firedrake_plotter_instance.plot_mesh_sets(mesh, dim, name)
+        return FiredrakePlotter.plot_mesh_sets(mesh, dim, name)
 
 plot_scalar_field_dispatcher = plum.Dispatcher()
 
@@ -306,7 +304,7 @@ if has_dolfinx:
         :
             A widget representing a plot of the scalar field.
         """
-        return _dolfinx_plotter_instance.plot_scalar_field(scalar_field, name, warp_factor, part)
+        return DolfinxPlotter.plot_scalar_field(scalar_field, name, warp_factor, part)
 
 if has_firedrake:
     @plot_scalar_field_dispatcher  # type: ignore[no-redef]
@@ -342,7 +340,7 @@ if has_firedrake:
         :
             A widget representing a plot of the scalar field.
         """
-        return _firedrake_plotter_instance.plot_scalar_field(scalar_field, name, warp_factor, part)
+        return FiredrakePlotter.plot_scalar_field(scalar_field, name, warp_factor, part)
 
 if has_dolfinx:
     @typing.overload
@@ -425,7 +423,7 @@ if has_dolfinx:
         :
             A widget representing a plot of the vector field.
         """
-        return _dolfinx_plotter_instance.plot_vector_field(vector_field, name, glyph_factor, warp_factor, part)
+        return DolfinxPlotter.plot_vector_field(vector_field, name, glyph_factor, warp_factor, part)
 
 if has_firedrake:
     @plot_vector_field_dispatcher  # type: ignore[no-redef]
@@ -463,7 +461,7 @@ if has_firedrake:
         :
             A widget representing a plot of the vector field.
         """
-        return _firedrake_plotter_instance.plot_vector_field(vector_field, name, glyph_factor, warp_factor, part)
+        return FiredrakePlotter.plot_vector_field(vector_field, name, glyph_factor, warp_factor, part)
 
 if has_dolfinx:
     @typing.overload

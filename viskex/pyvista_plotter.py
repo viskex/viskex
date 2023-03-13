@@ -32,8 +32,9 @@ class PyvistaPlotter(BasePlotter):
         "panel" # panel backends
     )
 
+    @classmethod
     def plot_mesh(
-        self, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None
+        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None
     ) -> typing.Union[
         panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
@@ -60,10 +61,11 @@ class PyvistaPlotter(BasePlotter):
         if tdim == 2:
             plotter.camera_position = "xy"
         return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=self._jupyter_backend, return_viewer=True)
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)
 
+    @classmethod
     def plot_mesh_entities(
-        self, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
+        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
         indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
     ) -> typing.Union[
         panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -108,10 +110,11 @@ class PyvistaPlotter(BasePlotter):
         if tdim == 2:
             plotter.camera_position = "xy"
         return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=self._jupyter_backend, return_viewer=True)
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)
 
+    @classmethod
     def plot_scalar_field(
-        self, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
+        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
         part: str = "real"
     ) -> typing.Union[
         panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -152,10 +155,11 @@ class PyvistaPlotter(BasePlotter):
                 plotter.camera_position = "xy"
         plotter.add_axes()
         return plotter.show(
-            jupyter_backend=self._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]
 
+    @classmethod
     def plot_vector_field(
-        self, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
+        cls, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
         panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -205,4 +209,4 @@ class PyvistaPlotter(BasePlotter):
             plotter.camera_position = "xy"
         plotter.add_axes()
         return plotter.show(
-            jupyter_backend=self._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]

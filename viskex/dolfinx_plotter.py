@@ -27,10 +27,8 @@ if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
 class DolfinxPlotter(BasePlotter):
     """viskex plotter interfacing dolfinx."""
 
-    _plotly_plotter = PlotlyPlotter()
-    _pyvista_plotter = PyvistaPlotter()
-
-    def plot_mesh(self, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
+    @classmethod
+    def plot_mesh(cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -52,14 +50,15 @@ class DolfinxPlotter(BasePlotter):
             dim = tdim
         assert dim <= tdim
         if tdim == 1:
-            plotly_grid = self._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return self._plotly_plotter.plot_mesh(plotly_grid, dim)
+            plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
+            return PlotlyPlotter.plot_mesh(plotly_grid, dim)
         else:
-            pyvista_grid = self._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return self._pyvista_plotter.plot_mesh((pyvista_grid, tdim))
+            pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
+            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
 
+    @classmethod
     def plot_mesh_entities(
-        self, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
+        cls, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -93,13 +92,14 @@ class DolfinxPlotter(BasePlotter):
         if values is None:
             values = np.ones_like(indices)
         if tdim == 1:
-            plotly_grid = self._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return self._plotly_plotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
+            plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
+            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
         else:
-            pyvista_grid = self._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return self._pyvista_plotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
+            pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
+            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
 
-    def plot_mesh_tags(self, mesh_tags: dolfinx.mesh.MeshTags, name: str) -> typing.Union[
+    @classmethod
+    def plot_mesh_tags(cls, mesh_tags: dolfinx.mesh.MeshTags, name: str) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot dolfinx.mesh.MeshTags.
@@ -116,10 +116,11 @@ class DolfinxPlotter(BasePlotter):
         :
             A widget representing a plot of the mesh entities.
         """
-        return self.plot_mesh_entities(mesh_tags.mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
+        return cls.plot_mesh_entities(mesh_tags.mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
 
+    @classmethod
     def plot_scalar_field(
-        self, scalar_field: typing.Union[
+        cls, scalar_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -150,7 +151,7 @@ class DolfinxPlotter(BasePlotter):
         :
             A widget representing a plot of the scalar field.
         """
-        scalar_field = self._interpolate_if_ufl_expression(scalar_field)
+        scalar_field = cls._interpolate_if_ufl_expression(scalar_field)
         mesh = scalar_field.function_space.mesh
         values = scalar_field.x.array
         (values, name) = extract_part(values, name, part)
@@ -161,16 +162,17 @@ class DolfinxPlotter(BasePlotter):
             argsort = coordinates.argsort()
             coordinates = coordinates[argsort]
             values = values[argsort]
-            return self._plotly_plotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
+            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
         else:
             pyvista_cells, cell_types, coordinates = dolfinx.plot.create_vtk_mesh(scalar_field.function_space)
             pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
             pyvista_grid.point_data[name] = values
             pyvista_grid.set_active_scalars(name)
-            return self._pyvista_plotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
+            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
 
+    @classmethod
     def plot_vector_field(
-        self, vector_field: typing.Union[
+        cls, vector_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -203,7 +205,7 @@ class DolfinxPlotter(BasePlotter):
         :
             A widget representing a plot of the vector field.
         """
-        vector_field = self._interpolate_if_ufl_expression(vector_field)
+        vector_field = cls._interpolate_if_ufl_expression(vector_field)
         mesh = vector_field.function_space.mesh
         values = vector_field.x.array
         (values, name) = extract_part(values, name, part)
@@ -216,8 +218,8 @@ class DolfinxPlotter(BasePlotter):
             values = np.insert(values, values.shape[1], 0.0, axis=1)
         pyvista_grid.point_data[name] = values
         pyvista_grid.set_active_vectors(name)
-        pyvista_grid_edges = self._dolfinx_mesh_to_pyvista_grid(mesh, 1)
-        return self._pyvista_plotter.plot_vector_field(
+        pyvista_grid_edges = cls._dolfinx_mesh_to_pyvista_grid(mesh, 1)
+        return PyvistaPlotter.plot_vector_field(
             (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part)
 
     @staticmethod

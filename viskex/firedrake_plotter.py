@@ -23,8 +23,6 @@ from viskex.utils import extract_part
 class FiredrakePlotter(BasePlotter):
     """viskex plotter interfacing firedrake."""
 
-    _plotly_plotter = PlotlyPlotter()
-    _pyvista_plotter = PyvistaPlotter()
     _ufl_cellname_to_vtk_celltype = {
         "point": 1,
         "interval": 3,
@@ -53,7 +51,8 @@ class FiredrakePlotter(BasePlotter):
         ("hexahedron", 0): "point"
     }
 
-    def plot_mesh(self, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None) -> typing.Union[
+    @classmethod
+    def plot_mesh(cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
@@ -75,14 +74,15 @@ class FiredrakePlotter(BasePlotter):
             dim = tdim
         assert dim <= tdim
         if tdim == 1:
-            plotly_grid = self._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return self._plotly_plotter.plot_mesh(plotly_grid, dim)
+            plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
+            return PlotlyPlotter.plot_mesh(plotly_grid, dim)
         else:
-            pyvista_grid = self._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return self._pyvista_plotter.plot_mesh((pyvista_grid, tdim))
+            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
+            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
 
+    @classmethod
     def plot_mesh_entities(
-        self, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
+        cls, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -116,13 +116,14 @@ class FiredrakePlotter(BasePlotter):
         if values is None:
             values = np.ones_like(indices)
         if tdim == 1:
-            plotly_grid = self._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return self._plotly_plotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
+            plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
+            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
         else:
-            pyvista_grid = self._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return self._pyvista_plotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
+            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
+            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
 
-    def plot_mesh_sets(self, mesh: firedrake.MeshGeometry, dim: int, name: str) -> typing.Union[
+    @classmethod
+    def plot_mesh_sets(cls, mesh: firedrake.MeshGeometry, dim: int, name: str) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a cell set or a face sets of a given firedrake mesh.
@@ -151,7 +152,7 @@ class FiredrakePlotter(BasePlotter):
             cell_markers = np.full(cells.shape[0], 0, dtype=np.int32)
             for cm in unique_cell_markers:
                 cell_markers[mesh.cell_subset(cm).indices] = cm
-            return self.plot_mesh_entities(mesh, dim, name, cell_indices, cell_markers)
+            return cls.plot_mesh_entities(mesh, dim, name, cell_indices, cell_markers)
         elif dim == tdim - 1:
             unique_face_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.FACE_SETS_LABEL).indices.tolist())
@@ -171,12 +172,13 @@ class FiredrakePlotter(BasePlotter):
                 for fm in unique_face_markers:
                     facet_indices_fm = offset + facet_set.measure_set(facet_set_name, fm).indices
                     all_facet_markers[facet_indices_fm] = fm
-            return self.plot_mesh_entities(mesh, dim, name, all_facet_indices, all_facet_markers)
+            return cls.plot_mesh_entities(mesh, dim, name, all_facet_indices, all_facet_markers)
         else:
             raise RuntimeError("Invalid mesh set dimension")
 
+    @classmethod
     def plot_scalar_field(
-        self, scalar_field: typing.Union[
+        cls, scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -208,23 +210,24 @@ class FiredrakePlotter(BasePlotter):
         :
             A widget representing a plot of the scalar field.
         """
-        scalar_field = self._interpolate_to_P1_space(
+        scalar_field = cls._interpolate_to_P1_space(
             scalar_field, lambda mesh: firedrake.FunctionSpace(mesh, "CG", 1))
         values = scalar_field.vector().array()
         (values, name) = extract_part(values, name, part)
         mesh = scalar_field.function_space().mesh()
         tdim = mesh.topological_dimension()
         if tdim == 1:
-            coordinates = self._firedrake_mesh_to_plotly_grid(mesh, tdim)
-            return self._plotly_plotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
+            coordinates = cls._firedrake_mesh_to_plotly_grid(mesh, tdim)
+            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
         else:
-            pyvista_grid = self._firedrake_mesh_to_pyvista_grid(mesh, tdim)
+            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, tdim)
             pyvista_grid.point_data[name] = values
             pyvista_grid.set_active_scalars(name)
-            return self._pyvista_plotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
+            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
 
+    @classmethod
     def plot_vector_field(
-        self, vector_field: typing.Union[
+        cls, vector_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -258,7 +261,7 @@ class FiredrakePlotter(BasePlotter):
         :
             A widget representing a plot of the vector field.
         """
-        vector_field = self._interpolate_to_P1_space(
+        vector_field = cls._interpolate_to_P1_space(
             vector_field, lambda mesh: firedrake.VectorFunctionSpace(mesh, "CG", 1))
         mesh = vector_field.function_space().mesh()
         tdim = mesh.topological_dimension()
@@ -267,11 +270,11 @@ class FiredrakePlotter(BasePlotter):
         (values, name) = extract_part(values, name, part)
         if tdim == 2:
             values = np.insert(values, values.shape[1], 0.0, axis=1)
-        pyvista_grid = self._firedrake_mesh_to_pyvista_grid(mesh, tdim)
+        pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, tdim)
         pyvista_grid.point_data[name] = values
         pyvista_grid.set_active_vectors(name)
-        pyvista_grid_edges = self._firedrake_mesh_to_pyvista_grid(mesh, 1)
-        return self._pyvista_plotter.plot_vector_field(
+        pyvista_grid_edges = cls._firedrake_mesh_to_pyvista_grid(mesh, 1)
+        return PyvistaPlotter.plot_vector_field(
             (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part)
 
     @classmethod

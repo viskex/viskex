@@ -19,7 +19,8 @@ from viskex.base_plotter import BasePlotter
 class PlotlyPlotter(BasePlotter):
     """viskex plotter interfacing plotly."""
 
-    def plot_mesh(self, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None) -> go.Figure:
+    @classmethod
+    def plot_mesh(cls, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None) -> go.Figure:
         """
         Plot a 1D mesh, described by a set of coordinates.
 
@@ -53,8 +54,9 @@ class PlotlyPlotter(BasePlotter):
         fig.update_xaxes(title_text="x")
         return fig
 
+    @classmethod
     def plot_mesh_entities(
-        self, coordinates: np.typing.NDArray[np.float64], dim: int, name: str,
+        cls, coordinates: np.typing.NDArray[np.float64], dim: int, name: str,
         indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
     ) -> go.Figure:
         """
@@ -125,8 +127,9 @@ class PlotlyPlotter(BasePlotter):
         fig.update_layout(showlegend=True)
         return fig
 
+    @classmethod
     def plot_scalar_field(
-        self, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+        cls, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
         name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> go.Figure:
         """
@@ -161,8 +164,9 @@ class PlotlyPlotter(BasePlotter):
         fig.update_yaxes(title_text=name)
         return fig
 
+    @classmethod
     def plot_vector_field(
-        self, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+        cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> None:
         """Cannot plot a 1D vector field: no such field exists."""
