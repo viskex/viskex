@@ -91,7 +91,10 @@ jobs:
       - name: Run unit tests
         if: steps.skips.outputs.run_unit_tests != 'false'
         run: |
-          COVERAGE_FILE=.coverage_unit_${{ matrix.backend }} python3 -m pytest --cov=viskex --cov-report= tests/unit
+          for VISKEX_PYVISTA_BACKEND in "client" "server" "panel" "static"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_unit_${{ matrix.backend }}_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tests/unit
+          done
       - name: Run flake8 and mypy checks on tutorial files
         run: |
           NO_TESTS_COLLECTED=5
@@ -105,7 +108,10 @@ jobs:
           pattern: "tutorials/**/*.ipynb"
       - name: Run tutorials
         run: |
-          COVERAGE_FILE=.coverage_tutorials_${{ matrix.backend }} python3 -m pytest --cov=viskex --cov-report= tutorials
+          for VISKEX_PYVISTA_BACKEND in "client" "server" "panel" "static"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_tutorials_${{ matrix.backend }} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tutorials
+          done
       - name: Store coverage reports as artifact
         if: steps.skips.outputs.run_coverage != 'false'
         uses: actions/upload-artifact@v2
@@ -144,7 +150,7 @@ jobs:
           mkdir -p _build/html
           for SRC in "${LIST_NOTEBOOKS[@]}"; do
               pushd $(dirname "$SRC")
-              jupyter nbconvert --to html --template viskex --execute --output-dir $GITHUB_WORKSPACE/_build/html/$(dirname "$SRC") $(basename "$SRC")
+              VISKEX_PYVISTA_BACKEND="panel" jupyter nbconvert --to html --template viskex --execute --output-dir $GITHUB_WORKSPACE/_build/html/$(dirname "$SRC") $(basename "$SRC")
               popd
           done
         shell: bash
