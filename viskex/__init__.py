@@ -5,11 +5,20 @@
 # SPDX-License-Identifier: MIT
 """viskex main module."""
 
-from viskex.free_functions import (
-    has_dolfinx, has_firedrake, plot_mesh, plot_mesh_entities, plot_scalar_field, plot_vector_field)
+import typing
 
-if has_dolfinx:
-    from viskex.free_functions import plot_mesh_tags
+try:
+    import dolfinx as dolfinx_check_availability
+except ImportError:
+    pass
+else:
+    del dolfinx_check_availability
+    from viskex.dolfinx_plotter import DolfinxPlotter as dolfinx
 
-if has_firedrake:
-    from viskex.free_functions import plot_mesh_sets
+try:
+    import firedrake as firedrake_check_availability
+except ImportError:
+    pass
+else:
+    del firedrake_check_availability
+    from viskex.firedrake_plotter import FiredrakePlotter as firedrake
