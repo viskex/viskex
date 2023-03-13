@@ -8,12 +8,16 @@
 import abc
 import typing
 
-Function = typing.TypeVar("Function")
+import numpy as np
+import numpy.typing
+
 Mesh = typing.TypeVar("Mesh")
+ScalarFunction = typing.TypeVar("ScalarFunction")
+VectorFunction = typing.TypeVar("VectorFunction")
 PlotterWidget = typing.TypeVar("PlotterWidget")
 
 
-class BasePlotter(abc.ABC):
+class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, PlotterWidget]):
     """viskex base plotter."""
 
     @classmethod
@@ -25,7 +29,7 @@ class BasePlotter(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def plot_mesh_entities(
-        cls, mesh: Mesh, dim: int, name: str, *args: typing.Any, **kwargs: typing.Any  # noqa: ANN401
+        cls, mesh: Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
     ) -> PlotterWidget:
         """Plot `dim`-dimensional entities."""
         pass  # pragma: no cover
@@ -33,7 +37,7 @@ class BasePlotter(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def plot_scalar_field(
-        cls, scalar_field: Function, name: str, warp_factor: float = 0.0, part: str = "real"
+        cls, scalar_field: ScalarFunction, name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> PlotterWidget:
         """Plot a scalar field."""
         pass  # pragma: no cover
@@ -41,7 +45,7 @@ class BasePlotter(abc.ABC):
     @classmethod
     @abc.abstractmethod
     def plot_vector_field(
-        cls, vector_field: Function, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0,
+        cls, vector_field: VectorFunction, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0,
         part: str = "real"
     ) -> PlotterWidget:
         """Plot a vector field."""

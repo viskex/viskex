@@ -20,7 +20,12 @@ from viskex.pyvista_plotter import PyvistaPlotter
 from viskex.utils import extract_part
 
 
-class FiredrakePlotter(BasePlotter):
+class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
+    firedrake.MeshGeometry,
+    typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
+    typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
+    typing.Union[go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+]):
     """viskex plotter interfacing firedrake."""
 
     _ufl_cellname_to_vtk_celltype = {
@@ -52,8 +57,11 @@ class FiredrakePlotter(BasePlotter):
     }
 
     @classmethod
-    def plot_mesh(cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None) -> typing.Union[
-            go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
+    def plot_mesh(  # type: ignore[no-any-unimported]
+        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None
+    ) -> typing.Union[
+        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+    ]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
 
@@ -81,7 +89,7 @@ class FiredrakePlotter(BasePlotter):
             return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
 
     @classmethod
-    def plot_mesh_entities(
+    def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
@@ -123,8 +131,11 @@ class FiredrakePlotter(BasePlotter):
             return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
 
     @classmethod
-    def plot_mesh_sets(cls, mesh: firedrake.MeshGeometry, dim: int, name: str) -> typing.Union[
-            go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
+    def plot_mesh_sets(  # type: ignore[no-any-unimported]
+        cls, mesh: firedrake.MeshGeometry, dim: int, name: str
+    ) -> typing.Union[
+        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+    ]:
         """
         Plot a cell set or a face sets of a given firedrake mesh.
 
@@ -177,7 +188,7 @@ class FiredrakePlotter(BasePlotter):
             raise RuntimeError("Invalid mesh set dimension")
 
     @classmethod
-    def plot_scalar_field(
+    def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
@@ -226,7 +237,7 @@ class FiredrakePlotter(BasePlotter):
             return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
 
     @classmethod
-    def plot_vector_field(
+    def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
@@ -278,7 +289,9 @@ class FiredrakePlotter(BasePlotter):
             (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part)
 
     @classmethod
-    def _firedrake_mesh_to_plotly_grid(cls, mesh: firedrake.MeshGeometry, dim: int) -> pyvista.UnstructuredGrid:
+    def _firedrake_mesh_to_plotly_grid(  # type: ignore[no-any-unimported]
+        cls, mesh: firedrake.MeshGeometry, dim: int
+    ) -> pyvista.UnstructuredGrid:
         """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
         vertices = mesh.coordinates.dat.data_ro
         assert len(vertices.shape) == 1
@@ -290,15 +303,17 @@ class FiredrakePlotter(BasePlotter):
             expected_cells = expected_cells.reshape(-1, 2)
             expected_cells[:, [0, 1]] = expected_cells[:, [1, 0]]
             assert np.array_equal(cells, expected_cells)
-            return vertices
+            return vertices  # type: ignore[no-any-return]
         elif dim == 0:
             vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
-            return vertices[vertices_reordering]
+            return vertices[vertices_reordering]  # type: ignore[no-any-return]
         else:
             raise RuntimeError("Invali dimension")
 
     @classmethod
-    def _firedrake_mesh_to_pyvista_grid(cls, mesh: firedrake.MeshGeometry, dim: int) -> pyvista.UnstructuredGrid:
+    def _firedrake_mesh_to_pyvista_grid(  # type: ignore[no-any-unimported]
+        cls, mesh: firedrake.MeshGeometry, dim: int
+    ) -> pyvista.UnstructuredGrid:
         """Convert a 2D or 3D firedrake.MeshGeometry to a pyvista.UnstructuredGrid."""
         tdim = mesh.topological_dimension()
         connectivity = cls._determine_connectivity(mesh, dim)
@@ -313,7 +328,9 @@ class FiredrakePlotter(BasePlotter):
         return pyvista.UnstructuredGrid(connectivity.reshape(-1), pyvista_types, vertices)
 
     @classmethod
-    def _determine_connectivity(cls, mesh: firedrake.MeshGeometry, dim: int) -> np.typing.NDArray[np.int32]:
+    def _determine_connectivity(  # type: ignore[no-any-unimported]
+        cls, mesh: firedrake.MeshGeometry, dim: int
+    ) -> np.typing.NDArray[np.int32]:
         """Determine connectivity of a given dimension."""
         tdim = mesh.topological_dimension()
         if dim == tdim:
@@ -343,7 +360,7 @@ class FiredrakePlotter(BasePlotter):
                 connectivity = repeated_connectivity.reshape(-1, 2)
             else:
                 raise RuntimeError("Invalid values of dim and tdim")
-        return connectivity
+        return connectivity  # type: ignore[no-any-return]
 
     @staticmethod
     def _reorder_connectivity(connectivity: np.typing.NDArray[np.int32], cellname: str) -> None:

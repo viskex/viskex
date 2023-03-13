@@ -16,11 +16,18 @@ import plotly.graph_objects as go
 from viskex.base_plotter import BasePlotter
 
 
-class PlotlyPlotter(BasePlotter):
+class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
+    np.typing.NDArray[np.float64],
+    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+    go.Figure
+]):
     """viskex plotter interfacing plotly."""
 
     @classmethod
-    def plot_mesh(cls, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None) -> go.Figure:
+    def plot_mesh(  # type: ignore[no-any-unimported]
+        cls, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None
+    ) -> go.Figure:
         """
         Plot a 1D mesh, described by a set of coordinates.
 
@@ -55,7 +62,7 @@ class PlotlyPlotter(BasePlotter):
         return fig
 
     @classmethod
-    def plot_mesh_entities(
+    def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, coordinates: np.typing.NDArray[np.float64], dim: int, name: str,
         indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
     ) -> go.Figure:
@@ -128,7 +135,7 @@ class PlotlyPlotter(BasePlotter):
         return fig
 
     @classmethod
-    def plot_scalar_field(
+    def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
         name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> go.Figure:
@@ -165,7 +172,7 @@ class PlotlyPlotter(BasePlotter):
         return fig
 
     @classmethod
-    def plot_vector_field(
+    def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> None:

@@ -15,11 +15,16 @@ import pyvista.trame.jupyter
 
 from viskex.base_plotter import BasePlotter
 
-pyvista.set_plot_theme("document")
+pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
 
 
-class PyvistaPlotter(BasePlotter):
+class PyvistaPlotter(BasePlotter[
+    typing.Tuple[pyvista.UnstructuredGrid, int],
+    typing.Tuple[pyvista.UnstructuredGrid, int],
+    typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
+    typing.Union[panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+]):
     """viskex plotter interfacing pyvista."""
 
     try:
@@ -58,7 +63,7 @@ class PyvistaPlotter(BasePlotter):
         assert dim is None
         plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
         plotter.add_mesh(mesh, color="red", edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        plotter.add_axes()
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
         return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
@@ -107,7 +112,7 @@ class PyvistaPlotter(BasePlotter):
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
         plotter.add_mesh(mesh, edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        plotter.add_axes()
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
         return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
@@ -154,9 +159,9 @@ class PyvistaPlotter(BasePlotter):
             plotter.add_mesh(mesh)  # type: ignore[no-untyped-call]
             if tdim == 2:
                 plotter.camera_position = "xy"
-        plotter.add_axes()
-        return plotter.show(
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
+        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)
 
     @classmethod
     def plot_vector_field(
@@ -208,6 +213,6 @@ class PyvistaPlotter(BasePlotter):
             plotter.add_mesh(edgemesh)  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
-        plotter.add_axes()
-        return plotter.show(
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)  # type: ignore[no-any-return, no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
+        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
+            jupyter_backend=cls._jupyter_backend, return_viewer=True)

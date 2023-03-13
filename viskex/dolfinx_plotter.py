@@ -24,12 +24,20 @@ if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
     dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
 
 
-class DolfinxPlotter(BasePlotter):
+class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
+    dolfinx.mesh.Mesh,
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+]):
     """viskex plotter interfacing dolfinx."""
 
     @classmethod
-    def plot_mesh(cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
-            go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
+    def plot_mesh(  # type: ignore[no-any-unimported]
+        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None
+    ) -> typing.Union[
+        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+    ]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
 
@@ -57,7 +65,7 @@ class DolfinxPlotter(BasePlotter):
             return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
 
     @classmethod
-    def plot_mesh_entities(
+    def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
@@ -99,8 +107,11 @@ class DolfinxPlotter(BasePlotter):
             return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
 
     @classmethod
-    def plot_mesh_tags(cls, mesh_tags: dolfinx.mesh.MeshTags, name: str) -> typing.Union[
-            go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
+    def plot_mesh_tags(  # type: ignore[no-any-unimported]
+        cls, mesh_tags: dolfinx.mesh.MeshTags, name: str
+    ) -> typing.Union[
+        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+    ]:
         """
         Plot dolfinx.mesh.MeshTags.
 
@@ -119,7 +130,7 @@ class DolfinxPlotter(BasePlotter):
         return cls.plot_mesh_entities(mesh_tags.mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
 
     @classmethod
-    def plot_scalar_field(
+    def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
@@ -171,7 +182,7 @@ class DolfinxPlotter(BasePlotter):
             return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
 
     @classmethod
-    def plot_vector_field(
+    def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
@@ -232,7 +243,7 @@ class DolfinxPlotter(BasePlotter):
         expected_cells = np.repeat(np.arange(vertices.shape[0], dtype=np.int32), 2)
         expected_cells = np.delete(np.delete(expected_cells, 0), -1)
         assert np.array_equal(cells, expected_cells)
-        return vertices
+        return vertices  # type: ignore[no-any-return]
 
     @staticmethod
     def _dolfinx_mesh_to_pyvista_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> pyvista.UnstructuredGrid:
