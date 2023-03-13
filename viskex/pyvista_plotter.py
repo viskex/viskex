@@ -35,7 +35,8 @@ class PyvistaPlotter(BasePlotter[
         _jupyter_backend = "panel"
     assert _jupyter_backend in (
         "client", "server", "trame",  # trame backends
-        "panel"  # panel backends
+        "panel",  # panel backends
+        "static"  # static backends
     )
 
     @classmethod
