@@ -32,13 +32,16 @@ jobs:
         include:
           - backend: dolfinx
             container: dolfinx/dolfinx:nightly
-            setup_container:
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt -y -qq update
+              apt install -y -qq libgl1-mesa-glx xvfb
           - backend: firedrake
             container: firedrakeproject/firedrake
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt -y -qq update
-              apt install -y -qq xorg
+              apt install -y -qq libgl1-mesa-glx xvfb
               echo "/home/firedrake/firedrake/bin" >> $GITHUB_PATH
       fail-fast: false
     container:
