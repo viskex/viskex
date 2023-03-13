@@ -237,13 +237,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def _dolfinx_mesh_to_plotly_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> np.typing.NDArray[np.float64]:
         """Convert a 1D dolfinx.mesh.Mesh to an array of coordinates."""
         vertices = mesh.geometry.x[:, 0]
-        assert np.all(vertices[1:] >= vertices[:-1])
-        mesh.topology.create_connectivity(1, 0)
-        cells = mesh.topology.connectivity(1, 0).array
-        expected_cells = np.repeat(np.arange(vertices.shape[0], dtype=np.int32), 2)
-        expected_cells = np.delete(np.delete(expected_cells, 0), -1)
-        assert np.array_equal(cells, expected_cells)
-        return vertices  # type: ignore[no-any-return]
+        argsort = vertices.argsort()
+        return vertices[argsort]  # type: ignore[no-any-return]
 
     @staticmethod
     def _dolfinx_mesh_to_pyvista_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> pyvista.UnstructuredGrid:
