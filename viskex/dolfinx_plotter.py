@@ -224,7 +224,7 @@ class DolfinxPlotter(BasePlotter):
 
     @staticmethod
     def _dolfinx_mesh_to_plotly_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> np.typing.NDArray[np.float64]:
-        """Helper method to convert a 1D dolfinx.mesh.Mesh to an array of coordinates."""
+        """Convert a 1D dolfinx.mesh.Mesh to an array of coordinates."""
         vertices = mesh.geometry.x[:, 0]
         assert np.all(vertices[1:] >= vertices[:-1])
         mesh.topology.create_connectivity(1, 0)
@@ -236,7 +236,7 @@ class DolfinxPlotter(BasePlotter):
 
     @staticmethod
     def _dolfinx_mesh_to_pyvista_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> pyvista.UnstructuredGrid:
-        """Helper method to convert a 2D or 3D dolfinx.mesh.Mesh to a pyvista.UnstructuredGrid."""
+        """Convert a 2D or 3D dolfinx.mesh.Mesh to a pyvista.UnstructuredGrid."""
         mesh.topology.create_connectivity(dim, dim)
         num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
         cell_entities = np.arange(num_cells, dtype=np.int32)
@@ -247,7 +247,7 @@ class DolfinxPlotter(BasePlotter):
     def _interpolate_if_ufl_expression(  # type: ignore[no-any-unimported]
         field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
     ) -> dolfinx.fem.Function:
-        """Helper method to interpolate a UFL Expression in a dolfinx Function."""
+        """Interpolate a UFL Expression in a dolfinx Function."""
         if isinstance(field, tuple):
             expression, function_space = field
             interpolated_field = dolfinx.fem.Function(function_space)

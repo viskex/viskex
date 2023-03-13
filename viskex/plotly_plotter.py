@@ -90,8 +90,8 @@ class PlotlyPlotter(BasePlotter):
         for (index, value) in zip(indices, values):
             all_values[index] = value
 
-        def consecutive(data):
-            """Helper function to determine consecutive indices in an array."""
+        def consecutive(data: np.typing.NDArray[np.int32]) -> typing.List[np.typing.NDArray[np.int32]]:
+            """Determine consecutive indices in an array."""
             return np.split(data, np.where(np.diff(data) != 1)[0] + 1)
 
         colors = plotly.colors.qualitative.Set1

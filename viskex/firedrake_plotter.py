@@ -279,7 +279,7 @@ class FiredrakePlotter(BasePlotter):
 
     @classmethod
     def _firedrake_mesh_to_plotly_grid(cls, mesh: firedrake.MeshGeometry, dim: int) -> pyvista.UnstructuredGrid:
-        """Helper method to convert a 1D firedrake.MeshGeometry to an array of coordinates."""
+        """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
         vertices = mesh.coordinates.dat.data_ro
         assert len(vertices.shape) == 1
         assert np.all(vertices[1:] >= vertices[:-1])
@@ -289,6 +289,7 @@ class FiredrakePlotter(BasePlotter):
             expected_cells = np.delete(np.delete(expected_cells, 0), -1)
             expected_cells = expected_cells.reshape(-1, 2)
             expected_cells[:, [0, 1]] = expected_cells[:, [1, 0]]
+            assert np.array_equal(cells, expected_cells)
             return vertices
         elif dim == 0:
             vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
@@ -298,7 +299,7 @@ class FiredrakePlotter(BasePlotter):
 
     @classmethod
     def _firedrake_mesh_to_pyvista_grid(cls, mesh: firedrake.MeshGeometry, dim: int) -> pyvista.UnstructuredGrid:
-        """Helper method to convert a 2D or 3D firedrake.MeshGeometry to a pyvista.UnstructuredGrid."""
+        """Convert a 2D or 3D firedrake.MeshGeometry to a pyvista.UnstructuredGrid."""
         tdim = mesh.topological_dimension()
         connectivity = cls._determine_connectivity(mesh, dim)
         tdim_cellname = mesh.ufl_cell().cellname()
@@ -313,7 +314,7 @@ class FiredrakePlotter(BasePlotter):
 
     @classmethod
     def _determine_connectivity(cls, mesh: firedrake.MeshGeometry, dim: int) -> np.typing.NDArray[np.int32]:
-        """Helper method to determine connectivity of a given dimension."""
+        """Determine connectivity of a given dimension."""
         tdim = mesh.topological_dimension()
         if dim == tdim:
             connectivity = mesh.coordinates.cell_node_map().values.copy()
@@ -327,7 +328,7 @@ class FiredrakePlotter(BasePlotter):
             facet_local_ids = np.concatenate((exterior_facet_local_ids, interior_facet_local_ids), dtype=np.int32)
             exterior_facet_node_map = mesh.coordinates.exterior_facet_node_map().values
             interior_facet_node_map = mesh.coordinates.interior_facet_node_map()
-            interior_facet_node_map = interior_facet_node_map.values[:, :interior_facet_node_map.arity//2]
+            interior_facet_node_map = interior_facet_node_map.values[:, :interior_facet_node_map.arity // 2]
             facet_node_map = np.concatenate((exterior_facet_node_map, interior_facet_node_map), dtype=np.int32)
             mask = np.zeros(facet_node_map.shape, dtype=bool)
             for mask_row, facet_local_id in enumerate(facet_local_ids):
@@ -346,7 +347,7 @@ class FiredrakePlotter(BasePlotter):
 
     @staticmethod
     def _reorder_connectivity(connectivity: np.typing.NDArray[np.int32], cellname: str) -> None:
-        """Helper method to reorder in-place a connectivity array according to vtk ordering."""
+        """Reorder in-place a connectivity array according to vtk ordering."""
         if cellname in ("point", "interval", "triangle", "tetrahedron"):
             pass
         elif cellname == "quadrilateral":
@@ -363,7 +364,7 @@ class FiredrakePlotter(BasePlotter):
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], function_space_generator: typing.Callable[[firedrake.MeshGeometry], ufl.FunctionSpace]
     ) -> firedrake.Function:
-        """Helper method to interpolate a firedrake Function or UFL Expression to a P1 space."""
+        """Interpolate a firedrake Function or UFL Expression to a P1 space."""
         if isinstance(field, tuple):
             expression, function_space = field
             mesh = function_space.mesh()

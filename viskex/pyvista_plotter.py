@@ -18,18 +18,19 @@ from viskex.base_plotter import BasePlotter
 pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
 
+
 class PyvistaPlotter(BasePlotter):
     """viskex plotter interfacing pyvista."""
 
     try:
-        import google.colab  # noqa: F401
+        import google.colab  # noqa: F401, I2000
     except ImportError:
         _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", "client")
     else:
         _jupyter_backend = "panel"
     assert _jupyter_backend in (
-        "client", "server", "trame", # trame backends
-        "panel" # panel backends
+        "client", "server", "trame",  # trame backends
+        "panel"  # panel backends
     )
 
     @classmethod

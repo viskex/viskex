@@ -7,7 +7,6 @@
 
 import typing
 
-import numpy as np
 import panel.pane.vtk.vtk
 import plotly.graph_objects as go
 import plum
@@ -22,7 +21,6 @@ else:
     has_dolfinx = True
     import dolfinx.fem
     import dolfinx.mesh
-    from viskex.dolfinx_plotter import DolfinxPlotter
 
 try:
     import firedrake  # noqa: F401
@@ -30,12 +28,18 @@ except ImportError:
     has_firedrake = False
 else:
     has_firedrake = True
+
+if has_dolfinx:
+    from viskex.dolfinx_plotter import DolfinxPlotter
+
+if has_firedrake:
     from viskex.firedrake_plotter import FiredrakePlotter
 
 plot_mesh_dispatcher = plum.Dispatcher()
 
+
 @plot_mesh_dispatcher.abstract
-def _plot_mesh(mesh: typing.Any, dim: typing.Optional[int] = None) -> typing.Union[
+def _plot_mesh(mesh: typing.Any, dim: typing.Optional[int] = None) -> typing.Union[  # noqa: ANN401
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
     """Plot a mesh."""
     raise NotImplementedError("The abstract case has not been implemented")  # pragma: no cover
@@ -43,7 +47,7 @@ def _plot_mesh(mesh: typing.Any, dim: typing.Optional[int] = None) -> typing.Uni
 
 if has_dolfinx:
     @plot_mesh_dispatcher
-    def _plot_mesh(mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[
+    def _plot_mesh(mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> typing.Union[  # noqa: F811
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -64,7 +68,7 @@ if has_dolfinx:
 
 if has_firedrake:
     @plot_mesh_dispatcher  # type: ignore[no-redef]
-    def _plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None)  -> typing.Union[  # noqa: F811
+    def _plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None) -> typing.Union[  # noqa: F811
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
@@ -92,36 +96,39 @@ if has_dolfinx:
 
 if has_firedrake:
     @typing.overload
-    def plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None)  -> typing.Union[
+    def plot_mesh(mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None) -> typing.Union[
             go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
         """Stub of plot_mesh for type checking. See the concrete implementation above."""
         ...  # pragma: no cover
 
 
-def plot_mesh(mesh: typing.Any, dim: typing.Optional[int] = None) -> typing.Union[
+def plot_mesh(mesh: typing.Any, dim: typing.Optional[int] = None) -> typing.Union[  # noqa: ANN401
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]:
     """Dispatcher of plot_mesh for type checking. See the concrete implementation above."""
     return _plot_mesh(mesh, dim)
+
 
 plot_mesh.__doc__ = _plot_mesh.__doc__
 
 plot_mesh_entities_dispatcher = plum.Dispatcher()
 
+
 @plot_mesh_entities_dispatcher.abstract
 def _plot_mesh_entities(
-    mesh: typing.Any, dim: int, name: str, indices: typing.Any,  # TODO waiting for plum issue #74
-    values: typing.Optional[typing.Any] = None  # TODO waiting for plum issue #74
+    mesh: typing.Any, dim: int, name: str, indices: typing.Any,  # noqa: ANN401 # TODO plum issue #74
+    values: typing.Optional[typing.Any] = None  # noqa: ANN401 # TODO plum issue #74
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
     """Plot `dim`-dimensional mesh entities of a given mesh."""
     raise NotImplementedError("The abstract case has not been implemented")  # pragma: no cover
 
+
 if has_dolfinx:
     @plot_mesh_entities_dispatcher
-    def _plot_mesh_entities(
-        mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: typing.Any,  # TODO waiting for plum issue #74
-        values: typing.Optional[typing.Any] = None  # TODO waiting for plum issue #74
+    def _plot_mesh_entities(  # noqa: F811
+        mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: typing.Any,  # noqa: ANN401 # TODO plum issue #74
+        values: typing.Optional[typing.Any] = None  # noqa: ANN401 # TODO plum issue #74
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
@@ -154,8 +161,8 @@ if has_dolfinx:
 if has_firedrake:
     @plot_mesh_entities_dispatcher  # type: ignore[no-redef]
     def _plot_mesh_entities(  # noqa: F811
-        mesh: firedrake.MeshGeometry, dim: int, name: str, indices: typing.Any,  # TODO waiting for plum issue #74
-        values: typing.Optional[typing.Any] = None  # TODO waiting for plum issue #74
+        mesh: firedrake.MeshGeometry, dim: int, name: str, indices: typing.Any,  # noqa: ANN401 # TODO plum issue #74
+        values: typing.Optional[typing.Any] = None  # noqa: ANN401 # TODO plum issue #74
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
@@ -188,8 +195,8 @@ if has_firedrake:
 if has_dolfinx:
     @typing.overload
     def plot_mesh_entities(
-        mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: typing.Any,  # TODO waiting for plum issue #74
-        values: typing.Optional[typing.Any] = None  # TODO waiting for plum issue #74
+        mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: typing.Any,  # noqa: ANN401 # TODO plum issue #74
+        values: typing.Optional[typing.Any] = None  # noqa: ANN401 # TODO plum issue #74
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
@@ -207,13 +214,14 @@ if has_firedrake:
 
 
 def plot_mesh_entities(
-    mesh: typing.Any, dim: int, name: str, indices: typing.Any,  # TODO waiting for plum issue #74
-    values: typing.Optional[typing.Any] = None  # TODO waiting for plum issue #74
+    mesh: typing.Any, dim: int, name: str, indices: typing.Any,  # noqa: ANN401 # TODO plum issue #74
+    values: typing.Optional[typing.Any] = None  # noqa: ANN401 # TODO plum issue #74
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
     """Dispatcher of plot_mesh_entities for type checking. See the concrete implementation above."""
     return _plot_mesh_entities(mesh, dim, name, indices, values)
+
 
 plot_mesh_entities.__doc__ = _plot_mesh_entities.__doc__
 
@@ -259,11 +267,13 @@ if has_firedrake:
         """
         return FiredrakePlotter.plot_mesh_sets(mesh, dim, name)
 
+
 plot_scalar_field_dispatcher = plum.Dispatcher()
+
 
 @plot_scalar_field_dispatcher.abstract
 def _plot_scalar_field(
-    scalar_field: typing.Any, name: str, warp_factor: float = 0.0, part: str = "real"
+    scalar_field: typing.Any, name: str, warp_factor: float = 0.0, part: str = "real"  # noqa: ANN401
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
@@ -273,7 +283,7 @@ def _plot_scalar_field(
 
 if has_dolfinx:
     @plot_scalar_field_dispatcher
-    def _plot_scalar_field(
+    def _plot_scalar_field(  # noqa: F811
         scalar_field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
         name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -308,11 +318,11 @@ if has_dolfinx:
 
 if has_firedrake:
     @plot_scalar_field_dispatcher  # type: ignore[no-redef]
-    def _plot_scalar_field(
+    def _plot_scalar_field(  # noqa: F811
         scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
-    )  -> typing.Union[
+    ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
@@ -359,7 +369,7 @@ if has_firedrake:
         scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
-    )  -> typing.Union[
+    ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """Stub of plot_scalar_field for type checking. See the concrete implementation above."""
@@ -367,20 +377,23 @@ if has_firedrake:
 
 
 def plot_scalar_field(
-    scalar_field: typing.Any, name: str, warp_factor: float = 0.0, part: str = "real"
+    scalar_field: typing.Any, name: str, warp_factor: float = 0.0, part: str = "real"  # noqa: ANN401
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
     """Dispatcher of plot_scalar_field for type checking. See the concrete implementation above."""
     return _plot_scalar_field(scalar_field, name, warp_factor, part)
 
+
 plot_scalar_field.__doc__ = _plot_scalar_field.__doc__
 
 plot_vector_field_dispatcher = plum.Dispatcher()
 
+
 @plot_vector_field_dispatcher.abstract
 def _plot_vector_field(
-    vector_field: typing.Any, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+    vector_field: typing.Any, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0,  # noqa: ANN401
+    part: str = "real"
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
@@ -390,7 +403,7 @@ def _plot_vector_field(
 
 if has_dolfinx:
     @plot_vector_field_dispatcher
-    def _plot_vector_field(
+    def _plot_vector_field(  # noqa: F811
         vector_field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
@@ -427,10 +440,10 @@ if has_dolfinx:
 
 if has_firedrake:
     @plot_vector_field_dispatcher  # type: ignore[no-redef]
-    def _plot_vector_field(
+    def _plot_vector_field(  # noqa: F811
         vector_field: typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
-    )  -> typing.Union[
+    ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
@@ -479,7 +492,7 @@ if has_firedrake:
     def plot_vector_field(
         vector_field: typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
-    )  -> typing.Union[
+    ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """Stub of plot_vector_field for type checking. See the concrete implementation above."""
@@ -487,11 +500,13 @@ if has_firedrake:
 
 
 def plot_vector_field(
-    vector_field: typing.Any, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+    vector_field: typing.Any, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0,  # noqa: ANN401
+    part: str = "real"
 ) -> typing.Union[
     go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
 ]:
     """Dispatcher of plot_vector_field for type checking. See the concrete implementation above."""
     return _plot_vector_field(vector_field, name, glyph_factor, warp_factor, part)
+
 
 plot_vector_field.__doc__ = _plot_vector_field.__doc__

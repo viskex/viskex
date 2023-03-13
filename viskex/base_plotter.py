@@ -24,7 +24,9 @@ class BasePlotter(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def plot_mesh_entities(cls, mesh: Mesh, dim: int, name: str, *args, **kwargs) -> PlotterWidget:
+    def plot_mesh_entities(
+        cls, mesh: Mesh, dim: int, name: str, *args: typing.Any, **kwargs: typing.Any  # noqa: ANN401
+    ) -> PlotterWidget:
         """Plot `dim`-dimensional entities."""
         pass  # pragma: no cover
 
