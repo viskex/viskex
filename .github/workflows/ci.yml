@@ -59,16 +59,20 @@ jobs:
       - name: Update mypy configuration
         run: |
           if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+            sed -i 's@exclude = .eggs, build, dist@exclude = .eggs, build, dist, viskex/firedrake_plotter.py@g' setup.cfg
             sed -i 's@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$)@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$|^viskex/firedrake_plotter\\\.py\$)@g' setup.cfg
             echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'flake8 = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
             echo 'mypy = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
           elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
             echo "[mypy-dolfinx]" >> setup.cfg
             echo "ignore_missing_imports = True" >> setup.cfg
             echo "[mypy-dolfinx.*]" >> setup.cfg
             echo "ignore_missing_imports = True" >> setup.cfg
+            sed -i 's@exclude = .eggs, build, dist@exclude = .eggs, build, dist, viskex/dolfinx_plotter.py, tutorials/**/tutorial_*_dolfinx.py@g' setup.cfg
             sed -i 's@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$)@exclude = (^\\\.eggs|^build|^dist|conftest\\\.py\$|^viskex/dolfinx_plotter\\\.py\$)@g' setup.cfg
             echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'flake8 = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
             echo 'mypy = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
           else
             echo "Invalid backend"
