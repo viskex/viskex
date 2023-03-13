@@ -10,7 +10,6 @@ import typing
 
 Function = typing.TypeVar("Function")
 Mesh = typing.TypeVar("Mesh")
-MeshEntities = typing.TypeVar("MeshEntities")
 PlotterWidget = typing.TypeVar("PlotterWidget")
 
 
@@ -23,8 +22,8 @@ class BasePlotter(abc.ABC):
         pass  # pragma: no cover
 
     @abc.abstractmethod
-    def plot_mesh_entities(self, mesh: Mesh, dim: int, entities: MeshEntities) -> PlotterWidget:
-        """Plot a mesh, highlighting the provided `dim`-dimensional entities."""
+    def plot_mesh_entities(self, mesh: Mesh, dim: int, name: str, *args, **kwargs) -> PlotterWidget:
+        """Plot `dim`-dimensional entities."""
         pass  # pragma: no cover
 
     @abc.abstractmethod
