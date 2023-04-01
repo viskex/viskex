@@ -108,7 +108,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_mesh_tags(  # type: ignore[no-any-unimported]
-        cls, mesh_tags: dolfinx.mesh.MeshTags, name: str
+        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
@@ -117,6 +117,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
         Parameters
         ----------
+        mesh
+            The dolfinx mesh associated to the provided mesh tags.
         mesh_tags
             A dolfinx mesh tags from which to extract mesh entities and their values.
         name
@@ -127,7 +129,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         :
             A widget representing a plot of the mesh entities.
         """
-        return cls.plot_mesh_entities(mesh_tags.mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
+        return cls.plot_mesh_entities(mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
