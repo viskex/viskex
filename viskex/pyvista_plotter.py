@@ -27,12 +27,16 @@ class PyvistaPlotter(BasePlotter[
 ]):
     """viskex plotter interfacing pyvista."""
 
+    _jupyter_backend = "client"
     try:
         import google.colab  # noqa: F401, I2000
     except ImportError:
-        _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", "client")
+        pass
     else:
         _jupyter_backend = "panel"
+    if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):
+        _jupyter_backend = "panel"
+    _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
     assert _jupyter_backend in (
         "client", "server", "trame",  # trame backends
         "panel",  # panel backends
