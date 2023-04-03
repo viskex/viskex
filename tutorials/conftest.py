@@ -5,27 +5,14 @@
 # SPDX-License-Identifier: MIT
 """pytest configuration file for tutorials tests."""
 
-import os
-
 import nbvalx.pytest_hooks_notebooks
 import pytest
-import pyvista
 
 pytest_addoption = nbvalx.pytest_hooks_notebooks.addoption
+pytest_sessionstart = nbvalx.pytest_hooks_notebooks.sessionstart
 pytest_collect_file = nbvalx.pytest_hooks_notebooks.collect_file
 pytest_runtest_makereport = nbvalx.pytest_hooks_notebooks.runtest_makereport
 pytest_runtest_teardown = nbvalx.pytest_hooks_notebooks.runtest_teardown
-
-
-def pytest_sessionstart(session: pytest.Session) -> None:
-    """Start xvfb depending on the value of the VISKEX_PYVISTA_BACKEND environment variable."""
-    # Do the session start as in nbvalx
-    nbvalx.pytest_hooks_notebooks.sessionstart(session)
-    # Start xfvb for pyvista backends that require so
-    jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", "client")
-    display = os.getenv("DISPLAY", None)
-    if jupyter_backend in ("panel", "server", "static") and display is None:
-        pyvista.start_xvfb()
 
 
 def pytest_runtest_setup(item: pytest.File) -> None:
