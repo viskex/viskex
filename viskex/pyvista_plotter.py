@@ -10,10 +10,13 @@ import typing
 
 import numpy as np
 import numpy.typing
+import panel
 import panel.pane.vtk.vtk
 import pyvista.trame.jupyter
 
 from viskex.base_plotter import BasePlotter
+
+panel.extension("vtk")
 
 pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
@@ -72,8 +75,7 @@ class PyvistaPlotter(BasePlotter[
             plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
-        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)
+        return cls._show_plotter(plotter)
 
     @classmethod
     def plot_mesh_entities(
@@ -122,8 +124,7 @@ class PyvistaPlotter(BasePlotter[
             plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
-        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)
+        return cls._show_plotter(plotter)
 
     @classmethod
     def plot_scalar_field(
@@ -168,8 +169,7 @@ class PyvistaPlotter(BasePlotter[
                 plotter.camera_position = "xy"
         if cls._jupyter_backend != "client":
             plotter.add_axes()  # type: ignore[no-untyped-call]
-        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)
+        return cls._show_plotter(plotter)
 
     @classmethod
     def plot_vector_field(
@@ -223,5 +223,27 @@ class PyvistaPlotter(BasePlotter[
             plotter.camera_position = "xy"
         if cls._jupyter_backend != "client":
             plotter.add_axes()  # type: ignore[no-untyped-call]
-        return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
-            jupyter_backend=cls._jupyter_backend, return_viewer=True)
+        return cls._show_plotter(plotter)
+
+    @classmethod
+    def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[
+        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+    ]:
+        """Show pyvista Plotter using the requested backend."""
+        if cls._jupyter_backend == "panel":
+            # Set up camera
+            plotter._on_first_render_request()  # type: ignore[no-untyped-call]
+            # Only set window size if explicitly set within the plotter
+            if not plotter._window_size_unset:
+                width, height = plotter.window_size
+                sizing = {"width": width, "height": height}
+            else:
+                sizing = {}
+            # Pass plotter render window to panel
+            return panel.panel(
+                plotter.render_window, orientation_widget=plotter.renderer.axes_enabled,
+                enable_keybindings=False, sizing_mode="stretch_width", **sizing
+            )
+        else:
+            return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
+                jupyter_backend=cls._jupyter_backend, return_viewer=True)
