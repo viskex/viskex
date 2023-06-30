@@ -71,8 +71,7 @@ class PyvistaPlotter(BasePlotter[
         assert dim is None
         plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
         plotter.add_mesh(mesh, color="red", edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        if cls._jupyter_backend != "client":
-            plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
@@ -120,8 +119,7 @@ class PyvistaPlotter(BasePlotter[
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
         plotter.add_mesh(mesh, edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        if cls._jupyter_backend != "client":
-            plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
@@ -167,8 +165,7 @@ class PyvistaPlotter(BasePlotter[
             plotter.add_mesh(mesh)  # type: ignore[no-untyped-call]
             if tdim == 2:
                 plotter.camera_position = "xy"
-        if cls._jupyter_backend != "client":
-            plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         return cls._show_plotter(plotter)
 
     @classmethod
@@ -221,8 +218,7 @@ class PyvistaPlotter(BasePlotter[
             plotter.add_mesh(edgemesh)  # type: ignore[no-untyped-call]
         if tdim == 2:
             plotter.camera_position = "xy"
-        if cls._jupyter_backend != "client":
-            plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()  # type: ignore[no-untyped-call]
         return cls._show_plotter(plotter)
 
     @classmethod
