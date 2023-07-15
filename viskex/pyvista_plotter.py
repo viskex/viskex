@@ -32,7 +32,7 @@ class PyvistaPlotter(BasePlotter[
 
     _jupyter_backend = "client"
     try:
-        import google.colab  # noqa: F401, I2000
+        import google.colab  # noqa: F401, IMR200
     except ImportError:
         pass
     else:
