@@ -18,7 +18,7 @@ from viskex.base_plotter import BasePlotter
 
 panel.extension("vtk")
 
-pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
+pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
 
 
@@ -69,9 +69,9 @@ class PyvistaPlotter(BasePlotter[
         """
         (mesh, tdim) = mesh_tdim
         assert dim is None
-        plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
-        plotter.add_mesh(mesh, color="red", edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter = pyvista.Plotter(notebook=True)
+        plotter.add_mesh(mesh, color="red", edge_color="black", show_edges=True)
+        plotter.add_axes()
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
@@ -117,9 +117,9 @@ class PyvistaPlotter(BasePlotter[
 
         mesh.cell_data[name] = all_values
         mesh.set_active_scalars(name)
-        plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
-        plotter.add_mesh(mesh, edge_color="black", show_edges=True)  # type: ignore[no-untyped-call]
-        plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter = pyvista.Plotter(notebook=True)
+        plotter.add_mesh(mesh, edge_color="black", show_edges=True)
+        plotter.add_axes()
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
@@ -155,17 +155,17 @@ class PyvistaPlotter(BasePlotter[
             A pyvista widget representing a plot of the 2D or 3D scalar field.
         """
         (mesh, tdim) = mesh_tdim
-        plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
+        plotter = pyvista.Plotter(notebook=True)
         if warp_factor != 0.0:
             assert warp_factor > 0.0
             assert tdim == 2
             warped = mesh.warp_by_scalar(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(warped)
         else:
-            plotter.add_mesh(mesh)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(mesh)
             if tdim == 2:
                 plotter.camera_position = "xy"
-        plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()
         return cls._show_plotter(plotter)
 
     @classmethod
@@ -202,33 +202,33 @@ class PyvistaPlotter(BasePlotter[
             A pyvista widget representing a plot of the 2D or 3D vector field.
         """
         (mesh, edgemesh, tdim) = mesh_edgemesh_tdim
-        plotter = pyvista.Plotter(notebook=True)  # type: ignore[no-untyped-call]
+        plotter = pyvista.Plotter(notebook=True)
         if glyph_factor == 0.0 and warp_factor == 0.0:
-            plotter.add_mesh(mesh)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(mesh)
         elif glyph_factor == 0.0 and warp_factor != 0.0:
             assert warp_factor > 0.0
             warped = mesh.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(warped)
         else:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
             glyphs = mesh.glyph(orient=name, factor=glyph_factor)  # type: ignore[no-untyped-call]
             glyphs.rename_array("GlyphScale", name)
-            plotter.add_mesh(glyphs)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(edgemesh)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(glyphs)
+            plotter.add_mesh(edgemesh)
         if tdim == 2:
             plotter.camera_position = "xy"
-        plotter.add_axes()  # type: ignore[no-untyped-call]
+        plotter.add_axes()
         return cls._show_plotter(plotter)
 
     @classmethod
-    def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[
+    def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[  # type: ignore[no-any-unimported]
         panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """Show pyvista Plotter using the requested backend."""
         if cls._jupyter_backend == "panel":
             # Set up camera
-            plotter._on_first_render_request()  # type: ignore[no-untyped-call]
+            plotter._on_first_render_request()
             # Only set window size if explicitly set within the plotter
             if not plotter._window_size_unset:
                 width, height = plotter.window_size
@@ -241,5 +241,5 @@ class PyvistaPlotter(BasePlotter[
                 enable_keybindings=False, sizing_mode="stretch_width", **sizing
             )
         else:
-            return plotter.show(  # type: ignore[no-any-return, no-untyped-call]
+            return plotter.show(  # type: ignore[no-any-return]
                 jupyter_backend=cls._jupyter_backend, return_viewer=True)
