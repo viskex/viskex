@@ -177,7 +177,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             values = values[argsort]
             return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
         else:
-            pyvista_cells, cell_types, coordinates = dolfinx.plot.create_vtk_mesh(scalar_field.function_space)
+            pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(scalar_field.function_space)
             pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
             pyvista_grid.point_data[name] = values
             pyvista_grid.set_active_scalars(name)
@@ -224,7 +224,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         (values, name) = extract_part(values, name, part)
         tdim = mesh.topology.dim
         assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.create_vtk_mesh(vector_field.function_space)
+        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(vector_field.function_space)
         pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
         values = values.reshape(coordinates.shape[0], vector_field.function_space.dofmap.index_map_bs)
         if tdim == 2:
@@ -248,7 +248,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         mesh.topology.create_connectivity(dim, dim)
         num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
         cell_entities = np.arange(num_cells, dtype=np.int32)
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.create_vtk_mesh(mesh, dim, cell_entities)
+        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, cell_entities)
         return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
 
     @staticmethod
