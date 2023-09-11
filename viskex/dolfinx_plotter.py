@@ -26,8 +26,8 @@ if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
 
 class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]],
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]],
     typing.Union[go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
 ]):
     """viskex plotter interfacing dolfinx."""
@@ -134,20 +134,20 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
-        Plot a scalar field stored in a dolfinx Function, or a pair of UFL Expression and dolfinx FunctionSpace.
+        Plot a scalar field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
         Parameters
         ----------
         scalar_field
             Expression to be plotted, which contains a scalar field.
-            If the expression is provided as a dolfinx Function, such function will be plotted.
-            If the expression is provided as a tuple containing UFL expression and a dolfinx FunctionSpace,
+            If the expression is provided as a dolfinx function, such function will be plotted.
+            If the expression is provided as a tuple containing UFL expression and a dolfinx function space,
             the UFL expression will first be interpolated on the function space and then plotted.
         name
             Name of the quantity stored in the scalar field.
@@ -186,20 +186,20 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
-        Plot a vector field stored in a dolfinx Function, or a pair of UFL Expression and dolfinx FunctionSpace.
+        Plot a vector field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
         Parameters
         ----------
         vector_field
             Expression to be plotted, which contains a vector field.
-            If the expression is provided as a dolfinx Function, such function will be plotted.
-            If the expression is provided as a tuple containing UFL expression and a dolfinx FunctionSpace,
+            If the expression is provided as a dolfinx function, such function will be plotted.
+            If the expression is provided as a tuple containing UFL expression and a dolfinx function space,
             the UFL expression will first be interpolated on the function space and then plotted.
         name
             Name of the quantity stored in the vector field.
@@ -253,9 +253,9 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @staticmethod
     def _interpolate_if_ufl_expression(  # type: ignore[no-any-unimported]
-        field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
+        field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]]
     ) -> dolfinx.fem.Function:
-        """Interpolate a UFL Expression in a dolfinx Function."""
+        """Interpolate a UFL expression in a dolfinx function."""
         if isinstance(field, tuple):
             expression, function_space = field
             interpolated_field = dolfinx.fem.Function(function_space)
