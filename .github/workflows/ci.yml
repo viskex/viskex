@@ -36,6 +36,7 @@ jobs:
               export DEBIAN_FRONTEND="noninteractive"
               apt -y -qq update
               apt install -y -qq libgl1-mesa-glx xvfb
+              rm /usr/local/lib/python3.10/dist-packages/petsc4py/py.typed
           - backend: firedrake
             container: firedrakeproject/firedrake
             setup_container: |
