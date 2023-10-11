@@ -34,14 +34,14 @@ jobs:
             container: dolfinx/dolfinx:nightly
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
-              apt -y -qq update
+              apt update -y -q
               apt install -y -qq libgl1-mesa-glx xvfb
               rm /usr/local/lib/python3.10/dist-packages/petsc4py/py.typed
           - backend: firedrake
             container: firedrakeproject/firedrake
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
-              apt -y -qq update
+              apt update -y -q
               apt install -y -qq libgl1-mesa-glx xvfb
               rm /home/firedrake/firedrake/lib/python3.10/site-packages/petsc4py/py.typed
               echo "/home/firedrake/firedrake/bin" >> $GITHUB_PATH
@@ -148,7 +148,7 @@ jobs:
       - name: Setup container
         run: |
           export DEBIAN_FRONTEND="noninteractive"
-          apt -y -qq update
+          apt update -y -q
           apt install -y -qq python3-pip rsync
           python3 -m pip -q install coverage
       - name: Download coverage reports from artifacts
