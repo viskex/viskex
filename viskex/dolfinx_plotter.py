@@ -26,8 +26,8 @@ if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
 
 class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]],
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]],
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
     typing.Union[go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
 ]):
     """viskex plotter interfacing dolfinx."""
@@ -134,7 +134,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]
+            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -186,7 +186,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]
+            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
         go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
@@ -253,7 +253,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @staticmethod
     def _interpolate_if_ufl_expression(  # type: ignore[no-any-unimported]
-        field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpaceBase]]
+        field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
     ) -> dolfinx.fem.Function:
         """Interpolate a UFL expression in a dolfinx function."""
         if isinstance(field, tuple):
