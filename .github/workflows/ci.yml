@@ -31,7 +31,7 @@ jobs:
       matrix:
         include:
           - backend: dolfinx
-            container: dolfinx/dolfinx:nightly
+            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
