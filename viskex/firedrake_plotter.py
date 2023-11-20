@@ -291,7 +291,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def _firedrake_mesh_to_plotly_grid(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int
-    ) -> pyvista.UnstructuredGrid:
+    ) -> np.typing.NDArray[np.float64]:
         """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
         vertices = mesh.coordinates.dat.data_ro
         assert len(vertices.shape) == 1
