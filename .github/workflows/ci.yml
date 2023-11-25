@@ -93,7 +93,7 @@ jobs:
           python3 -m mypy .
       - name: Run documentation generation
         run: |
-          cd docs && make html
+          cd docs && python3 -m sphinx -W -b html . build/html
       - name: Run unit tests
         if: steps.skips.outputs.run_unit_tests != 'false'
         run: |
