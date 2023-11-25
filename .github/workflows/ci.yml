@@ -60,42 +60,51 @@ jobs:
           echo "run_coverage=false" >> $GITHUB_OUTPUT
       - name: Install viskex
         run: python3 -m pip install .[docs,lint,tests,tutorials]
-      - name: Update flake8 and mypy configuration
+      - name: Clean build files
+        run: |
+          git config --global --add safe.directory $PWD
+          git clean -xdf
+      - name: Update ruff configuration
         run: |
           if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
-            sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter as firedrake@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@exclude = \[".eggs", "build", "dist"\]$@exclude = [".eggs", "build", "dist", "viskex/firedrake_plotter.py"]@g' pyproject.toml
-            sed -i 's@exclude = "(^\\\\.eggs|^build|^dist|conftest\\\\.py\$)"@exclude = "(^\\\\.eggs|^build|^dist|conftest\\\\.py\$|^viskex/firedrake_plotter\\\\.py\$)"@g' pyproject.toml
-            echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'flake8 = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
-            echo 'mypy = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
+            sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter as firedrake  # noqa: N813@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/firedrake_plotter.py"]@g' pyproject.toml
           elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
-            sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter as dolfinx@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter as dolfinx  # noqa: N813@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/dolfinx_plotter.py"]@g' pyproject.toml
+          else
+            echo "Invalid backend"
+            exit 1
+          fi
+        shell: bash
+      - name: Update mypy configuration
+        run: |
+          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/firedrake_plotter\\\\.py\$)"@g' pyproject.toml
+          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
+            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/dolfinx_plotter\\\\.py\$)"@g' pyproject.toml
             echo "[[tool.mypy.overrides]]" >> pyproject.toml
             echo 'module = "dolfinx"' >> pyproject.toml
             echo "ignore_missing_imports = true" >> pyproject.toml
             echo "[[tool.mypy.overrides]]" >> pyproject.toml
             echo 'module = "dolfinx.*"' >> pyproject.toml
             echo "ignore_missing_imports = true" >> pyproject.toml
-            sed -i 's@exclude = \[".eggs", "build", "dist"\]@exclude = [".eggs", "build", "dist", "viskex/dolfinx_plotter.py"]@g' pyproject.toml
-            sed -i 's@exclude = "(^\\\\.eggs|^build|^dist|conftest\\\\.py\$)"@exclude = "(^\\\\.eggs|^build|^dist|conftest\\\\.py\$|^viskex/dolfinx_plotter\\\\.py\$)"@g' pyproject.toml
-            echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'flake8 = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
-            echo 'mypy = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
           else
             echo "Invalid backend"
             exit 1
           fi
         shell: bash
-      - name: Run flake8 on python files
+      - name: Run ruff on python files
         run: |
-          python3 -m flake8 .
+          python3 -m ruff .
       - name: Run isort on python files
         run: |
           python3 -m isort --check --diff .
       - name: Run mypy on python files
         run: |
-          python3 -m mypy .
+          python3 -m mypy --exclude=conftest.py .
+          python3 -m mypy tests/unit/conftest.py
+          python3 -m mypy tutorials/conftest.py
       - name: Run yamllint on workflows
         run: |
           python3 -m yamllint -d "{extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" .
@@ -114,9 +123,24 @@ jobs:
           NO_TESTS_COLLECTED=5
           python3 -m pytest --ipynb-action=create-notebooks tutorials || (($?==$NO_TESTS_COLLECTED))
         shell: bash
-      - name: Run flake8 on tutorial files
+      - name: Update nbqa configuration
         run: |
-          python3 -m nbqa flake8 .
+          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+            echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'ruff = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
+            echo 'mypy = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
+          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
+            echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo 'ruff = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
+            echo 'mypy = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
+          else
+            echo "Invalid backend"
+            exit 1
+          fi
+        shell: bash
+      - name: Run ruff on tutorial files
+        run: |
+          python3 -m nbqa ruff .
       - name: Run isort on tutorial files
         run: |
           python3 -m nbqa isort --check --diff .

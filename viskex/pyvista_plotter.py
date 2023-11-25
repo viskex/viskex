@@ -10,13 +10,13 @@ import typing
 
 import numpy as np
 import numpy.typing
-import panel
+import panel as pn
 import panel.pane.vtk.vtk
 import pyvista.trame.jupyter
 
 from viskex.base_plotter import BasePlotter
 
-panel.extension("vtk")
+pn.extension("vtk")
 
 pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
@@ -26,13 +26,13 @@ class PyvistaPlotter(BasePlotter[
     typing.Tuple[pyvista.UnstructuredGrid, int],
     typing.Tuple[pyvista.UnstructuredGrid, int],
     typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
-    typing.Union[panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+    typing.Union[pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
 ]):
     """viskex plotter interfacing pyvista."""
 
     _jupyter_backend = "client"
     try:
-        import google.colab  # noqa: F401, IMR200
+        import google.colab
     except ImportError:
         pass
     else:
@@ -50,7 +50,7 @@ class PyvistaPlotter(BasePlotter[
     def plot_mesh(
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None
     ) -> typing.Union[
-        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a 2D or 3D mesh, stored in a pyvista.UnstructuredGrid.
@@ -81,7 +81,7 @@ class PyvistaPlotter(BasePlotter[
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
         indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
     ) -> typing.Union[
-        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot `dim`-dimensional mesh entities of a 2D or 3D mesh.
@@ -129,7 +129,7 @@ class PyvistaPlotter(BasePlotter[
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
         part: str = "real"
     ) -> typing.Union[
-        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a 2D or 3D scalar field.
@@ -173,7 +173,7 @@ class PyvistaPlotter(BasePlotter[
         cls, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
-        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a 2D or 3D vector field.
@@ -223,7 +223,7 @@ class PyvistaPlotter(BasePlotter[
 
     @classmethod
     def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[  # type: ignore[no-any-unimported]
-        panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """Show pyvista Plotter using the requested backend."""
         if cls._jupyter_backend == "panel":
@@ -236,7 +236,7 @@ class PyvistaPlotter(BasePlotter[
             else:
                 sizing = {}
             # Pass plotter render window to panel
-            return panel.panel(
+            return pn.panel(
                 plotter.render_window, orientation_widget=plotter.renderer.axes_enabled,
                 enable_keybindings=False, sizing_mode="stretch_width", **sizing
             )

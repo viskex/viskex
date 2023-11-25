@@ -15,7 +15,7 @@ pytest_runtest_makereport = nbvalx.pytest_hooks_notebooks.runtest_makereport
 pytest_runtest_teardown = nbvalx.pytest_hooks_notebooks.runtest_teardown
 
 
-def pytest_runtest_setup(item: pytest.File) -> None:
+def pytest_runtest_setup(item: nbvalx.pytest_hooks_notebooks.IPyNbFile) -> None:
     """Check backend availability."""
     # Do the setup as in nbvalx
     nbvalx.pytest_hooks_notebooks.runtest_setup(item)

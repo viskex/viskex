@@ -54,14 +54,9 @@ docs = [
     "sphinx"
 ]
 lint = [
-    "flake8",
-    "flake8-annotations",
-    "flake8-docstrings",
-    "flake8-import-restrictions",
-    "flake8-isort",
-    "Flake8-pyproject",
-    "flake8-quotes",
+    "isort",
     "mypy",
+    "ruff",
     "yamllint"
 ]
 tests = [
@@ -77,22 +72,6 @@ tutorials = [
     "nbvalx[notebooks] @ git+https://github.com/multiphenics/nbvalx.git"
 ]
 
-[tool.flake8]
-max-line-length = 120
-show-source = true
-docstring-convention = "numpy"
-inline-quotes = "double"
-imr241_exclude = ["viskex", "viskex.*"]
-imr245_include = "*"
-imr245_exclude = ["viskex", "viskex.*"]
-ignore = ["ANN102", "W503"]
-exclude = [".eggs", "build", "dist"]
-per-file-ignores = [
-    "viskex/__init__.py: F401",
-    "viskex/**/__init__.py: F401",
-    "tutorials/**/tutorial_*.py: D100, I004"
-]
-
 [tool.isort]
 line_length = 120
 multi_line_output = 4
@@ -102,7 +81,6 @@ order_by_type = false
 check_untyped_defs = true
 disallow_any_unimported = true
 disallow_untyped_defs = true
-exclude = "(^\\.eggs|^build|^dist|conftest\\.py$)"
 implicit_reexport = true
 no_implicit_optional = true
 pretty = true
@@ -150,6 +128,22 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "ufl"
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 120
+select = ["ANN", "D", "E", "F", "ICN", "N", "Q", "RUF", "W"]
+ignore = ["ANN101", "ANN102"]
+
+[tool.ruff.per-file-ignores]
+"viskex/__init__.py" = ["F401"]
+"viskex/**/__init__.py" = ["F401"]
+"tutorials/**/tutorial_*.py" = ["D100"]
+
+[tool.ruff.pycodestyle]
+max-doc-length = 120
+
+[tool.ruff.pydocstyle]
+convention = "numpy"
 
 [tool.setuptools.package-data]
 viskex = ["py.typed"]

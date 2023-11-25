@@ -28,7 +28,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
 ]):
     """viskex plotter interfacing firedrake."""
 
-    _ufl_cellname_to_vtk_celltype = {
+    _ufl_cellname_to_vtk_celltype: typing.ClassVar[typing.Dict[str, int]] = {
         "point": 1,
         "interval": 3,
         "triangle": 5,
@@ -36,7 +36,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         "tetrahedron": 10,
         "hexahedron": 12
     }
-    _tdim_cellname_to_dim_cellname = {
+    _tdim_cellname_to_dim_cellname: typing.ClassVar[typing.Dict[typing.Tuple[str, int], str]] = {
         ("point", 0): "point",
         ("interval", 1): "interval",
         ("interval", 0): "point",
@@ -376,7 +376,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             raise RuntimeError("Unsupported cellname")
 
     @staticmethod
-    def _interpolate_to_P1_space(  # type: ignore[no-any-unimported]
+    def _interpolate_to_P1_space(  # type: ignore[no-any-unimported] # noqa: N802
         field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], function_space_generator: typing.Callable[[firedrake.MeshGeometry], ufl.FunctionSpace]
