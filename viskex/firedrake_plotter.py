@@ -9,6 +9,7 @@ import typing
 
 import firedrake
 import numpy as np
+import panel as pn
 import panel.pane.vtk.vtk
 import plotly.graph_objects as go
 import pyvista.trame.jupyter
@@ -24,7 +25,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     firedrake.MeshGeometry,
     typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
     typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
-    typing.Union[go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+    typing.Union[go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
 ]):
     """viskex plotter interfacing firedrake."""
 
@@ -60,7 +61,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_mesh(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None
     ) -> typing.Union[
-        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
@@ -93,7 +94,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
-        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot `dim`-dimensional mesh entities of a given firedrake mesh.
@@ -134,7 +135,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_mesh_sets(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int, name: str
     ) -> typing.Union[
-        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a cell set or a face sets of a given firedrake mesh.
@@ -193,7 +194,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
-        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a scalar field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
@@ -242,7 +243,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
-        go.Figure, panel.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a vector field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
