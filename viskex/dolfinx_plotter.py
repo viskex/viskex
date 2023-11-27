@@ -29,7 +29,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
     typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
     typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
-    typing.Union[go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget]
+    typing.Union[go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget]
 ]):
     """viskex plotter interfacing dolfinx."""
 
@@ -37,7 +37,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_mesh(  # type: ignore[no-any-unimported]
         cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None
     ) -> typing.Union[
-        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -70,7 +70,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         cls, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
         values: typing.Optional[np.typing.NDArray[np.int32]] = None
     ) -> typing.Union[
-        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot `dim`-dimensional mesh entities of a given dolfinx mesh.
@@ -111,7 +111,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_mesh_tags(  # type: ignore[no-any-unimported]
         cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str
     ) -> typing.Union[
-        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot dolfinx.mesh.MeshTags.
@@ -138,7 +138,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
-        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a scalar field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
@@ -190,7 +190,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
     ) -> typing.Union[
-        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.trame.jupyter.Widget
+        go.Figure, pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """
         Plot a vector field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.

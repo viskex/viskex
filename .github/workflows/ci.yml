@@ -114,7 +114,9 @@ jobs:
       - name: Run unit tests
         if: steps.skips.outputs.run_unit_tests != 'false'
         run: |
-          for VISKEX_PYVISTA_BACKEND in "client" "server" "panel" "static"; do
+          export DISPLAY=":99"
+          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "panel" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_unit_${{ matrix.backend }}_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tests/unit
           done
@@ -155,7 +157,7 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "server" "panel" "static"; do
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "panel" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_${{ matrix.backend }} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tutorials
           done
