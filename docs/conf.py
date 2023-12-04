@@ -8,7 +8,7 @@
 # Project information
 project = "viskex"
 copyright = "2023, the viskex authors"
-author = "Francesco Ballarin (and contributors)"
+author = "Francesco Ballarin"
 
 # General configuration
 extensions = [
