@@ -59,7 +59,9 @@ jobs:
           echo "run_unit_tests=false" >> $GITHUB_OUTPUT
           echo "run_coverage=false" >> $GITHUB_OUTPUT
       - name: Install viskex
-        run: python3 -m pip install .[docs,lint,tests,tutorials]
+        run: |
+          BACKEND=backend_${{ matrix.backend }}
+          python3 -m pip install .[${BACKEND},docs,lint,tests,tutorials]
       - name: Clean build files
         run: |
           git config --global --add safe.directory $PWD
