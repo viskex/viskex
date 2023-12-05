@@ -83,12 +83,8 @@ jobs:
             sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/firedrake_plotter\\\\.py\$)"@g' pyproject.toml
           elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
             sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/dolfinx_plotter\\\\.py\$)"@g' pyproject.toml
-            echo "[[tool.mypy.overrides]]" >> pyproject.toml
-            echo 'module = "dolfinx"' >> pyproject.toml
-            echo "ignore_missing_imports = true" >> pyproject.toml
-            echo "[[tool.mypy.overrides]]" >> pyproject.toml
-            echo 'module = "dolfinx.*"' >> pyproject.toml
-            echo "ignore_missing_imports = true" >> pyproject.toml
+            sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
+            sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
           else
             echo "Invalid backend"
             exit 1
