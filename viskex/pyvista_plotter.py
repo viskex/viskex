@@ -10,14 +10,10 @@ import typing
 
 import numpy as np
 import numpy.typing
-import panel as pn
-import panel.pane.vtk.vtk
 import pyvista
 import pyvista.trame.jupyter
 
 from viskex.base_plotter import BasePlotter
-
-pn.extension("vtk")
 
 pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
@@ -27,9 +23,7 @@ class PyvistaPlotter(BasePlotter[
     typing.Tuple[pyvista.UnstructuredGrid, int],
     typing.Tuple[pyvista.UnstructuredGrid, int],
     typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
-    typing.Union[  # type: ignore[no-any-unimported]
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]
+    typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]  # type: ignore[no-any-unimported]
 ]):
     """viskex plotter interfacing pyvista."""
 
@@ -45,7 +39,6 @@ class PyvistaPlotter(BasePlotter[
     _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
     assert _jupyter_backend in (
         "client", "html", "server", "trame",  # trame backends
-        "panel",  # panel backend
         "static",  # static backend
         "none"  # do-nothing backend
     )
@@ -53,9 +46,7 @@ class PyvistaPlotter(BasePlotter[
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None
-    ) -> typing.Union[
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]:
+    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D mesh, stored in a pyvista.UnstructuredGrid.
 
@@ -84,9 +75,7 @@ class PyvistaPlotter(BasePlotter[
     def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
         indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
-    ) -> typing.Union[
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]:
+    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot `dim`-dimensional mesh entities of a 2D or 3D mesh.
 
@@ -132,9 +121,7 @@ class PyvistaPlotter(BasePlotter[
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
         part: str = "real"
-    ) -> typing.Union[
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]:
+    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D scalar field.
 
@@ -176,9 +163,7 @@ class PyvistaPlotter(BasePlotter[
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
-    ) -> typing.Union[
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]:
+    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D vector field.
 
@@ -227,24 +212,10 @@ class PyvistaPlotter(BasePlotter[
 
     @classmethod
     def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[  # type: ignore[no-any-unimported]
-        pn.pane.vtk.vtk.VTKRenderWindowSynchronized, pyvista.Plotter, pyvista.trame.jupyter.Widget
+        pyvista.Plotter, pyvista.trame.jupyter.Widget
     ]:
         """Show pyvista Plotter using the requested backend."""
-        if cls._jupyter_backend == "panel":
-            # Set up camera
-            plotter._on_first_render_request()
-            # Only set window size if explicitly set within the plotter
-            if not plotter._window_size_unset:
-                width, height = plotter.window_size
-                sizing = {"width": width, "height": height}
-            else:
-                sizing = {}
-            # Pass plotter render window to panel
-            return pn.panel(
-                plotter.render_window, orientation_widget=plotter.renderer.axes_enabled,
-                enable_keybindings=False, sizing_mode="stretch_width", **sizing
-            )
-        elif cls._jupyter_backend == "none":
+        if cls._jupyter_backend == "none":
             return plotter
         else:
             return plotter.show(jupyter_backend=cls._jupyter_backend, return_viewer=True)
