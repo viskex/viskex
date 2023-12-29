@@ -105,8 +105,6 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Array containing the IDs of the entities to be plotted.
         values
             Array containing the value to be associated to each of the entities in `indices`.
-            Values are assumed to be greater than zero, because every entity not part of `indices`
-            will be automatically assigned value equal to zero.
             If not provided, every entity part of `indices` will be marked with value one.
 
         Returns
@@ -152,31 +150,45 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             cells = mesh.coordinates.cell_node_map().values
             unique_cell_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.CELL_SETS_LABEL).indices.tolist())
-            cell_indices = np.arange(cells.shape[0], dtype=np.int32)
-            cell_markers = np.full(cells.shape[0], 0, dtype=np.int32)
-            for cm in unique_cell_markers:
-                cell_markers[mesh.cell_subset(cm).indices] = cm
-            return cls.plot_mesh_entities(mesh, dim, name, cell_indices, cell_markers)
+            if len(unique_cell_markers) > 0:
+                assert min(unique_cell_markers) > 0, "Zero is used as a placeholder for unmarked cells"
+                cell_indices = np.arange(cells.shape[0], dtype=np.int32)
+                cell_markers = np.full(cells.shape[0], 0, dtype=np.int32)
+                for cm in unique_cell_markers:
+                    cell_markers[mesh.cell_subset(cm).indices] = cm
+                marked_cells = np.argwhere(cell_markers > 0)
+                return cls.plot_mesh_entities(
+                    mesh, dim, name, cell_indices[marked_cells], cell_markers[marked_cells])
+            else:
+                empty = np.array([], dtype=np.int32)
+                return cls.plot_mesh_entities(mesh, dim, name, empty, empty)
         elif dim == tdim - 1:
             unique_face_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.FACE_SETS_LABEL).indices.tolist())
-            facet_sizes = {
-                facet_set_name: facet_set.measure_set(facet_set_name, "everywhere").size
-                for (facet_set, facet_set_name) in zip(
-                    (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet")
-                )
-            }
-            all_facet_size = sum(facet_sizes.values())
-            all_facet_indices = np.arange(all_facet_size, dtype=np.int32)
-            all_facet_markers = np.full(all_facet_size, 0, dtype=np.int32)
-            for (facet_set, facet_set_name, offset) in zip(
-                (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet"),
-                (0, facet_sizes["exterior_facet"])
-            ):
-                for fm in unique_face_markers:
-                    facet_indices_fm = offset + facet_set.measure_set(facet_set_name, fm).indices
-                    all_facet_markers[facet_indices_fm] = fm
-            return cls.plot_mesh_entities(mesh, dim, name, all_facet_indices, all_facet_markers)
+            if len(unique_face_markers) > 0:
+                assert min(unique_face_markers) > 0, "Zero is used as a placeholder for unmarked facets"
+                facet_sizes = {
+                    facet_set_name: facet_set.measure_set(facet_set_name, "everywhere").size
+                    for (facet_set, facet_set_name) in zip(
+                        (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet")
+                    )
+                }
+                all_facet_size = sum(facet_sizes.values())
+                all_facet_indices = np.arange(all_facet_size, dtype=np.int32)
+                all_facet_markers = np.full(all_facet_size, 0, dtype=np.int32)
+                for (facet_set, facet_set_name, offset) in zip(
+                    (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet"),
+                    (0, facet_sizes["exterior_facet"])
+                ):
+                    for fm in unique_face_markers:
+                        facet_indices_fm = offset + facet_set.measure_set(facet_set_name, fm).indices
+                        all_facet_markers[facet_indices_fm] = fm
+                marked_facets = np.argwhere(all_facet_markers > 0)
+                return cls.plot_mesh_entities(
+                    mesh, dim, name, all_facet_indices[marked_facets], all_facet_markers[marked_facets])
+            else:
+                empty = np.array([], dtype=np.int32)
+                return cls.plot_mesh_entities(mesh, dim, name, empty, empty)
         else:
             raise RuntimeError("Invalid mesh set dimension")
 

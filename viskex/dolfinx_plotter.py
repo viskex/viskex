@@ -81,8 +81,6 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Array containing the IDs of the entities to be plotted.
         values
             Array containing the value to be associated to each of the entities in `indices`.
-            Values are assumed to be greater than zero, because every entity not part of `indices`
-            will be automatically assigned value equal to zero.
             If not provided, every entity part of `indices` will be marked with value one.
 
         Returns

@@ -81,8 +81,6 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Array containing the IDs of the entities to be plotted.
         values
             Array containing the value to be associated to each of the entities in `indices`.
-            Values are assumed to be greater than zero, because every entity not part of `indices`
-            will be automatically assigned value equal to zero.
 
         Returns
         -------
@@ -91,19 +89,24 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """
         assert dim in (0, 1)
 
-        all_values = np.zeros(coordinates.shape[0] if dim == 0 else coordinates.shape[0] - 1, dtype=np.int32)
+        int_nan = np.iinfo(np.int32).max
+        all_values = np.full(coordinates.shape[0] if dim == 0 else coordinates.shape[0] - 1, int_nan, dtype=np.int32)
         if values.shape[0] != all_values.shape[0]:
-            assert np.all(values != 0), "Zero is used as a placeholder for non-provided entities"
+            assert np.all(values != int_nan), f"{int_nan} is used as a placeholder for non-provided entities"
         for (index, value) in zip(indices, values):
             all_values[index] = value
+        all_values_unique = np.unique(all_values)
 
         def consecutive(data: np.typing.NDArray[np.int32]) -> typing.List[np.typing.NDArray[np.int32]]:
             """Determine consecutive indices in an array."""
             return np.split(data, np.where(np.diff(data) != 1)[0] + 1)
 
-        colors = plotly.colors.qualitative.Set1
+        assert len(all_values_unique) < 9, "The chosen color sequences only contains 8 colors + 1 color for NaN"
+        color_sequence = plotly.colors.qualitative.Set1
+        colors = {
+            value: color_sequence[-1] if value == int_nan else color_sequence[value] for value in all_values_unique}
         fig = go.Figure()
-        for value in np.unique(all_values):
+        for value in all_values_unique:
             indices_value = np.where(all_values == value)[0]
             if dim == 0:
                 mode = "markers"
@@ -122,7 +125,10 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
                 raise RuntimeError("Invalid dimension")
             for s, coordinates_value_s in enumerate(coordinates_value):
                 if s == 0:
-                    name_value_s = str(name + " == " + str(value))
+                    if value != int_nan:
+                        name_value_s = str(name + " == " + str(value))
+                    else:
+                        name_value_s = str(name + " not provided")
                 else:
                     name_value_s = None
                 fig.add_scatter(

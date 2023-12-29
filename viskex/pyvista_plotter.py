@@ -93,8 +93,6 @@ class PyvistaPlotter(BasePlotter[
             Array containing the IDs of the entities to be plotted.
         values
             Array containing the value to be associated to each of the entities in `indices`.
-            Values are assumed to be greater than zero, because every entity not part of `indices`
-            will be automatically assigned value equal to zero.
 
         Returns
         -------
@@ -102,16 +100,16 @@ class PyvistaPlotter(BasePlotter[
             A pyvista widget representing a plot of the mesh entities of the 2D or 3D mesh.
         """
         (mesh, tdim) = mesh_tdim
-        all_values = np.zeros(mesh.n_cells)
+        all_values = np.full(mesh.n_cells, np.nan)
         if values.shape[0] != all_values.shape[0]:
-            assert np.all(values != 0), "Zero is used as a placeholder for non-provided entities"
+            assert np.invert(np.isnan(values)).all(), "NaN is used as a placeholder for non-provided entities"
         for (index, value) in zip(indices, values):
             all_values[index] = value
 
         mesh.cell_data[name] = all_values
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)
-        plotter.add_mesh(mesh, edge_color="black", show_edges=True)
+        plotter.add_mesh(mesh, edge_color="black", show_edges=True, nan_color="lightgrey")
         plotter.add_axes()
         if tdim == 2:
             plotter.camera_position = "xy"
