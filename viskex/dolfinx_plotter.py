@@ -33,7 +33,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None
+        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
@@ -44,6 +44,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A dolfinx mesh to be plotted.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -56,15 +58,15 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         assert dim <= tdim
         if tdim == 1:
             plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh(plotly_grid, dim)
+            return PlotlyPlotter.plot_mesh(plotly_grid, dim, **kwargs)
         else:
             pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
+            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim), **kwargs)
 
     @classmethod
     def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
-        values: typing.Optional[np.typing.NDArray[np.int32]] = None
+        values: typing.Optional[np.typing.NDArray[np.int32]] = None, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot `dim`-dimensional mesh entities of a given dolfinx mesh.
@@ -82,6 +84,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         values
             Array containing the value to be associated to each of the entities in `indices`.
             If not provided, every entity part of `indices` will be marked with value one.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -94,14 +98,14 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             values = np.ones_like(indices)
         if tdim == 1:
             plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
+            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values, **kwargs)
         else:
             pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
+            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values, **kwargs)
 
     @classmethod
     def plot_mesh_tags(  # type: ignore[no-any-unimported]
-        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str
+        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot dolfinx.mesh.MeshTags.
@@ -114,19 +118,21 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A dolfinx mesh tags from which to extract mesh entities and their values.
         name
             Name to be assigned to the field containing the mesh entities values.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
         :
             A widget representing a plot of the mesh entities.
         """
-        return cls.plot_mesh_entities(mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values)
+        return cls.plot_mesh_entities(mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values, **kwargs)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str, warp_factor: float = 0.0, part: str = "real"
+        ], name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a scalar field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
@@ -147,6 +153,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         part
             Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -164,19 +172,20 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             argsort = coordinates.argsort()
             coordinates = coordinates[argsort]
             values = values[argsort]
-            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
+            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
         else:
             pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(scalar_field.function_space)
             pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
             pyvista_grid.point_data[name] = values
             pyvista_grid.set_active_scalars(name)
-            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
+            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a vector field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
@@ -199,6 +208,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         part
             Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -220,7 +231,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         pyvista_grid.set_active_vectors(name)
         pyvista_grid_edges = cls._dolfinx_mesh_to_pyvista_grid(mesh, 1)
         return PyvistaPlotter.plot_vector_field(
-            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part)
+            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
 
     @staticmethod
     def _dolfinx_mesh_to_plotly_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> np.typing.NDArray[np.float64]:

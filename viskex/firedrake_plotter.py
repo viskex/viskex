@@ -57,7 +57,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None
+        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
@@ -68,6 +68,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A firedrake mesh to be plotted.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -80,15 +82,15 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         assert dim <= tdim
         if tdim == 1:
             plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh(plotly_grid, dim)
+            return PlotlyPlotter.plot_mesh(plotly_grid, dim, **kwargs)
         else:
             pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim))
+            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim), **kwargs)
 
     @classmethod
     def plot_mesh_entities(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
-        values: typing.Optional[np.typing.NDArray[np.int32]] = None
+        values: typing.Optional[np.typing.NDArray[np.int32]] = None, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot `dim`-dimensional mesh entities of a given firedrake mesh.
@@ -106,6 +108,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         values
             Array containing the value to be associated to each of the entities in `indices`.
             If not provided, every entity part of `indices` will be marked with value one.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -118,14 +122,14 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             values = np.ones_like(indices)
         if tdim == 1:
             plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values)
+            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values, **kwargs)
         else:
             pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values)
+            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values, **kwargs)
 
     @classmethod
     def plot_mesh_sets(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int, name: str
+        cls, mesh: firedrake.MeshGeometry, dim: int, name: str, **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a cell set or a face sets of a given firedrake mesh.
@@ -138,6 +142,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Extract entities associated to this dimension.
         name
             Name to be assigned to the field containing the mesh entities values.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -158,10 +164,10 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
                     cell_markers[mesh.cell_subset(cm).indices] = cm
                 marked_cells = np.argwhere(cell_markers > 0)
                 return cls.plot_mesh_entities(
-                    mesh, dim, name, cell_indices[marked_cells], cell_markers[marked_cells])
+                    mesh, dim, name, cell_indices[marked_cells], cell_markers[marked_cells], **kwargs)
             else:
                 empty = np.array([], dtype=np.int32)
-                return cls.plot_mesh_entities(mesh, dim, name, empty, empty)
+                return cls.plot_mesh_entities(mesh, dim, name, empty, empty, **kwargs)
         elif dim == tdim - 1:
             unique_face_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.FACE_SETS_LABEL).indices.tolist())
@@ -185,10 +191,10 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
                         all_facet_markers[facet_indices_fm] = fm
                 marked_facets = np.argwhere(all_facet_markers > 0)
                 return cls.plot_mesh_entities(
-                    mesh, dim, name, all_facet_indices[marked_facets], all_facet_markers[marked_facets])
+                    mesh, dim, name, all_facet_indices[marked_facets], all_facet_markers[marked_facets], **kwargs)
             else:
                 empty = np.array([], dtype=np.int32)
-                return cls.plot_mesh_entities(mesh, dim, name, empty, empty)
+                return cls.plot_mesh_entities(mesh, dim, name, empty, empty, **kwargs)
         else:
             raise RuntimeError("Invalid mesh set dimension")
 
@@ -196,7 +202,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str, warp_factor: float = 0.0, part: str = "real"
+        ], name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a scalar field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
@@ -218,6 +224,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         part
             Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -232,18 +240,19 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         tdim = mesh.topological_dimension()
         if tdim == 1:
             coordinates = cls._firedrake_mesh_to_plotly_grid(mesh, tdim)
-            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part)
+            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
         else:
             pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, tdim)
             pyvista_grid.point_data[name] = values
             pyvista_grid.set_active_scalars(name)
-            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part)
+            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a vector field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
@@ -267,6 +276,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         part
             Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        kwargs
+            Additional keyword arguments to be passed to plotly or pyvista.
 
         Returns
         -------
@@ -287,7 +298,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         pyvista_grid.set_active_vectors(name)
         pyvista_grid_edges = cls._firedrake_mesh_to_pyvista_grid(mesh, 1)
         return PyvistaPlotter.plot_vector_field(
-            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part)
+            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
 
     @classmethod
     def _firedrake_mesh_to_plotly_grid(  # type: ignore[no-any-unimported]

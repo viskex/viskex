@@ -25,8 +25,9 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     """viskex plotter interfacing plotly."""
 
     @classmethod
-    def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None
+    def plot_mesh(  # type: ignore[no-any-unimported, override]
+        cls, coordinates: np.typing.NDArray[np.float64], dim: typing.Optional[int] = None,
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> go.Figure:
         """
         Plot a 1D mesh, described by a set of coordinates.
@@ -46,6 +47,8 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         if dim is None:
             dim = 1
         assert dim in (0, 1)
+        assert len(kwargs) == 0
+
         if dim == 0:
             mode = "markers"
         elif dim == 1:
@@ -62,9 +65,9 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         return fig
 
     @classmethod
-    def plot_mesh_entities(  # type: ignore[no-any-unimported]
-        cls, coordinates: np.typing.NDArray[np.float64], dim: int, name: str,
-        indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
+    def plot_mesh_entities(  # type: ignore[no-any-unimported, override]
+        cls, coordinates: np.typing.NDArray[np.float64], dim: int, name: str, indices: np.typing.NDArray[np.int32],
+        values: np.typing.NDArray[np.int32], **kwargs: typing.Any  # noqa: ANN401
     ) -> go.Figure:
         """
         Plot `dim`-dimensional mesh entities of a 1D mesh.
@@ -88,6 +91,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A plotly figure representing a plot of the mesh entities of the 1D mesh.
         """
         assert dim in (0, 1)
+        assert len(kwargs) == 0
 
         int_nan = np.iinfo(np.int32).max
         all_values = np.full(coordinates.shape[0] if dim == 0 else coordinates.shape[0] - 1, int_nan, dtype=np.int32)
@@ -143,7 +147,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
-        name: str, warp_factor: float = 0.0, part: str = "real"
+        name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> go.Figure:
         """
         Plot a 1D scalar field.
@@ -166,6 +170,8 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         :
             A plotly figure representing a plot of the 1D scalar field.
         """
+        assert len(kwargs) == 0
+
         (coordinates, values) = scalar_field
         fig = go.Figure()
         fig.add_scatter(
@@ -180,7 +186,8 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
-        name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+        name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> None:
         """Cannot plot a 1D vector field: no such field exists."""
         raise RuntimeError("Cannot call plot_vector_field for 1D meshes")

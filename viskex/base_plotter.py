@@ -22,14 +22,17 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
 
     @classmethod
     @abc.abstractmethod
-    def plot_mesh(cls, mesh: Mesh, dim: typing.Optional[int] = None) -> PlotterWidget:
+    def plot_mesh(
+        cls, mesh: Mesh, dim: typing.Optional[int] = None, **kwargs: typing.Any  # noqa: ANN401
+    ) -> PlotterWidget:
         """Plot a mesh."""
         pass  # pragma: no cover
 
     @classmethod
     @abc.abstractmethod
     def plot_mesh_entities(
-        cls, mesh: Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
+        cls, mesh: Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
+        values: np.typing.NDArray[np.int32], **kwargs: typing.Any  # noqa: ANN401
     ) -> PlotterWidget:
         """Plot `dim`-dimensional entities."""
         pass  # pragma: no cover
@@ -37,7 +40,8 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     @classmethod
     @abc.abstractmethod
     def plot_scalar_field(
-        cls, scalar_field: ScalarFunction, name: str, warp_factor: float = 0.0, part: str = "real"
+        cls, scalar_field: ScalarFunction, name: str, warp_factor: float = 0.0, part: str = "real",
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> PlotterWidget:
         """Plot a scalar field."""
         pass  # pragma: no cover
@@ -46,7 +50,7 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     @abc.abstractmethod
     def plot_vector_field(
         cls, vector_field: VectorFunction, name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0,
-        part: str = "real"
+        part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> PlotterWidget:
         """Plot a vector field."""
         pass  # pragma: no cover

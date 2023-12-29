@@ -44,8 +44,9 @@ class PyvistaPlotter(BasePlotter[
     )
 
     @classmethod
-    def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None
+    def plot_mesh(  # type: ignore[no-any-unimported, override]
+        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D mesh, stored in a pyvista.UnstructuredGrid.
@@ -56,6 +57,8 @@ class PyvistaPlotter(BasePlotter[
             A pyvista unstructured grid to be plotted.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        kwargs
+            Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
         Returns
         -------
@@ -65,16 +68,19 @@ class PyvistaPlotter(BasePlotter[
         (mesh, tdim) = mesh_tdim
         assert dim is None
         plotter = pyvista.Plotter(notebook=True)
-        plotter.add_mesh(mesh, color="red", edge_color="black", show_edges=True)
+        default_kwargs = {"color": "red", "edge_color": "black", "show_edges": True}
+        default_kwargs.update(kwargs)
+        plotter.add_mesh(mesh, **default_kwargs)
         plotter.add_axes()
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
 
     @classmethod
-    def plot_mesh_entities(  # type: ignore[no-any-unimported]
+    def plot_mesh_entities(  # type: ignore[no-any-unimported, override]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
-        indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32]
+        indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32],
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot `dim`-dimensional mesh entities of a 2D or 3D mesh.
@@ -109,16 +115,18 @@ class PyvistaPlotter(BasePlotter[
         mesh.cell_data[name] = all_values
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)
-        plotter.add_mesh(mesh, edge_color="black", show_edges=True, nan_color="lightgrey")
+        default_kwargs = {"edge_color": "black", "show_edges": True, "nan_color": "lightgrey"}
+        default_kwargs.update(kwargs)
+        plotter.add_mesh(mesh, **default_kwargs)
         plotter.add_axes()
         if tdim == 2:
             plotter.camera_position = "xy"
         return cls._show_plotter(plotter)
 
     @classmethod
-    def plot_scalar_field(  # type: ignore[no-any-unimported]
+    def plot_scalar_field(  # type: ignore[no-any-unimported, override]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
-        part: str = "real"
+        part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D scalar field.
@@ -149,18 +157,19 @@ class PyvistaPlotter(BasePlotter[
             assert warp_factor > 0.0
             assert tdim == 2
             warped = mesh.warp_by_scalar(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped)
+            plotter.add_mesh(warped, **kwargs)
         else:
-            plotter.add_mesh(mesh)
+            plotter.add_mesh(mesh, **kwargs)
             if tdim == 2:
                 plotter.camera_position = "xy"
         plotter.add_axes()
         return cls._show_plotter(plotter)
 
     @classmethod
-    def plot_vector_field(  # type: ignore[no-any-unimported]
+    def plot_vector_field(  # type: ignore[no-any-unimported, override]
         cls, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
-        name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real"
+        name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        **kwargs: typing.Any  # noqa: ANN401
     ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
         """
         Plot a 2D or 3D vector field.
@@ -191,17 +200,17 @@ class PyvistaPlotter(BasePlotter[
         (mesh, edgemesh, tdim) = mesh_edgemesh_tdim
         plotter = pyvista.Plotter(notebook=True)
         if glyph_factor == 0.0 and warp_factor == 0.0:
-            plotter.add_mesh(mesh)
+            plotter.add_mesh(mesh, **kwargs)
         elif glyph_factor == 0.0 and warp_factor != 0.0:
             assert warp_factor > 0.0
             warped = mesh.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped)
+            plotter.add_mesh(warped, **kwargs)
         else:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
             glyphs = mesh.glyph(orient=name, factor=glyph_factor)  # type: ignore[no-untyped-call]
             glyphs.rename_array("GlyphScale", name)
-            plotter.add_mesh(glyphs)
+            plotter.add_mesh(glyphs, **kwargs)
             plotter.add_mesh(edgemesh)
         if tdim == 2:
             plotter.camera_position = "xy"
