@@ -67,14 +67,14 @@ lint = [
 tests = [
     "coverage[toml]",
     "nbqa",
-    "nbvalx[unit_tests] @ git+https://github.com/multiphenics/nbvalx.git",
+    "nbvalx[unit_tests]",
     "pytest",
     "pytest-cov"
 ]
 tutorials = [
     # "fenics-dolfinx",
     # "firedrake",
-    "nbvalx[notebooks] @ git+https://github.com/multiphenics/nbvalx.git"
+    "nbvalx[notebooks]"
 ]
 
 [tool.isort]
