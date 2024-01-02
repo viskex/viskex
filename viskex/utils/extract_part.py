@@ -9,14 +9,15 @@ import typing
 
 import numpy as np
 import numpy.typing
-import petsc4py.PETSc
+
+from viskex.utils.scalar_type import ScalarType
 
 
-def extract_part(  # type: ignore[no-any-unimported]
-    values: np.typing.NDArray[petsc4py.PETSc.ScalarType], name: str, part: str
+def extract_part(
+    values: np.typing.NDArray[ScalarType], name: str, part: str
 ) -> typing.Tuple[np.typing.NDArray[np.float64], str]:
     """Extract real or complex part from an array, and update the name to reflect this."""
-    if np.issubdtype(petsc4py.PETSc.ScalarType, np.complexfloating):  # pragma: no cover
+    if np.issubdtype(ScalarType, np.complexfloating):  # pragma: no cover
         if part == "real":
             values = values.real
             name = "real(" + name + ")"

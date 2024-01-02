@@ -9,17 +9,17 @@ import typing
 
 import numpy as np
 import numpy.typing
-import petsc4py.PETSc
 import plotly.colors
 import plotly.graph_objects as go
 
 from viskex.base_plotter import BasePlotter
+from viskex.utils import ScalarType
 
 
 class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     np.typing.NDArray[np.float64],
-    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
-    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[ScalarType]],
+    typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[ScalarType]],
     go.Figure
 ]):
     """viskex plotter interfacing plotly."""
@@ -146,7 +146,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
-        cls, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+        cls, scalar_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[ScalarType]],
         name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
     ) -> go.Figure:
         """
@@ -184,8 +184,8 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         return fig
 
     @classmethod
-    def plot_vector_field(  # type: ignore[no-any-unimported]
-        cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[petsc4py.PETSc.ScalarType]],
+    def plot_vector_field(
+        cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[ScalarType]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
         **kwargs: typing.Any  # noqa: ANN401
     ) -> None:
