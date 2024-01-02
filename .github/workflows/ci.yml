@@ -146,15 +146,14 @@ jobs:
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
           for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
-            COVERAGE_FILE=.coverage_tutorials_${{ matrix.backend }} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tutorials
+            VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest tutorials
           done
       - name: Store coverage reports as artifact
         uses: actions/upload-artifact@v3
         with:
           name: coverage-${{ matrix.backend }}
           path: |
-            .coverage_unit_${{ matrix.backend }}
-            .coverage_tutorials_${{ matrix.backend }}
+            .coverage*
           retention-days: 1
       - name: Upload tutorials logs as an artifact in case of failure
         if: failure() || cancelled()
@@ -178,17 +177,9 @@ jobs:
           python3 -m pip -q install coverage
       - name: Download coverage reports from artifacts
         uses: actions/download-artifact@v3
-      - name: Combine coverage reports (tutorials only)
+      - name: Combine coverage reports
         run: |
-          python3 -m coverage combine coverage-*/.coverage_tutorials*
-          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
-      - name: Combine coverage reports (notebooks tests only)
-        run: |
-          python3 -m coverage combine coverage-*/.coverage_notebooks*
-          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
-      - name: Combine coverage reports (unit tests only)
-        run: |
-          python3 -m coverage combine coverage-*/.coverage_unit*
+          python3 -m coverage combine coverage-*/.coverage*
           python3 -m coverage report --fail-under=100 --show-missing --skip-covered
 
   warn:
