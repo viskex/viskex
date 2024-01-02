@@ -51,10 +51,12 @@ jobs:
       - name: Update ruff configuration
         run: |
           if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
-            sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter as firedrake  # noqa: N813@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@firedrake = FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
             sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/firedrake_plotter.py"]@g' pyproject.toml
           elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
-            sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter as dolfinx  # noqa: N813@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
+            sed -i 's@dolfinx = DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
             sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/dolfinx_plotter.py"]@g' pyproject.toml
           else
             echo "Invalid backend"
