@@ -40,11 +40,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup container
         run: ${{ matrix.setup_container }}
-      - name: Determine which steps to skip
-        id: skips
-        run: |
-          echo "run_unit_tests=false" >> $GITHUB_OUTPUT
-          echo "run_coverage=false" >> $GITHUB_OUTPUT
       - name: Install viskex
         run: |
           BACKEND=backend_${{ matrix.backend }}
@@ -97,7 +92,6 @@ jobs:
         run: |
           cd docs && python3 -m sphinx -W -b html . build/html
       - name: Run unit tests
-        if: steps.skips.outputs.run_unit_tests != 'false'
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
@@ -147,7 +141,6 @@ jobs:
             COVERAGE_FILE=.coverage_tutorials_${{ matrix.backend }} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tutorials
           done
       - name: Store coverage reports as artifact
-        if: steps.skips.outputs.run_coverage != 'false'
         uses: actions/upload-artifact@v3
         with:
           name: coverage-${{ matrix.backend }}
@@ -162,15 +155,11 @@ jobs:
           name: "tutorials-logs-${{ matrix.backend }}"
           path: |
             tutorials/**/.ipynb_pytest/**/*.log*
-    outputs:
-      run_unit_tests: ${{ steps.skips.outputs.run_unit_tests }}
-      run_coverage: ${{ steps.skips.outputs.run_unit_tests }}
 
   combine_coverage:
     runs-on: ubuntu-latest
     container: ubuntu
     needs: [test]
-    if: needs.test.outputs.run_coverage != 'false'
     steps:
       - uses: actions/checkout@v4
       - name: Setup container
