@@ -50,14 +50,14 @@ jobs:
           git clean -xdf
       - name: Update ruff configuration
         run: |
-          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
             sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
             sed -i 's@firedrake = FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/firedrake_plotter.py"]@g' pyproject.toml
-          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
+            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/firedrake_plotter.py", "tests/notebooks/common_firedrake.py"]@g' pyproject.toml
+          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
             sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
             sed -i 's@dolfinx = DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/dolfinx_plotter.py"]@g' pyproject.toml
+            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/dolfinx_plotter.py", "tests/notebooks/common_dolfinx.py"]@g' pyproject.toml
           else
             echo "Invalid backend"
             exit 1
@@ -65,10 +65,10 @@ jobs:
         shell: bash
       - name: Update mypy configuration
         run: |
-          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
-            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/firedrake_plotter\\\\.py\$)"@g' pyproject.toml
-          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
-            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/dolfinx_plotter\\\\.py\$)"@g' pyproject.toml
+          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
+            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/firedrake_plotter\\\\.py\$|^tests/notebooks/common_firedrake\\\\.py\$)"@g' pyproject.toml
+          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
+            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/dolfinx_plotter\\\\.py\$|^tests/notebooks/common_dolfinx\\\\.py\$)"@g' pyproject.toml
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
           else
@@ -97,43 +97,49 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
-            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
-            COVERAGE_FILE=.coverage_unit_${{ matrix.backend }}_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tests/unit
-          done
-      - name: Generate tutorial files
+          COVERAGE_FILE=.coverage_unit python3 -m coverage run --source=viskex -m pytest tests/unit
+      - name: Generate notebooks files
         run: |
           NO_TESTS_COLLECTED=5
+          python3 -m pytest --ipynb-action=create-notebooks tests/notebooks || (($?==$NO_TESTS_COLLECTED))
           python3 -m pytest --ipynb-action=create-notebooks tutorials || (($?==$NO_TESTS_COLLECTED))
         shell: bash
       - name: Update nbqa configuration
         run: |
-          if [[ "${{ matrix.backend }}" == "dolfinx" ]]; then
+          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
             echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'ruff = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
-            echo 'mypy = "^tutorials/.*/tutorial_.*_firedrake"' >> pyproject.toml
-          elif [[ "${{ matrix.backend }}" == "firedrake" ]]; then
+            echo 'ruff = "(^tests/notebooks/test_.*_firedrake|^tests/notebooks/.*/test_.*_firedrake|^tutorials/.*/tutorial_.*_firedrake)"' >> pyproject.toml
+            echo 'mypy = "(^tests/notebooks/test_.*_firedrake|^tests/notebooks/.*/test_.*_firedrake|^tutorials/.*/tutorial_.*_firedrake)"' >> pyproject.toml
+          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
             echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'ruff = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
-            echo 'mypy = "^tutorials/.*/tutorial_.*_dolfinx"' >> pyproject.toml
+            echo 'ruff = "(^tests/notebooks/test_.*_dolfinx|^tests/notebooks/.*/test_.*_dolfinx|^tutorials/.*/tutorial_.*_dolfinx)"' >> pyproject.toml
+            echo 'mypy = "(^tests/notebooks/test_.*_dolfinx|^tests/notebooks/.*/test_.*_dolfinx|^tutorials/.*/tutorial_.*_dolfinx)"' >> pyproject.toml
           else
             echo "Invalid backend"
             exit 1
           fi
         shell: bash
-      - name: Run ruff on tutorial files
+      - name: Run ruff on notebooks files
         run: |
           python3 -m nbqa ruff .
-      - name: Run isort on tutorial files
+      - name: Run isort on notebooks files
         run: |
           python3 -m nbqa isort --check --diff .
-      - name: Run mypy on tutorial files
+      - name: Run mypy on notebooks files
         run: |
           python3 -m nbqa mypy .
       - name: Check for stray outputs, counts and metadata in ipynb files
         uses: RBniCS/check-jupyter-metadata-action@main
         with:
-          pattern: "tutorials/**/*.ipynb"
+          pattern: "**/*.ipynb"
+      - name: Run notebooks tests
+        run: |
+          export DISPLAY=":99"
+          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_notebooks_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tests/notebooks
+          done
       - name: Run tutorials
         run: |
           export DISPLAY=":99"
@@ -172,9 +178,17 @@ jobs:
           python3 -m pip -q install coverage
       - name: Download coverage reports from artifacts
         uses: actions/download-artifact@v3
-      - name: Combine coverage reports
+      - name: Combine coverage reports (tutorials only)
         run: |
-          python3 -m coverage combine coverage-*/.coverage*
+          python3 -m coverage combine coverage-*/.coverage_tutorials*
+          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
+      - name: Combine coverage reports (notebooks tests only)
+        run: |
+          python3 -m coverage combine coverage-*/.coverage_notebooks*
+          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
+      - name: Combine coverage reports (unit tests only)
+        run: |
+          python3 -m coverage combine coverage-*/.coverage_unit*
           python3 -m coverage report --fail-under=100 --show-missing --skip-covered
 
   warn:
