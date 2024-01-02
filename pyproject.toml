@@ -68,8 +68,7 @@ tests = [
     "coverage[toml]",
     "nbqa",
     "nbvalx[unit_tests]",
-    "pytest",
-    "pytest-cov"
+    "pytest"
 ]
 tutorials = [
     # "fenics-dolfinx",

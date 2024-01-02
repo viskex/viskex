@@ -138,7 +138,7 @@ jobs:
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
           for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
-            COVERAGE_FILE=.coverage_notebooks_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --cov=viskex --cov-report= tests/notebooks
+            COVERAGE_FILE=.coverage_notebooks_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tests/notebooks
           done
       - name: Run tutorials
         run: |
