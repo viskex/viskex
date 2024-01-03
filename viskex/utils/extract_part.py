@@ -24,4 +24,9 @@ def extract_part(
         elif part == "imag":
             values = values.imag
             name = "imag(" + name + ")"
+        else:
+            raise RuntimeError(f"Invalid part {part}")
+    else:
+        if part != "real":
+            raise RuntimeError(f"Invalid part {part}")
     return values, name
