@@ -44,7 +44,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         :
             A plotly figure representing a plot of the 1D mesh.
         """
-        if dim is None:
+        if dim is None:  # pragma: no cover
             dim = 1
         assert dim in (0, 1)
         assert len(kwargs) == 0
@@ -53,7 +53,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             mode = "markers"
         elif dim == 1:
             mode = "lines+markers"
-        else:
+        else:  # pragma: no cover
             raise RuntimeError("Invalid dimension")
         fig = go.Figure()
         fig.add_scatter(
@@ -125,7 +125,7 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
                     coordinates[consecutive_indices[0]:consecutive_indices[-1] + 2]
                     for consecutive_indices in consecutive(indices_value)
                 ]
-            else:
+            else:  # pragma: no cover
                 raise RuntimeError("Invalid dimension")
             for s, coordinates_value_s in enumerate(coordinates_value):
                 if s == 0:
@@ -133,12 +133,14 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
                         name_value_s = str(name + " == " + str(value))
                     else:
                         name_value_s = str(name + " not provided")
+                    show_legend_s = True
                 else:
                     name_value_s = None
+                    show_legend_s = False
                 fig.add_scatter(
                     x=coordinates_value_s, y=np.zeros_like(coordinates_value_s),
                     line=dict(color=line_color, width=2, dash="solid"), marker=dict(color=marker_color, size=10),
-                    mode=mode, name=name_value_s
+                    mode=mode, name=name_value_s, showlegend=show_legend_s
                 )
         fig.update_xaxes(title_text="x")
         fig.update_layout(showlegend=True)
@@ -188,6 +190,6 @@ class PlotlyPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Tuple[np.typing.NDArray[np.float64], np.typing.NDArray[ScalarType]],
         name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> None:
+    ) -> None:  # pragma: no cover
         """Cannot plot a 1D vector field: no such field exists."""
         raise RuntimeError("Cannot call plot_vector_field for 1D meshes")

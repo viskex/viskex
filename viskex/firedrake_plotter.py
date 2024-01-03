@@ -195,7 +195,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             else:
                 empty = np.array([], dtype=np.int32)
                 return cls.plot_mesh_entities(mesh, dim, name, empty, empty, **kwargs)
-        else:
+        else:  # pragma: no cover
             raise RuntimeError("Invalid mesh set dimension")
 
     @classmethod
@@ -319,7 +319,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         elif dim == 0:
             vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
             return vertices[vertices_reordering]  # type: ignore[no-any-return]
-        else:
+        else:  # pragma: no cover
             raise RuntimeError("Invali dimension")
 
     @classmethod
@@ -370,7 +370,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
                 cls._reorder_connectivity(connectivity, cls._tdim_cellname_to_dim_cellname[tdim_cellname, tdim - 1])
                 repeated_connectivity = np.roll(np.repeat(connectivity, repeats=2, axis=1), shift=-1, axis=1)
                 connectivity = repeated_connectivity.reshape(-1, 2)
-            else:
+            else:  # pragma: no cover
                 raise RuntimeError("Invalid values of dim and tdim")
         return connectivity  # type: ignore[no-any-return]
 
@@ -384,7 +384,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         elif cellname == "hexahedron":
             connectivity[:, [2, 3]] = connectivity[:, [3, 2]]
             connectivity[:, [6, 7]] = connectivity[:, [7, 6]]
-        else:
+        else:  # pragma: no cover
             raise RuntimeError("Unsupported cellname")
 
     @staticmethod

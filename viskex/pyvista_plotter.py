@@ -32,9 +32,9 @@ class PyvistaPlotter(BasePlotter[
         import google.colab
     except ImportError:
         pass
-    else:
+    else:  # pragma: no cover
         _jupyter_backend = "html"
-    if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):
+    if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
         _jupyter_backend = "html"
     _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
     assert _jupyter_backend in (
