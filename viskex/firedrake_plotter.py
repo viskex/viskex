@@ -306,6 +306,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     ) -> np.typing.NDArray[np.float64]:
         """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
         vertices = mesh.coordinates.dat.data_ro
+        (vertices, _) = extract_part(vertices, "vertices", "real")
         assert len(vertices.shape) == 1
         assert np.all(vertices[1:] >= vertices[:-1])
         if dim == 1:
@@ -320,7 +321,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
             return vertices[vertices_reordering]  # type: ignore[no-any-return]
         else:  # pragma: no cover
-            raise RuntimeError("Invali dimension")
+            raise RuntimeError("Invalid dimension")
 
     @classmethod
     def _firedrake_mesh_to_pyvista_grid(  # type: ignore[no-any-unimported]
@@ -335,6 +336,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         connectivity = np.insert(connectivity, 0, values=connectivity.shape[1], axis=1)
         pyvista_types = np.full(connectivity.shape[0], cls._ufl_cellname_to_vtk_celltype[dim_cellname])
         vertices = mesh.coordinates.dat.data_ro
+        (vertices, _) = extract_part(vertices, "vertices", "real")
         if tdim == 2:
             vertices = np.insert(vertices, 2, values=0.0, axis=1)
         return pyvista.UnstructuredGrid(connectivity.reshape(-1), pyvista_types, vertices)
