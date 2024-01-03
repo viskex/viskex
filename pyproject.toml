@@ -76,6 +76,9 @@ tutorials = [
     "nbvalx[notebooks]"
 ]
 
+[tool.coverage.paths]
+source = ["viskex", "*/dist-packages/viskex", "*/site-packages/viskex"]
+
 [tool.isort]
 line_length = 120
 multi_line_output = 4
