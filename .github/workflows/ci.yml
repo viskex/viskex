@@ -17,19 +17,81 @@ jobs:
     strategy:
       matrix:
         include:
-          - backend: dolfinx
+          - backend: none
+            container: debian:testing
+            setup_git: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq git
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq python3-mpi4py python3-pip xvfb
+              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+          - backend: petsc4py-real
+            container: numericalpdes/base_images:petsc4py-real
+            setup_git: ""
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq xvfb
+              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
+              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
+              rm /usr/local/lib/python3.11/site-packages/petsc4py/py.typed
+          - backend: petsc4py-complex
+            container: numericalpdes/base_images:petsc4py-complex
+            setup_git: ""
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq xvfb
+              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
+              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
+              rm /usr/local/lib/python3.11/site-packages/petsc4py/py.typed
+          - backend: dolfinx-real
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
+            setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
-              apt install -y -qq libgl1-mesa-glx xvfb
+              apt install -y -qq xvfb
+              . /usr/local/bin/dolfinx-real-mode
+              echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
+              echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+              echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+              echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
               rm /usr/local/lib/python3.10/dist-packages/petsc4py/py.typed
-          - backend: firedrake
-            container: firedrakeproject/firedrake
+          - backend: dolfinx-complex
+            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
+            setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
-              apt install -y -qq libgl1-mesa-glx xvfb
+              apt install -y -qq xvfb
+              . /usr/local/bin/dolfinx-complex-mode
+              echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
+              echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+              echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+              echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+              echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+              rm /usr/local/lib/python3.10/dist-packages/petsc4py/py.typed
+          - backend: firedrake-real
+            container: firedrakeproject/firedrake
+            setup_git: ""
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq xvfb
+              rm /home/firedrake/firedrake/lib/python3.10/site-packages/petsc4py/py.typed
+              echo "/home/firedrake/firedrake/bin" >> $GITHUB_PATH
+          - backend: firedrake-complex
+            container: firedrakeproject/firedrake-complex
+            setup_git: ""
+            setup_container: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq xvfb
               rm /home/firedrake/firedrake/lib/python3.10/site-packages/petsc4py/py.typed
               echo "/home/firedrake/firedrake/bin" >> $GITHUB_PATH
       fail-fast: false
@@ -37,6 +99,8 @@ jobs:
       image: ${{ matrix.container }}
       options: --user root
     steps:
+      - name: Setup git
+        run: ${{ matrix.setup_git }}
       - uses: actions/checkout@v4
       - name: Setup container
         run: ${{ matrix.setup_container }}
@@ -50,30 +114,38 @@ jobs:
           git clean -xdf
       - name: Update ruff configuration
         run: |
-          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
-            sed -i 's@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@firedrake = FiredrakePlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/firedrake_plotter.py", "tests/notebooks/common_firedrake.py"]@g' pyproject.toml
-          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
-            sed -i 's@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@dolfinx = DolfinxPlotter@# line removed by CI@g' viskex/__init__.py
-            sed -i 's@\[tool\.ruff\]@[tool.ruff]\nexclude = ["viskex/dolfinx_plotter.py", "tests/notebooks/common_dolfinx.py"]@g' pyproject.toml
-          else
-            echo "Invalid backend"
-            exit 1
+          declare -a RUFF_EXCLUDE
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            sed -i "s@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
+            sed -i "s@firedrake = FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
+            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tests/notebooks/common_firedrake.py")
+          fi
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            sed -i "s@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
+            sed -i "s@dolfinx = DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
+            RUFF_EXCLUDE+=("viskex/dolfinx_plotter.py" "tests/notebooks/common_dolfinx.py")
+          fi
+          if [[ ${RUFF_EXCLUDE[@]} ]]; then
+            RUFF_EXCLUDE_STRING="${RUFF_EXCLUDE[@]}"
+            RUFF_EXCLUDE_STRING="\"${RUFF_EXCLUDE_STRING// /\", \"}\""
+            sed -i "s@\[tool\.ruff\]@[tool.ruff]\nexclude = [${RUFF_EXCLUDE_STRING}]@g" pyproject.toml
           fi
         shell: bash
       - name: Update mypy configuration
         run: |
-          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
-            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/firedrake_plotter\\\\.py\$|^tests/notebooks/common_firedrake\\\\.py\$)"@g' pyproject.toml
-          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
-            sed -i 's@\[tool\.mypy\]@[tool.mypy]\nexclude = "(^viskex/dolfinx_plotter\\\\.py\$|^tests/notebooks/common_dolfinx\\\\.py\$)"@g' pyproject.toml
+          declare -a MYPY_EXCLUDE
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tests/notebooks/common_firedrake\\\\.py\$')
+          fi
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            MYPY_EXCLUDE+=('^viskex/dolfinx_plotter\\\\.py\$' '^tests/notebooks/common_dolfinx\\\\.py\$')
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
-          else
-            echo "Invalid backend"
-            exit 1
+          fi
+          if [[ ${MYPY_EXCLUDE[@]} ]]; then
+            MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"
+            MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE_STRING// /|}"
+            sed -i "s@\[tool\.mypy\]@[tool.mypy]\nexclude = \"(${MYPY_EXCLUDE_STRING})\"@g" pyproject.toml
           fi
         shell: bash
       - name: Run ruff on python files
@@ -106,17 +178,19 @@ jobs:
         shell: bash
       - name: Update nbqa configuration
         run: |
-          if [[ "${{ matrix.backend }}" != "firedrake" ]]; then
+          declare -a NBQA_EXCLUDE
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_firedrake' '^tests/notebooks/.*/test_.*_firedrake' '^tutorials/.*/tutorial_.*_firedrake')
+          fi
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_dolfinx' '^tests/notebooks/.*/test_.*_dolfinx' '^tutorials/.*/tutorial_.*_dolfinx')
+          fi
+          if [[ ${NBQA_EXCLUDE[@]} ]]; then
+            NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE[@]}"
+            NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE_STRING// /|}"
             echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'ruff = "(^tests/notebooks/test_.*_firedrake|^tests/notebooks/.*/test_.*_firedrake|^tutorials/.*/tutorial_.*_firedrake)"' >> pyproject.toml
-            echo 'mypy = "(^tests/notebooks/test_.*_firedrake|^tests/notebooks/.*/test_.*_firedrake|^tutorials/.*/tutorial_.*_firedrake)"' >> pyproject.toml
-          elif [[ "${{ matrix.backend }}" != "dolfinx" ]]; then
-            echo "[tool.nbqa.exclude]" >> pyproject.toml
-            echo 'ruff = "(^tests/notebooks/test_.*_dolfinx|^tests/notebooks/.*/test_.*_dolfinx|^tutorials/.*/tutorial_.*_dolfinx)"' >> pyproject.toml
-            echo 'mypy = "(^tests/notebooks/test_.*_dolfinx|^tests/notebooks/.*/test_.*_dolfinx|^tutorials/.*/tutorial_.*_dolfinx)"' >> pyproject.toml
-          else
-            echo "Invalid backend"
-            exit 1
+            echo "ruff = \"(${NBQA_EXCLUDE_STRING})\"" >> pyproject.toml
+            echo "mypy = \"(${NBQA_EXCLUDE_STRING})\"" >> pyproject.toml
           fi
         shell: bash
       - name: Run ruff on notebooks files
@@ -165,7 +239,7 @@ jobs:
 
   combine_coverage:
     runs-on: ubuntu-latest
-    container: ubuntu
+    container: debian:testing
     needs: [test]
     steps:
       - uses: actions/checkout@v4
@@ -174,6 +248,7 @@ jobs:
           export DEBIAN_FRONTEND="noninteractive"
           apt update -y -q
           apt install -y -qq python3-pip
+          rm /usr/lib/python3.*/EXTERNALLY-MANAGED
           python3 -m pip -q install coverage[toml]
       - name: Download coverage reports from artifacts
         uses: actions/download-artifact@v3
