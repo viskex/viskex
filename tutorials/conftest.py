@@ -26,8 +26,5 @@ def pytest_runtest_setup(item: nbvalx.pytest_hooks_notebooks.IPyNbFile) -> None:
         pytest.importorskip("dolfinx")
     elif notebook_name.endswith("firedrake.ipynb"):
         pytest.importorskip("firedrake")
-    elif notebook_name.endswith("firedrake_netgen.ipynb"):
-        pytest.importorskip("firedrake")
-        pytest.importorskip("netgen")
     else:
         raise ValueError("Invalid notebook name " + notebook_name)
