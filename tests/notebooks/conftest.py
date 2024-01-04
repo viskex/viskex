@@ -15,11 +15,11 @@ pytest_runtest_teardown = nbvalx.pytest_hooks_notebooks.runtest_teardown
 
 
 def pytest_sessionstart(session: pytest.Session) -> None:
-    """Automatically mark common files as data to be copied to the work directory."""
-    # Add common files as data to be copied
-    copy_data_to_work_dir = session.config.option.copy_data_to_work_dir
-    assert len(copy_data_to_work_dir) == 0
-    copy_data_to_work_dir.append("**/common_*.py")
+    """Automatically mark common files as data to be linked in the work directory."""
+    # Add common files as data to be linked
+    link_data_in_work_dir = session.config.option.link_data_in_work_dir
+    assert len(link_data_in_work_dir) == 0
+    link_data_in_work_dir.append("**/common_*.py")
     # Start session as in nbvalx
     nbvalx.pytest_hooks_notebooks.sessionstart(session)
 
