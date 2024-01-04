@@ -152,17 +152,18 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """
         tdim = mesh.topological_dimension()
         assert dim in (tdim, tdim - 1)
+        int_nan = np.iinfo(np.int32).max
         if dim == tdim:
-            cells = mesh.coordinates.cell_node_map().values
+            cells = mesh.coordinates.cell_node_map().values_with_halo
             unique_cell_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.CELL_SETS_LABEL).indices.tolist())
             if len(unique_cell_markers) > 0:
-                assert min(unique_cell_markers) > 0, "Zero is used as a placeholder for unmarked cells"
+                assert max(unique_cell_markers) < int_nan, f"{int_nan} is used as a placeholder for unmarked cells"
                 cell_indices = np.arange(cells.shape[0], dtype=np.int32)
-                cell_markers = np.full(cells.shape[0], 0, dtype=np.int32)
+                cell_markers = np.full(cells.shape[0], int_nan, dtype=np.int32)
                 for cm in unique_cell_markers:
                     cell_markers[mesh.cell_subset(cm).indices] = cm
-                marked_cells = np.argwhere(cell_markers > 0)
+                marked_cells = np.argwhere(cell_markers < int_nan)
                 return cls.plot_mesh_entities(
                     mesh, dim, name, cell_indices[marked_cells], cell_markers[marked_cells], **kwargs)
             else:
@@ -172,16 +173,16 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             unique_face_markers = tuple(mesh.topology_dm.getLabelIdIS(
                 firedrake.cython.dmcommon.FACE_SETS_LABEL).indices.tolist())
             if len(unique_face_markers) > 0:
-                assert min(unique_face_markers) > 0, "Zero is used as a placeholder for unmarked facets"
+                assert max(unique_face_markers) < int_nan, f"{int_nan} is used as a placeholder for unmarked facets"
                 facet_sizes = {
-                    facet_set_name: facet_set.measure_set(facet_set_name, "everywhere").size
+                    facet_set_name: facet_set.measure_set(facet_set_name, "everywhere").total_size
                     for (facet_set, facet_set_name) in zip(
                         (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet")
                     )
                 }
                 all_facet_size = sum(facet_sizes.values())
                 all_facet_indices = np.arange(all_facet_size, dtype=np.int32)
-                all_facet_markers = np.full(all_facet_size, 0, dtype=np.int32)
+                all_facet_markers = np.full(all_facet_size, int_nan, dtype=np.int32)
                 for (facet_set, facet_set_name, offset) in zip(
                     (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet"),
                     (0, facet_sizes["exterior_facet"])
@@ -189,7 +190,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
                     for fm in unique_face_markers:
                         facet_indices_fm = offset + facet_set.measure_set(facet_set_name, fm).indices
                         all_facet_markers[facet_indices_fm] = fm
-                marked_facets = np.argwhere(all_facet_markers > 0)
+                marked_facets = np.argwhere(all_facet_markers < int_nan)
                 return cls.plot_mesh_entities(
                     mesh, dim, name, all_facet_indices[marked_facets], all_facet_markers[marked_facets], **kwargs)
             else:
@@ -234,7 +235,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """
         scalar_field = cls._interpolate_to_P1_space(
             scalar_field, lambda mesh: firedrake.FunctionSpace(mesh, "CG", 1))
-        values = scalar_field.vector().array()
+        values = scalar_field.dat.data_ro_with_halos
         (values, name) = extract_part(values, name, part)
         mesh = scalar_field.function_space().mesh()
         tdim = mesh.topological_dimension()
@@ -289,7 +290,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         mesh = vector_field.function_space().mesh()
         tdim = mesh.topological_dimension()
         assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
-        values = vector_field.vector().array().reshape(-1, tdim)
+        values = vector_field.dat.data_ro_with_halos
         (values, name) = extract_part(values, name, part)
         if tdim == 2:
             values = np.insert(values, values.shape[1], 0.0, axis=1)
@@ -305,18 +306,19 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int
     ) -> np.typing.NDArray[np.float64]:
         """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
-        vertices = mesh.coordinates.dat.data_ro
+        vertices = mesh.coordinates.dat.data_ro_with_halos
         (vertices, _) = extract_part(vertices, "vertices", "real")
         assert len(vertices.shape) == 1
-        assert np.all(vertices[1:] >= vertices[:-1])
         if dim == 1:
+            vertices_reordering = np.argsort(vertices)
             cells = cls._determine_connectivity(mesh, dim)
-            expected_cells = np.repeat(np.arange(vertices.shape[0], dtype=np.int32), 2)
+            expected_cells = np.repeat(vertices_reordering, 2)
             expected_cells = np.delete(np.delete(expected_cells, 0), -1)
             expected_cells = expected_cells.reshape(-1, 2)
-            expected_cells[:, [0, 1]] = expected_cells[:, [1, 0]]
-            assert np.array_equal(cells, expected_cells)
-            return vertices  # type: ignore[no-any-return]
+            cells_set = {frozenset(cell.tolist()) for cell in cells}
+            expected_cells_sets = {frozenset(cell.tolist()) for cell in expected_cells}
+            assert cells_set == expected_cells_sets
+            return vertices[vertices_reordering]  # type: ignore[no-any-return]
         elif dim == 0:
             vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
             return vertices[vertices_reordering]  # type: ignore[no-any-return]
@@ -335,7 +337,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         cls._reorder_connectivity(connectivity, dim_cellname)
         connectivity = np.insert(connectivity, 0, values=connectivity.shape[1], axis=1)
         pyvista_types = np.full(connectivity.shape[0], cls._ufl_cellname_to_vtk_celltype[dim_cellname])
-        vertices = mesh.coordinates.dat.data_ro
+        vertices = mesh.coordinates.dat.data_ro_with_halos
         (vertices, _) = extract_part(vertices, "vertices", "real")
         if tdim == 2:
             vertices = np.insert(vertices, 2, values=0.0, axis=1)
@@ -348,18 +350,18 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """Determine connectivity of a given dimension."""
         tdim = mesh.topological_dimension()
         if dim == tdim:
-            connectivity = mesh.coordinates.cell_node_map().values.copy()
+            connectivity = mesh.coordinates.cell_node_map().values_with_halo.copy()
         elif dim == 0 and tdim > 1:
-            vertices = mesh.coordinates.dat.data_ro
+            vertices = mesh.coordinates.dat.data_ro_with_halos
             connectivity = np.arange(vertices.shape[0]).reshape(-1, 1)
         else:
             topology = mesh.coordinates.function_space().finat_element.cell.get_topology()
-            exterior_facet_local_ids = mesh.exterior_facets.local_facet_dat.data_ro
-            interior_facet_local_ids = mesh.interior_facets.local_facet_dat.data_ro[:, :1].reshape(-1)
+            exterior_facet_local_ids = mesh.exterior_facets.local_facet_dat.data_ro_with_halos
+            interior_facet_local_ids = mesh.interior_facets.local_facet_dat.data_ro_with_halos[:, :1].reshape(-1)
             facet_local_ids = np.concatenate((exterior_facet_local_ids, interior_facet_local_ids), dtype=np.int32)
-            exterior_facet_node_map = mesh.coordinates.exterior_facet_node_map().values
+            exterior_facet_node_map = mesh.coordinates.exterior_facet_node_map().values_with_halo
             interior_facet_node_map = mesh.coordinates.interior_facet_node_map()
-            interior_facet_node_map = interior_facet_node_map.values[:, :interior_facet_node_map.arity // 2]
+            interior_facet_node_map = interior_facet_node_map.values_with_halo[:, :interior_facet_node_map.arity // 2]
             facet_node_map = np.concatenate((exterior_facet_node_map, interior_facet_node_map), dtype=np.int32)
             mask = np.zeros(facet_node_map.shape, dtype=bool)
             for mask_row, facet_local_id in enumerate(facet_local_ids):
