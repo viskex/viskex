@@ -54,26 +54,22 @@ def mark_boundaries(mesh: dolfinx.mesh.Mesh, subdomains: dolfinx.mesh.MeshTags) 
         """Condition that defines the right boundary."""
         return abs(x[0] - 1.) < np.finfo(float).eps  # type: ignore[no-any-return]
 
-    boundaries_entities = dict()
-    boundaries_values = dict()
-    for (boundary, boundary_id) in zip((left, right), (3, 4)):
-        boundaries_entities[boundary_id] = dolfinx.mesh.locate_entities_boundary(
-            mesh, mesh.topology.dim - 1, boundary)
-        boundaries_values[boundary_id] = np.full(
-            boundaries_entities[boundary_id].shape, boundary_id, dtype=np.int32)
+    subdomain_to_boundary_function = {1: left, 2: right}
 
-    boundaries_entities_unsorted = np.hstack(list(boundaries_entities.values()))
-    boundaries_values_unsorted = np.hstack(list(boundaries_values.values()))
-    boundaries_entities_argsort = np.argsort(boundaries_entities_unsorted)
-    boundaries_entities_sorted = boundaries_entities_unsorted[boundaries_entities_argsort]
-    boundaries_values_sorted = boundaries_values_unsorted[boundaries_entities_argsort]
-    boundaries = dolfinx.mesh.meshtags(
-        mesh, mesh.topology.dim - 1,
-        boundaries_entities_sorted, boundaries_values_sorted)
-
+    mesh.topology.create_connectivity(mesh.topology.dim, mesh.topology.dim - 1)
+    mesh.topology.create_connectivity(mesh.topology.dim, 0)
+    mesh.topology.create_connectivity(mesh.topology.dim - 1, 0)
     cell_to_facets_connectivity = mesh.topology.connectivity(mesh.topology.dim, mesh.topology.dim - 1)
-    new_facets_indices = list()
-    new_facets_values = list()
+    cell_to_vertices_connectivity = mesh.topology.connectivity(mesh.topology.dim, 0)
+    facet_to_vertices_connectivity = mesh.topology.connectivity(mesh.topology.dim - 1, 0)
+    cells_map = mesh.topology.index_map(mesh.topology.dim)
+    num_cells = cells_map.size_local + cells_map.num_ghosts
+    vertex_map = {
+        topology_index: geometry_index for cell in range(num_cells) for (topology_index, geometry_index) in zip(
+            cell_to_vertices_connectivity.links(cell), mesh.geometry.dofmap[cell])
+    }
+    facets_indices = list()
+    facets_values = list()
     for cell in range(cell_to_facets_connectivity.num_nodes):
         facets = cell_to_facets_connectivity.links(cell)
         subdomain_index = np.where(subdomains.indices == cell)[0]
@@ -81,13 +77,18 @@ def mark_boundaries(mesh: dolfinx.mesh.Mesh, subdomains: dolfinx.mesh.MeshTags) 
             assert subdomain_index.size == 1
             subdomain_value = subdomains.values[subdomain_index[0]]
             if subdomain_value in (1, 2):
+                boundary_function = subdomain_to_boundary_function[subdomain_value]
                 for facet in facets:
-                    if facet not in boundaries.indices and facet not in new_facets_indices:
-                        new_facets_indices.append(facet)
-                        new_facets_values.append(subdomain_value)
+                    if facet not in facets_indices:
+                        vertices = [vertex_map[vertex] for vertex in facet_to_vertices_connectivity.links(facet)]
+                        facets_indices.append(facet)
+                        if all(boundary_function(mesh.geometry.x[vertex]) for vertex in vertices):
+                            facets_values.append(subdomain_value + 2)
+                        else:
+                            facets_values.append(subdomain_value)
 
-    boundaries_and_interfaces_entities_unsorted = np.hstack((boundaries.indices, new_facets_indices)).astype(np.int32)
-    boundaries_and_interfaces_values_unsorted = np.hstack((boundaries.values, new_facets_values)).astype(np.int32)
+    boundaries_and_interfaces_entities_unsorted = np.array(facets_indices, dtype=np.int32)
+    boundaries_and_interfaces_values_unsorted = np.array(facets_values, dtype=np.int32)
     boundaries_and_interfaces_entities_argsort = np.argsort(boundaries_and_interfaces_entities_unsorted)
     boundaries_and_interfaces_entities_sorted = boundaries_and_interfaces_entities_unsorted[
         boundaries_and_interfaces_entities_argsort]
