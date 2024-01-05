@@ -163,22 +163,21 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """
         scalar_field = cls._interpolate_if_ufl_expression(scalar_field)
         mesh = scalar_field.function_space.mesh
-        values = scalar_field.x.array
-        (values, name) = extract_part(values, name, part)
-        tdim = mesh.topology.dim
-        if tdim == 1:
-            coordinates = scalar_field.function_space.tabulate_dof_coordinates()
-            coordinates = coordinates[:, 0]
-            argsort = coordinates.argsort()
-            coordinates = coordinates[argsort]
-            values = values[argsort]
-            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
-        else:
-            pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(scalar_field.function_space)
-            pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
-            pyvista_grid.point_data[name] = values
-            pyvista_grid.set_active_scalars(name)
-            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
+        with scalar_field.vector.localForm() as values:
+            (values, name) = extract_part(values.array, name, part)
+            tdim = mesh.topology.dim
+            if tdim == 1:
+                coordinates = scalar_field.function_space.tabulate_dof_coordinates()
+                coordinates = coordinates[:, 0]
+                argsort = coordinates.argsort()
+                coordinates = coordinates[argsort]
+                values = values[argsort]
+                return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
+            else:
+                pyvista_grid = cls._dolfinx_function_space_to_pyvista_grid(scalar_field.function_space)
+                pyvista_grid.point_data[name] = values
+                pyvista_grid.set_active_scalars(name)
+                return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -218,20 +217,19 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         """
         vector_field = cls._interpolate_if_ufl_expression(vector_field)
         mesh = vector_field.function_space.mesh
-        values = vector_field.x.array
-        (values, name) = extract_part(values, name, part)
-        tdim = mesh.topology.dim
-        assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(vector_field.function_space)
-        pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
-        values = values.reshape(coordinates.shape[0], vector_field.function_space.dofmap.index_map_bs)
-        if tdim == 2:
-            values = np.insert(values, values.shape[1], 0.0, axis=1)
-        pyvista_grid.point_data[name] = values
-        pyvista_grid.set_active_vectors(name)
-        pyvista_grid_edges = cls._dolfinx_mesh_to_pyvista_grid(mesh, 1)
-        return PyvistaPlotter.plot_vector_field(
-            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
+        with vector_field.vector.localForm() as values:
+            (values, name) = extract_part(values.array, name, part)
+            tdim = mesh.topology.dim
+            assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
+            pyvista_grid = cls._dolfinx_function_space_to_pyvista_grid(vector_field.function_space)
+            values = values.reshape(-1, vector_field.function_space.dofmap.index_map_bs)
+            if tdim == 2:
+                values = np.insert(values, values.shape[1], 0.0, axis=1)
+            pyvista_grid.point_data[name] = values
+            pyvista_grid.set_active_vectors(name)
+            pyvista_grid_edges = cls._dolfinx_mesh_to_pyvista_grid(mesh, 1)
+            return PyvistaPlotter.plot_vector_field(
+                (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
 
     @staticmethod
     def _dolfinx_mesh_to_plotly_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> np.typing.NDArray[np.float64]:
@@ -247,6 +245,18 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
         cell_entities = np.arange(num_cells, dtype=np.int32)
         pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, cell_entities)
+        return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
+
+    @staticmethod
+    def _dolfinx_function_space_to_pyvista_grid(function_space: dolfinx.fem.FunctionSpace) -> pyvista.UnstructuredGrid:
+        """Convert the mesh associated to a dolfinx.fem.FunctionSpace to a pyvista.UnstructuredGrid."""
+        mesh = function_space.mesh
+        dim = mesh.topology.dim
+        mesh.topology.create_connectivity(dim, dim)
+        num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
+        cell_entities = np.arange(num_cells, dtype=np.int32)
+        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(
+            function_space, cell_entities)  # type: ignore[arg-type]
         return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
 
     @staticmethod
