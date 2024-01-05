@@ -153,13 +153,15 @@ class PyvistaPlotter(BasePlotter[
         """
         (mesh, tdim) = mesh_tdim
         plotter = pyvista.Plotter(notebook=True)
+        default_kwargs = {"edge_color": "black", "show_edges": True}
+        default_kwargs.update(kwargs)
         if warp_factor != 0.0:
             assert warp_factor > 0.0
             assert tdim == 2
             warped = mesh.warp_by_scalar(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped, **kwargs)
+            plotter.add_mesh(warped, **default_kwargs)
         else:
-            plotter.add_mesh(mesh, **kwargs)
+            plotter.add_mesh(mesh, **default_kwargs)
             if tdim == 2:
                 plotter.camera_position = "xy"
         plotter.add_axes()
@@ -200,18 +202,24 @@ class PyvistaPlotter(BasePlotter[
         (mesh, edgemesh, tdim) = mesh_edgemesh_tdim
         plotter = pyvista.Plotter(notebook=True)
         if glyph_factor == 0.0 and warp_factor == 0.0:
-            plotter.add_mesh(mesh, **kwargs)
+            default_kwargs = {"edge_color": "black", "show_edges": True}
+            default_kwargs.update(kwargs)
+            plotter.add_mesh(mesh, **default_kwargs)
         elif glyph_factor == 0.0 and warp_factor != 0.0:
             assert warp_factor > 0.0
             warped = mesh.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped, **kwargs)
+            default_kwargs = {"edge_color": "black", "show_edges": True}
+            default_kwargs.update(kwargs)
+            plotter.add_mesh(warped, **default_kwargs)
         else:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
             glyphs = mesh.glyph(orient=name, factor=glyph_factor)  # type: ignore[no-untyped-call]
             glyphs.rename_array("GlyphScale", name)
-            plotter.add_mesh(glyphs, **kwargs)
-            plotter.add_mesh(edgemesh)
+            plotter.add_mesh(glyphs)
+            default_kwargs = {"color": "black"}
+            default_kwargs.update(kwargs)
+            plotter.add_mesh(edgemesh, **default_kwargs)
         if tdim == 2:
             plotter.camera_position = "xy"
         plotter.add_axes()
