@@ -3,7 +3,7 @@
 # This file is part of viskex.
 #
 # SPDX-License-Identifier: MIT
-"""viskex utils module."""
+"""Definition of default scalar type."""
 
 import numpy as np
 
