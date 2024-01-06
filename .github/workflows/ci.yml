@@ -112,8 +112,13 @@ jobs:
         run: ${{ matrix.setup_container }}
       - name: Install viskex
         run: |
-          BACKEND=backend_${{ matrix.backend }}
-          python3 -m pip install .[${BACKEND},docs,lint,tests,tutorials]
+          if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
+            python3 -m pip install .[backend_dolfinx,docs,lint,tests,tutorials]
+          elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
+            python3 -m pip install .[backend_firedrake,docs,lint,tests,tutorials]
+          else
+            python3 -m pip install .[docs,lint,tests,tutorials]
+          fi
       - name: Clean build files
         run: |
           git config --global --add safe.directory $PWD
@@ -121,15 +126,15 @@ jobs:
       - name: Update ruff configuration
         run: |
           declare -a RUFF_EXCLUDE
-          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            sed -i "s@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
-            sed -i "s@firedrake = FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
-            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tests/notebooks/common_firedrake.py")
-          fi
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
             sed -i "s@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
             sed -i "s@dolfinx = DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
             RUFF_EXCLUDE+=("viskex/dolfinx_plotter.py" "tests/notebooks/common_dolfinx.py")
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            sed -i "s@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
+            sed -i "s@firedrake = FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
+            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tests/notebooks/common_firedrake.py")
           fi
           if [[ ${RUFF_EXCLUDE[@]} ]]; then
             RUFF_EXCLUDE_STRING="${RUFF_EXCLUDE[@]}"
@@ -140,13 +145,13 @@ jobs:
       - name: Update mypy configuration
         run: |
           declare -a MYPY_EXCLUDE
-          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tests/notebooks/common_firedrake\\\\.py\$')
-          fi
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
             MYPY_EXCLUDE+=('^viskex/dolfinx_plotter\\\\.py\$' '^tests/notebooks/common_dolfinx\\\\.py\$')
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tests/notebooks/common_firedrake\\\\.py\$')
           fi
           if [[ ${MYPY_EXCLUDE[@]} ]]; then
             MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"
@@ -189,11 +194,11 @@ jobs:
       - name: Update nbqa configuration
         run: |
           declare -a NBQA_EXCLUDE
-          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_firedrake' '^tests/notebooks/.*/test_.*_firedrake' '^tutorials/.*/tutorial_.*_firedrake')
-          fi
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
             NBQA_EXCLUDE+=('^tests/notebooks/test_.*_dolfinx' '^tests/notebooks/.*/test_.*_dolfinx' '^tutorials/.*/tutorial_.*_dolfinx')
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_firedrake' '^tests/notebooks/.*/test_.*_firedrake' '^tutorials/.*/tutorial_.*_firedrake')
           fi
           if [[ ${NBQA_EXCLUDE[@]} ]]; then
             NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE[@]}"
