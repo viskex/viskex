@@ -17,6 +17,7 @@ from viskex.base_plotter import BasePlotter
 
 pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
+pyvista.global_theme.nan_color = "lightgrey"
 
 
 class PyvistaPlotter(BasePlotter[
@@ -43,6 +44,9 @@ class PyvistaPlotter(BasePlotter[
         "none"  # do-nothing backend
     )
 
+    cell_color = "red"
+    edge_color = "black"
+
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported, override]
         cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
@@ -68,7 +72,7 @@ class PyvistaPlotter(BasePlotter[
         (mesh, tdim) = mesh_tdim
         assert dim is None
         plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"color": "red", "edge_color": "black", "show_edges": True}
+        default_kwargs = {"color": cls.cell_color, "edge_color": cls.edge_color, "show_edges": True}
         default_kwargs.update(kwargs)
         plotter.add_mesh(mesh, **default_kwargs)
         plotter.add_axes()
@@ -115,7 +119,7 @@ class PyvistaPlotter(BasePlotter[
         mesh.cell_data[name] = all_values
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"edge_color": "black", "show_edges": True, "nan_color": "lightgrey"}
+        default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
         default_kwargs.update(kwargs)
         plotter.add_mesh(mesh, **default_kwargs)
         plotter.add_axes()
@@ -153,7 +157,7 @@ class PyvistaPlotter(BasePlotter[
         """
         (mesh, tdim) = mesh_tdim
         plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"edge_color": "black", "show_edges": True}
+        default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
         default_kwargs.update(kwargs)
         if warp_factor != 0.0:
             assert warp_factor > 0.0
@@ -202,13 +206,13 @@ class PyvistaPlotter(BasePlotter[
         (mesh, edgemesh, tdim) = mesh_edgemesh_tdim
         plotter = pyvista.Plotter(notebook=True)
         if glyph_factor == 0.0 and warp_factor == 0.0:
-            default_kwargs = {"edge_color": "black", "show_edges": True}
+            default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
             default_kwargs.update(kwargs)
             plotter.add_mesh(mesh, **default_kwargs)
         elif glyph_factor == 0.0 and warp_factor != 0.0:
             assert warp_factor > 0.0
             warped = mesh.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
-            default_kwargs = {"edge_color": "black", "show_edges": True}
+            default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
             default_kwargs.update(kwargs)
             plotter.add_mesh(warped, **default_kwargs)
         else:
@@ -217,7 +221,7 @@ class PyvistaPlotter(BasePlotter[
             glyphs = mesh.glyph(orient=name, factor=glyph_factor)  # type: ignore[no-untyped-call]
             glyphs.rename_array("GlyphScale", name)
             plotter.add_mesh(glyphs)
-            default_kwargs = {"color": "black"}
+            default_kwargs = {"color": cls.edge_color}
             default_kwargs.update(kwargs)
             plotter.add_mesh(edgemesh, **default_kwargs)
         if tdim == 2:
