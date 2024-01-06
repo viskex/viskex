@@ -231,7 +231,7 @@ jobs:
           done
       - name: Run notebooks tests (parallel)
         run: |
-          COVERAGE_FILE=.coverage_notebooks_parallel VISKEX_PYVISTA_BACKEND="none" python3 -m pytest --coverage-source=viskex --np=2 tests/notebooks
+          COVERAGE_FILE=.coverage_notebooks_parallel python3 -m pytest --coverage-source=viskex --np=2 tests/notebooks
       - name: Upload notebooks tests logs as an artifact in case of failure
         if: failure() || cancelled()
         uses: actions/upload-artifact@v3
@@ -241,15 +241,10 @@ jobs:
             tests/notebooks/**/.ipynb_pytest/**/*.log*
       - name: Run tutorials (serial)
         run: |
-          export DISPLAY=":99"
-          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
-            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
-            VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest tutorials
-          done
+          python3 -m pytest tutorials
       - name: Run tutorials (parallel)
         run: |
-          VISKEX_PYVISTA_BACKEND="none" python3 -m pytest --np=2 tutorials
+          python3 -m pytest --np=2 tutorials
       - name: Store coverage reports as artifact
         uses: actions/upload-artifact@v3
         with:

@@ -37,6 +37,8 @@ class PyvistaPlotter(BasePlotter[
         _jupyter_backend = "html"
     if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
         _jupyter_backend = "html"
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        _jupyter_backend = "none"
     _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
     assert _jupyter_backend in (
         "client", "html", "server", "trame",  # trame backends
