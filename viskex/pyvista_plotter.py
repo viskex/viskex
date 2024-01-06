@@ -110,6 +110,7 @@ class PyvistaPlotter(BasePlotter[
             A pyvista widget representing a plot of the mesh entities of the 2D or 3D mesh.
         """
         (mesh, tdim) = mesh_tdim
+        values_unique = np.unique(values)
         all_values = np.full(mesh.n_cells, np.nan)
         if values.shape[0] != all_values.shape[0]:
             assert np.invert(np.isnan(values)).all(), "NaN is used as a placeholder for non-provided entities"
@@ -120,6 +121,8 @@ class PyvistaPlotter(BasePlotter[
         mesh.set_active_scalars(name)
         plotter = pyvista.Plotter(notebook=True)
         default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
+        if values_unique.shape[0] == 1:
+            default_kwargs.update({"cmap": [cls.cell_color]})
         default_kwargs.update(kwargs)
         plotter.add_mesh(mesh, **default_kwargs)
         plotter.add_axes()
