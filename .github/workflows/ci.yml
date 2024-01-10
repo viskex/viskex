@@ -129,12 +129,12 @@ jobs:
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
             sed -i "s@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
             sed -i "s@dolfinx = DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
-            RUFF_EXCLUDE+=("viskex/dolfinx_plotter.py" "tests/notebooks/common_dolfinx.py")
+            RUFF_EXCLUDE+=("viskex/dolfinx_plotter.py" "tutorials/**/common_dolfinx.py")
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
             sed -i "s@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
             sed -i "s@firedrake = FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
-            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tests/notebooks/common_firedrake.py")
+            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tutorials/**/common_firedrake.py")
           fi
           if [[ ${RUFF_EXCLUDE[@]} ]]; then
             RUFF_EXCLUDE_STRING="${RUFF_EXCLUDE[@]}"
@@ -146,12 +146,12 @@ jobs:
         run: |
           declare -a MYPY_EXCLUDE
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
-            MYPY_EXCLUDE+=('^viskex/dolfinx_plotter\\\\.py\$' '^tests/notebooks/common_dolfinx\\\\.py\$')
+            MYPY_EXCLUDE+=('^viskex/dolfinx_plotter\\\\.py\$' '^tutorials/.*/common_dolfinx\\\\.py\$')
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tests/notebooks/common_firedrake\\\\.py\$')
+            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tutorials/.*/common_firedrake\\\\.py\$')
           fi
           if [[ ${MYPY_EXCLUDE[@]} ]]; then
             MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"
@@ -168,7 +168,6 @@ jobs:
       - name: Run mypy on python files
         run: |
           python3 -m mypy --exclude=conftest.py .
-          python3 -m mypy tests/notebooks/conftest.py
           python3 -m mypy tests/unit/conftest.py
           python3 -m mypy tutorials/conftest.py
       - name: Run yamllint on workflows
@@ -183,22 +182,20 @@ jobs:
       - name: Run unit tests (parallel)
         run: |
           COVERAGE_FILE=.coverage_unit_parallel mpirun -n 2 python3 -m coverage run --source=viskex --parallel-mode -m pytest tests/unit
-      - name: Generate notebooks files
+      - name: Generate tutorial files
         run: |
           NO_TESTS_COLLECTED=5
-          python3 -m pytest --ipynb-action=create-notebooks tests/notebooks || (($?==$NO_TESTS_COLLECTED))
           python3 -m pytest --ipynb-action=create-notebooks tutorials || (($?==$NO_TESTS_COLLECTED))
-          python3 -m pytest --ipynb-action=create-notebooks --np=2 tests/notebooks || (($?==$NO_TESTS_COLLECTED))
           python3 -m pytest --ipynb-action=create-notebooks --np=2 tutorials || (($?==$NO_TESTS_COLLECTED))
         shell: bash
       - name: Update nbqa configuration
         run: |
           declare -a NBQA_EXCLUDE
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
-            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_dolfinx' '^tests/notebooks/.*/test_.*_dolfinx' '^tutorials/.*/tutorial_.*_dolfinx')
+            NBQA_EXCLUDE+=('^tutorials/.*/tutorial_.*_dolfinx')
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            NBQA_EXCLUDE+=('^tests/notebooks/test_.*_firedrake' '^tests/notebooks/.*/test_.*_firedrake' '^tutorials/.*/tutorial_.*_firedrake')
+            NBQA_EXCLUDE+=('^tutorials/.*/tutorial_.*_firedrake')
           fi
           if [[ ${NBQA_EXCLUDE[@]} ]]; then
             NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE[@]}"
@@ -208,43 +205,30 @@ jobs:
             echo "mypy = \"(${NBQA_EXCLUDE_STRING})\"" >> pyproject.toml
           fi
         shell: bash
-      - name: Run ruff on notebooks files
+      - name: Run ruff on tutorial files
         run: |
           python3 -m nbqa ruff .
-      - name: Run isort on notebooks files
+      - name: Run isort on tutorial files
         run: |
           python3 -m nbqa isort --check --diff .
-      - name: Run mypy on notebooks files
+      - name: Run mypy on tutorial files
         run: |
           python3 -m nbqa mypy .
       - name: Check for stray outputs, counts and metadata in ipynb files
         uses: RBniCS/check-jupyter-metadata-action@main
         with:
           pattern: "**/*.ipynb"
-      - name: Run notebooks tests (serial)
+      - name: Run tutorials (serial)
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
           for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
-            COVERAGE_FILE=.coverage_notebooks_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tests/notebooks
+            COVERAGE_FILE=.coverage_tutorials_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tutorials
           done
-      - name: Run notebooks tests (parallel)
-        run: |
-          COVERAGE_FILE=.coverage_notebooks_parallel python3 -m pytest --coverage-source=viskex --np=2 tests/notebooks
-      - name: Upload notebooks tests logs as an artifact in case of failure
-        if: failure() || cancelled()
-        uses: actions/upload-artifact@v3
-        with:
-          name: "tests-notebooks-logs-${{ matrix.backend }}"
-          path: |
-            tests/notebooks/**/.ipynb_pytest/**/*.log*
-      - name: Run tutorials (serial)
-        run: |
-          python3 -m pytest tutorials
       - name: Run tutorials (parallel)
         run: |
-          python3 -m pytest --np=2 tutorials
+          COVERAGE_FILE=.coverage_tutorials_parallel python3 -m pytest --coverage-source=viskex --np=2 tutorials
       - name: Store coverage reports as artifact
         uses: actions/upload-artifact@v3
         with:
@@ -275,10 +259,14 @@ jobs:
           python3 -m pip -q install coverage[toml]
       - name: Download coverage reports from artifacts
         uses: actions/download-artifact@v3
-      - name: Combine coverage reports
+      - name: Combine coverage reports (unit tests)
         run: |
-          python3 -m coverage combine coverage-*/.coverage*
-          python3 -m coverage report --fail-under=100 --show-missing --skip-covered
+          python3 -m coverage combine coverage-*/.coverage_unit*
+          python3 -m coverage report --show-missing --skip-covered
+      - name: Combine coverage reports (tutorials)
+        run: |
+          python3 -m coverage combine coverage-*/.coverage_tutorials*
+          python3 -m coverage report --show-missing --skip-covered
 
   warn:
     runs-on: ubuntu-latest
