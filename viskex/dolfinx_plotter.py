@@ -7,34 +7,32 @@
 
 import typing
 
+import dolfinx.fem
 import dolfinx.mesh
 import dolfinx.plot
-import numpy as np
-import plotly.graph_objects as go
-import pyvista.trame.jupyter
+import pyvista
 import ufl
 
 from viskex.base_plotter import BasePlotter
-from viskex.plotly_plotter import PlotlyPlotter
+from viskex.dolfinx_converter import DolfinxConverter
 from viskex.pyvista_plotter import PyvistaPlotter
-from viskex.utils import extract_part
-
-if dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk:
-    dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
 
 
 class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
     typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
     typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
-    typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]
+    pyvista.UnstructuredGrid,
+    pyvista.Plotter
 ]):
     """viskex plotter interfacing dolfinx."""
 
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot a mesh stored in dolfinx.mesh.Mesh object.
 
@@ -44,69 +42,26 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A dolfinx mesh to be plotted.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        grid_filter
+            A filter to be applied to the grid representing the mesh before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the mesh.
+            A pyvista plotter representing a plot of the mesh.
         """
-        tdim = mesh.topology.dim
-        if dim is None:
-            dim = tdim
-        assert dim <= tdim
-        if tdim == 1:
-            plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh(plotly_grid, dim, **kwargs)
-        else:
-            pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim), **kwargs)
-
-    @classmethod
-    def plot_mesh_entities(  # type: ignore[no-any-unimported]
-        cls, mesh: dolfinx.mesh.Mesh, dim: int, name: str, indices: np.typing.NDArray[np.int32],
-        values: typing.Optional[np.typing.NDArray[np.int32]] = None, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
-        """
-        Plot `dim`-dimensional mesh entities of a given dolfinx mesh.
-
-        Parameters
-        ----------
-        mesh
-            A dolfinx mesh from which to extract mesh entities.
-        dim
-            Extract entities associated to this dimension.
-        name
-            Name to be assigned to the field containing the mesh entities values.
-        indices
-            Array containing the IDs of the entities to be plotted.
-        values
-            Array containing the value to be associated to each of the entities in `indices`.
-            If not provided, every entity part of `indices` will be marked with value one.
-        kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
-
-        Returns
-        -------
-        :
-            A widget representing a plot of the mesh entities.
-        """
-        tdim = mesh.topology.dim
-        assert dim <= tdim
-        if values is None:
-            values = np.ones_like(indices)
-        if tdim == 1:
-            plotly_grid = cls._dolfinx_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values, **kwargs)
-        else:
-            pyvista_grid = cls._dolfinx_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values, **kwargs)
+        pyvista_grid = DolfinxConverter.convert_mesh(mesh, dim)
+        return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topology.dim), dim, grid_filter, **kwargs)
 
     @classmethod
     def plot_mesh_tags(  # type: ignore[no-any-unimported]
-        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot dolfinx.mesh.MeshTags.
 
@@ -118,22 +73,28 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A dolfinx mesh tags from which to extract mesh entities and their values.
         name
             Name to be assigned to the field containing the mesh entities values.
+        grid_filter
+            A filter to be applied to the grid representing the mesh before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the mesh entities.
+            A pyvista plotter representing a plot of the mesh entities.
         """
-        return cls.plot_mesh_entities(mesh, mesh_tags.dim, name, mesh_tags.indices, mesh_tags.values, **kwargs)
+        pyvista_grid = DolfinxConverter.convert_mesh_tags(mesh, mesh_tags, name)
+        return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topology.dim), mesh_tags.dim, grid_filter, **kwargs)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot a scalar field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
@@ -146,46 +107,38 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             the UFL expression will first be interpolated on the function space and then plotted.
         name
             Name of the quantity stored in the scalar field.
-        warp_factor
-            This argument is ignored for a field on 1D or 3D meshes.
-            For a 2D mesh, if provided then the factor is used to produce a warped representation
-            the field; if not provided then the scalar field will be plotted on the mesh.
         part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
+            Part of the field (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        warp_factor
+            If provided then the factor is used to produce a warped representation
+            the field; if not provided then the scalar field will be plotted on the mesh.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the scalar field.
+            A pyvista plotter representing a plot of the scalar field.
         """
-        scalar_field = cls._interpolate_if_ufl_expression(scalar_field)
-        mesh = scalar_field.function_space.mesh
-        with scalar_field.vector.localForm() as values:
-            (values, name) = extract_part(values.array, name, part)
-            tdim = mesh.topology.dim
-            if tdim == 1:
-                coordinates = scalar_field.function_space.tabulate_dof_coordinates()
-                coordinates = coordinates[:, 0]
-                argsort = coordinates.argsort()
-                coordinates = coordinates[argsort]
-                values = values[argsort]
-                return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
-            else:
-                pyvista_grid = cls._dolfinx_function_space_to_pyvista_grid(scalar_field.function_space)
-                pyvista_grid.point_data[name] = values
-                pyvista_grid.set_active_scalars(name)
-                return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
+        if isinstance(scalar_field, tuple):
+            tdim = scalar_field[1].mesh.topology.dim
+        else:
+            tdim = scalar_field.function_space.mesh.topology.dim
+        pyvista_grid = DolfinxConverter.convert_field(scalar_field, name, part)
+        return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, part, warp_factor, grid_filter, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+    ) -> pyvista.Plotter:
         """
         Plot a vector field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
@@ -198,78 +151,32 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             the UFL expression will first be interpolated on the function space and then plotted.
         name
             Name of the quantity stored in the vector field.
-        glyph_factor
-            If provided, the vector field is represented using a gylph, scaled by this factor.
+        part
+            Part of the field (real or imag) to be plotted. By default, the real part is plotted.
+            The argument is ignored when plotting a real field.
         warp_factor
             If provided then the factor is used to produce a warped representation of the field.
             If not provided then the magnitude of the vector field will be plotted on the mesh.
             The argument cannot be used if `glyph_factor` is also provided.
-        part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
-            The argument is ignored when plotting a real field.
+        glyph_factor
+            If provided, the vector field is represented using a gylph, scaled by this factor.
+            The argument cannot be used if `warp_factor` is also provided.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the vector field.
+            A pyvista plotter representing a plot of the vector field.
         """
-        vector_field = cls._interpolate_if_ufl_expression(vector_field)
-        mesh = vector_field.function_space.mesh
-        with vector_field.vector.localForm() as values:
-            (values, name) = extract_part(values.array, name, part)
-            tdim = mesh.topology.dim
-            assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
-            pyvista_grid = cls._dolfinx_function_space_to_pyvista_grid(vector_field.function_space)
-            values = values.reshape(-1, vector_field.function_space.dofmap.index_map_bs)
-            if tdim == 2:
-                values = np.insert(values, values.shape[1], 0.0, axis=1)
-            pyvista_grid.point_data[name] = values
-            pyvista_grid.set_active_vectors(name)
-            pyvista_grid_edges = cls._dolfinx_mesh_to_pyvista_grid(mesh, 1)
-            return PyvistaPlotter.plot_vector_field(
-                (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
-
-    @staticmethod
-    def _dolfinx_mesh_to_plotly_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> np.typing.NDArray[np.float64]:
-        """Convert a 1D dolfinx.mesh.Mesh to an array of coordinates."""
-        vertices = mesh.geometry.x[:, 0]
-        argsort = vertices.argsort()
-        return vertices[argsort]  # type: ignore[no-any-return]
-
-    @staticmethod
-    def _dolfinx_mesh_to_pyvista_grid(mesh: dolfinx.mesh.Mesh, dim: int) -> pyvista.UnstructuredGrid:
-        """Convert a 2D or 3D dolfinx.mesh.Mesh to a pyvista.UnstructuredGrid."""
-        mesh.topology.create_connectivity(dim, dim)
-        num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
-        cell_entities = np.arange(num_cells, dtype=np.int32)
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, cell_entities)
-        return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
-
-    @staticmethod
-    def _dolfinx_function_space_to_pyvista_grid(function_space: dolfinx.fem.FunctionSpace) -> pyvista.UnstructuredGrid:
-        """Convert the mesh associated to a dolfinx.fem.FunctionSpace to a pyvista.UnstructuredGrid."""
-        mesh = function_space.mesh
-        dim = mesh.topology.dim
-        mesh.topology.create_connectivity(dim, dim)
-        num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
-        cell_entities = np.arange(num_cells, dtype=np.int32)
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(
-            function_space, cell_entities)  # type: ignore[arg-type]
-        return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
-
-    @staticmethod
-    def _interpolate_if_ufl_expression(  # type: ignore[no-any-unimported]
-        field: typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
-    ) -> dolfinx.fem.Function:
-        """Interpolate a UFL expression in a dolfinx function."""
-        if isinstance(field, tuple):
-            expression, function_space = field
-            interpolated_field = dolfinx.fem.Function(function_space)
-            interpolated_field.interpolate(
-                dolfinx.fem.Expression(expression, function_space.element.interpolation_points()))
-            return interpolated_field
+        if isinstance(vector_field, tuple):
+            tdim = vector_field[1].mesh.topology.dim
         else:
-            assert isinstance(field, dolfinx.fem.Function)
-            return field
+            tdim = vector_field.function_space.mesh.topology.dim
+        assert tdim in (2, 3)
+        pyvista_grid = DolfinxConverter.convert_field(vector_field, name, part)
+        return PyvistaPlotter.plot_vector_field(
+            (pyvista_grid, tdim), name, part, warp_factor, glyph_factor, grid_filter, **kwargs)

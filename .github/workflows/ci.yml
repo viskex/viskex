@@ -119,6 +119,7 @@ jobs:
           else
             python3 -m pip install .[docs,lint,tests,tutorials]
           fi
+        shell: bash
       - name: Clean build files
         run: |
           git config --global --add safe.directory $PWD
@@ -127,14 +128,10 @@ jobs:
         run: |
           declare -a RUFF_EXCLUDE
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
-            sed -i "s@from viskex.dolfinx_plotter import DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
-            sed -i "s@dolfinx = DolfinxPlotter@# line removed by CI@g" viskex/__init__.py
-            RUFF_EXCLUDE+=("viskex/dolfinx_plotter.py" "tutorials/**/common_dolfinx.py")
+            RUFF_EXCLUDE+=("viskex/dolfinx.py" "viskex/dolfinx_converter.py" "viskex/dolfinx_plotter.py" "tutorials/**/common_dolfinx.py")
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            sed -i "s@from viskex.firedrake_plotter import FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
-            sed -i "s@firedrake = FiredrakePlotter@# line removed by CI@g" viskex/__init__.py
-            RUFF_EXCLUDE+=("viskex/firedrake_plotter.py" "tutorials/**/common_firedrake.py")
+            RUFF_EXCLUDE+=("viskex/firedrake.py" "viskex/firedrake_converter.py" "viskex/firedrake_plotter.py" "tutorials/**/common_firedrake.py")
           fi
           if [[ ${RUFF_EXCLUDE[@]} ]]; then
             RUFF_EXCLUDE_STRING="${RUFF_EXCLUDE[@]}"
@@ -145,19 +142,28 @@ jobs:
       - name: Update mypy configuration
         run: |
           declare -a MYPY_EXCLUDE
+          declare -a MYPY_FOLLOW_IMPORTS
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
-            MYPY_EXCLUDE+=('^viskex/dolfinx_plotter\\\\.py\$' '^tutorials/.*/common_dolfinx\\\\.py\$')
+            MYPY_EXCLUDE+=('^viskex/dolfinx\\\\.py\$' '^viskex/dolfinx_converter\\\\.py\$' '^viskex/dolfinx_plotter\\\\.py\$' '^tutorials/.*/common_dolfinx\\\\.py\$')
+            MYPY_FOLLOW_IMPORTS+=("viskex.dolfinx" "viskex.dolfinx_converter" "viskex.dolfinx_plotter" "common_dolfinx")
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
-            MYPY_EXCLUDE+=('^viskex/firedrake_plotter\\\\.py\$' '^tutorials/.*/common_firedrake\\\\.py\$')
+            MYPY_EXCLUDE+=('^viskex/firedrake\\\\.py\$' '^viskex/firedrake_converter\\\\.py\$' '^viskex/firedrake_plotter\\\\.py\$' '^tutorials/.*/common_firedrake\\\\.py\$')
+            MYPY_FOLLOW_IMPORTS+=("viskex.firedrake" "viskex.firedrake_converter" "viskex.firedrake_plotter" "common_firedrake")
           fi
           if [[ ${MYPY_EXCLUDE[@]} ]]; then
             MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"
             MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE_STRING// /|}"
             sed -i "s@\[tool\.mypy\]@[tool.mypy]\nexclude = \"(${MYPY_EXCLUDE_STRING})\"@g" pyproject.toml
+            MYPY_FOLLOW_IMPORTS_STRING="${MYPY_FOLLOW_IMPORTS[@]}"
+            MYPY_FOLLOW_IMPORTS_STRING="\"${MYPY_FOLLOW_IMPORTS_STRING// /\", \"}\""
+            echo "[[tool.mypy.overrides]]" >> pyproject.toml
+            echo "module = [${MYPY_FOLLOW_IMPORTS_STRING}]" >> pyproject.toml
+            echo 'follow_imports = "skip"' >> pyproject.toml
           fi
+          cat pyproject.toml
         shell: bash
       - name: Run ruff on python files
         run: |
@@ -222,7 +228,7 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "html" "none" "server" "static"; do
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "server" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tutorials
           done

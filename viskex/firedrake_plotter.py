@@ -8,57 +8,29 @@
 import typing
 
 import firedrake
-import numpy as np
-import plotly.graph_objects as go
-import pyvista.trame.jupyter
+import pyvista
 import ufl
 
 from viskex.base_plotter import BasePlotter
-from viskex.plotly_plotter import PlotlyPlotter
+from viskex.firedrake_converter import FiredrakeConverter
 from viskex.pyvista_plotter import PyvistaPlotter
-from viskex.utils import extract_part
 
 
 class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     firedrake.MeshGeometry,
     typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
     typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
-    typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]
+    pyvista.UnstructuredGrid,
+    pyvista.Plotter
 ]):
     """viskex plotter interfacing firedrake."""
 
-    _ufl_cellname_to_vtk_celltype: typing.ClassVar[typing.Dict[str, int]] = {
-        "point": 1,
-        "interval": 3,
-        "triangle": 5,
-        "quadrilateral": 9,
-        "tetrahedron": 10,
-        "hexahedron": 12
-    }
-    _tdim_cellname_to_dim_cellname: typing.ClassVar[typing.Dict[typing.Tuple[str, int], str]] = {
-        ("point", 0): "point",
-        ("interval", 1): "interval",
-        ("interval", 0): "point",
-        ("triangle", 2): "triangle",
-        ("triangle", 1): "interval",
-        ("triangle", 0): "point",
-        ("quadrilateral", 2): "quadrilateral",
-        ("quadrilateral", 1): "interval",
-        ("quadrilateral", 0): "point",
-        ("tetrahedron", 3): "tetrahedron",
-        ("tetrahedron", 2): "triangle",
-        ("tetrahedron", 1): "interval",
-        ("tetrahedron", 0): "point",
-        ("hexahedron", 3): "hexahedron",
-        ("hexahedron", 2): "quadrilateral",
-        ("hexahedron", 1): "interval",
-        ("hexahedron", 0): "point"
-    }
-
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot a mesh stored in firedrake.MeshGeometry object.
 
@@ -68,69 +40,34 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A firedrake mesh to be plotted.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        grid_filter
+            A filter to be applied to the grid representing the mesh before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the mesh.
+            A pyvista plotter representing a plot of the mesh.
         """
         tdim = mesh.topological_dimension()
-        if dim is None:
-            dim = tdim
-        assert dim <= tdim
-        if tdim == 1:
-            plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh(plotly_grid, dim, **kwargs)
+        if tdim == 3 and dim == 1:
+            # Firedrake does not offer edge (dim = 1) to vertices connectivity. Convert the case with
+            # facet (dim = 2) to vertices connectivity, and then ask vtk to extract edges.
+            pyvista_grid = FiredrakeConverter.convert_mesh(
+                mesh, dim + 1).extract_all_edges()  # type: ignore[no-untyped-call]
         else:
-            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh((pyvista_grid, tdim), **kwargs)
-
-    @classmethod
-    def plot_mesh_entities(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int, name: str, indices: np.typing.NDArray[np.int32],
-        values: typing.Optional[np.typing.NDArray[np.int32]] = None, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
-        """
-        Plot `dim`-dimensional mesh entities of a given firedrake mesh.
-
-        Parameters
-        ----------
-        mesh
-            A firedrake mesh to be plotted.
-        dim
-            Extract entities associated to this dimension.
-        name
-            Name to be assigned to the field containing the mesh entities values.
-        indices
-            Array containing the IDs of the entities to be plotted.
-        values
-            Array containing the value to be associated to each of the entities in `indices`.
-            If not provided, every entity part of `indices` will be marked with value one.
-        kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
-
-        Returns
-        -------
-        :
-            A widget representing a plot of the mesh entities.
-        """
-        tdim = mesh.topological_dimension()
-        assert dim <= tdim
-        if values is None:
-            values = np.ones_like(indices)
-        if tdim == 1:
-            plotly_grid = cls._firedrake_mesh_to_plotly_grid(mesh, dim)
-            return PlotlyPlotter.plot_mesh_entities(plotly_grid, dim, name, indices, values, **kwargs)
-        else:
-            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, dim)
-            return PyvistaPlotter.plot_mesh_entities((pyvista_grid, tdim), dim, name, indices, values, **kwargs)
+            pyvista_grid = FiredrakeConverter.convert_mesh(mesh, dim)
+        plotter = PyvistaPlotter.plot_mesh((pyvista_grid, tdim), dim, grid_filter, **kwargs)
+        return plotter
 
     @classmethod
     def plot_mesh_sets(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int, name: str, **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        cls, mesh: firedrake.MeshGeometry, dim: int, name: str = "mesh sets",
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot a cell set or a face sets of a given firedrake mesh.
 
@@ -142,69 +79,28 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Extract entities associated to this dimension.
         name
             Name to be assigned to the field containing the mesh entities values.
+        grid_filter
+            A filter to be applied to the grid representing the mesh before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the mesh entities.
+            A pyvista plotter representing a plot of the mesh entities.
         """
-        tdim = mesh.topological_dimension()
-        assert dim in (tdim, tdim - 1)
-        int_nan = np.iinfo(np.int32).max
-        if dim == tdim:
-            cells = mesh.coordinates.cell_node_map().values_with_halo
-            unique_cell_markers = tuple(mesh.topology_dm.getLabelIdIS(
-                firedrake.cython.dmcommon.CELL_SETS_LABEL).indices.tolist())
-            if len(unique_cell_markers) > 0:
-                assert max(unique_cell_markers) < int_nan, f"{int_nan} is used as a placeholder for unmarked cells"
-                cell_indices = np.arange(cells.shape[0], dtype=np.int32)
-                cell_markers = np.full(cells.shape[0], int_nan, dtype=np.int32)
-                for cm in unique_cell_markers:
-                    cell_markers[mesh.cell_subset(cm).indices] = cm
-                marked_cells = np.argwhere(cell_markers < int_nan)
-                return cls.plot_mesh_entities(
-                    mesh, dim, name, cell_indices[marked_cells], cell_markers[marked_cells], **kwargs)
-            else:
-                empty = np.array([], dtype=np.int32)
-                return cls.plot_mesh_entities(mesh, dim, name, empty, empty, **kwargs)
-        elif dim == tdim - 1:
-            unique_face_markers = tuple(mesh.topology_dm.getLabelIdIS(
-                firedrake.cython.dmcommon.FACE_SETS_LABEL).indices.tolist())
-            if len(unique_face_markers) > 0:
-                assert max(unique_face_markers) < int_nan, f"{int_nan} is used as a placeholder for unmarked facets"
-                facet_sizes = {
-                    facet_set_name: facet_set.measure_set(facet_set_name, "everywhere").total_size
-                    for (facet_set, facet_set_name) in zip(
-                        (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet")
-                    )
-                }
-                all_facet_size = sum(facet_sizes.values())
-                all_facet_indices = np.arange(all_facet_size, dtype=np.int32)
-                all_facet_markers = np.full(all_facet_size, int_nan, dtype=np.int32)
-                for (facet_set, facet_set_name, offset) in zip(
-                    (mesh.exterior_facets, mesh.interior_facets), ("exterior_facet", "interior_facet"),
-                    (0, facet_sizes["exterior_facet"])
-                ):
-                    for fm in unique_face_markers:
-                        facet_indices_fm = offset + facet_set.measure_set(facet_set_name, fm).indices
-                        all_facet_markers[facet_indices_fm] = fm
-                marked_facets = np.argwhere(all_facet_markers < int_nan)
-                return cls.plot_mesh_entities(
-                    mesh, dim, name, all_facet_indices[marked_facets], all_facet_markers[marked_facets], **kwargs)
-            else:
-                empty = np.array([], dtype=np.int32)
-                return cls.plot_mesh_entities(mesh, dim, name, empty, empty, **kwargs)
-        else:  # pragma: no cover
-            raise RuntimeError("Invalid mesh set dimension")
+        pyvista_grid = FiredrakeConverter.convert_mesh_sets(mesh, dim, name)
+        return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topological_dimension()), dim, grid_filter, **kwargs)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str, warp_factor: float = 0.0, part: str = "real", **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+        ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        **kwargs: typing.Any  # noqa: ANN401
+    ) -> pyvista.Plotter:
         """
         Plot a scalar field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
 
@@ -215,46 +111,40 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             If the expression is provided as a firedrake Function, such function will be plotted.
             If the expression is provided as a tuple containing UFL expression and a firedrake FunctionSpace,
             the UFL expression will first be interpolated on the function space and then plotted.
-            Notice that the field will be interpolated to a P1 space before plotting.
         name
             Name of the quantity stored in the scalar field.
-        warp_factor
-            This argument is ignored for a field on 1D or 3D meshes.
-            For a 2D mesh, if provided then the factor is used to produce a warped representation
-            the field; if not provided then the scalar field will be plotted on the mesh.
         part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
+            Part of the field (real or imag) to be plotted. By default, the real part is plotted.
             The argument is ignored when plotting a real field.
+        warp_factor
+            If provided then the factor is used to produce a warped representation
+            the field; if not provided then the scalar field will be plotted on the mesh.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the scalar field.
+            A pyvista plotter representing a plot of the scalar field.
         """
-        scalar_field = cls._interpolate_to_P1_space(
-            scalar_field, lambda mesh: firedrake.FunctionSpace(mesh, "CG", 1))
-        values = scalar_field.dat.data_ro_with_halos
-        (values, name) = extract_part(values, name, part)
-        mesh = scalar_field.function_space().mesh()
-        tdim = mesh.topological_dimension()
-        if tdim == 1:
-            coordinates = cls._firedrake_mesh_to_plotly_grid(mesh, tdim)
-            return PlotlyPlotter.plot_scalar_field((coordinates, values), name, warp_factor, part, **kwargs)
+        if isinstance(scalar_field, tuple):
+            tdim = scalar_field[1].mesh().topological_dimension()
         else:
-            pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, tdim)
-            pyvista_grid.point_data[name] = values
-            pyvista_grid.set_active_scalars(name)
-            return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, warp_factor, part, **kwargs)
+            tdim = scalar_field.function_space().mesh().topological_dimension()
+        pyvista_grid = FiredrakeConverter.convert_field(scalar_field, name, part)
+        return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, part, warp_factor, grid_filter, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
             firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+        ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[go.Figure, pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+    ) -> pyvista.Plotter:
         """
         Plot a vector field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
 
@@ -268,141 +158,32 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             Notice that the field will be interpolated to a P1 space before plotting.
         name
             Name of the quantity stored in the vector field.
-        glyph_factor
-            If provided, the vector field is represented using a gylph, scaled by this factor.
+        part
+            Part of the field (real or imag) to be plotted. By default, the real part is plotted.
+            The argument is ignored when plotting a real field.
         warp_factor
             If provided then the factor is used to produce a warped representation of the field.
             If not provided then the magnitude of the vector field will be plotted on the mesh.
             The argument cannot be used if `glyph_factor` is also provided.
-        part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
-            The argument is ignored when plotting a real field.
+        glyph_factor
+            If provided, the vector field is represented using a gylph, scaled by this factor.
+            The argument cannot be used if `warp_factor` is also provided.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.
+            If not provided, no filter will be applied.
         kwargs
-            Additional keyword arguments to be passed to plotly or pyvista.
+            Additional keyword arguments to be passed to pyvista.
 
         Returns
         -------
         :
-            A widget representing a plot of the vector field.
+            A pyvista plotter representing a plot of the vector field.
         """
-        vector_field = cls._interpolate_to_P1_space(
-            vector_field, lambda mesh: firedrake.VectorFunctionSpace(mesh, "CG", 1))
-        mesh = vector_field.function_space().mesh()
-        tdim = mesh.topological_dimension()
-        assert tdim > 1, "Cannot call plot_vector_field for 1D meshes"
-        values = vector_field.dat.data_ro_with_halos
-        (values, name) = extract_part(values, name, part)
-        if tdim == 2:
-            values = np.insert(values, values.shape[1], 0.0, axis=1)
-        pyvista_grid = cls._firedrake_mesh_to_pyvista_grid(mesh, tdim)
-        pyvista_grid.point_data[name] = values
-        pyvista_grid.set_active_vectors(name)
-        pyvista_grid_edges = cls._firedrake_mesh_to_pyvista_grid(mesh, 1)
+        if isinstance(vector_field, tuple):
+            tdim = vector_field[1].mesh().topological_dimension()
+        else:
+            tdim = vector_field.function_space().mesh().topological_dimension()
+        assert tdim in (2, 3)
+        pyvista_grid = FiredrakeConverter.convert_field(vector_field, name, part)
         return PyvistaPlotter.plot_vector_field(
-            (pyvista_grid, pyvista_grid_edges, tdim), name, glyph_factor, warp_factor, part, **kwargs)
-
-    @classmethod
-    def _firedrake_mesh_to_plotly_grid(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int
-    ) -> np.typing.NDArray[np.float64]:
-        """Convert a 1D firedrake.MeshGeometry to an array of coordinates."""
-        vertices = mesh.coordinates.dat.data_ro_with_halos
-        (vertices, _) = extract_part(vertices, "vertices", "real")
-        assert len(vertices.shape) == 1
-        if dim == 1:
-            vertices_reordering = np.argsort(vertices)
-            cells = cls._determine_connectivity(mesh, dim)
-            expected_cells = np.repeat(vertices_reordering, 2)
-            expected_cells = np.delete(np.delete(expected_cells, 0), -1)
-            expected_cells = expected_cells.reshape(-1, 2)
-            cells_set = {frozenset(cell.tolist()) for cell in cells}
-            expected_cells_sets = {frozenset(cell.tolist()) for cell in expected_cells}
-            assert cells_set == expected_cells_sets
-            return vertices[vertices_reordering]  # type: ignore[no-any-return]
-        elif dim == 0:
-            vertices_reordering = cls._determine_connectivity(mesh, dim).reshape(-1)
-            return vertices[vertices_reordering]  # type: ignore[no-any-return]
-        else:  # pragma: no cover
-            raise RuntimeError("Invalid dimension")
-
-    @classmethod
-    def _firedrake_mesh_to_pyvista_grid(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int
-    ) -> pyvista.UnstructuredGrid:
-        """Convert a 2D or 3D firedrake.MeshGeometry to a pyvista.UnstructuredGrid."""
-        tdim = mesh.topological_dimension()
-        connectivity = cls._determine_connectivity(mesh, dim)
-        tdim_cellname = mesh.ufl_cell().cellname()
-        dim_cellname = cls._tdim_cellname_to_dim_cellname[tdim_cellname, dim]
-        cls._reorder_connectivity(connectivity, dim_cellname)
-        connectivity = np.insert(connectivity, 0, values=connectivity.shape[1], axis=1)
-        pyvista_types = np.full(connectivity.shape[0], cls._ufl_cellname_to_vtk_celltype[dim_cellname])
-        vertices = mesh.coordinates.dat.data_ro_with_halos
-        (vertices, _) = extract_part(vertices, "vertices", "real")
-        if tdim == 2:
-            vertices = np.insert(vertices, 2, values=0.0, axis=1)
-        return pyvista.UnstructuredGrid(connectivity.reshape(-1), pyvista_types, vertices)
-
-    @classmethod
-    def _determine_connectivity(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: int
-    ) -> np.typing.NDArray[np.int32]:
-        """Determine connectivity of a given dimension."""
-        tdim = mesh.topological_dimension()
-        if dim == tdim:
-            connectivity = mesh.coordinates.cell_node_map().values_with_halo.copy()
-        elif dim == 0 and tdim > 1:
-            vertices = mesh.coordinates.dat.data_ro_with_halos
-            connectivity = np.arange(vertices.shape[0]).reshape(-1, 1)
-        else:
-            topology = mesh.coordinates.function_space().finat_element.cell.get_topology()
-            exterior_facet_local_ids = mesh.exterior_facets.local_facet_dat.data_ro_with_halos
-            interior_facet_local_ids = mesh.interior_facets.local_facet_dat.data_ro_with_halos[:, :1].reshape(-1)
-            facet_local_ids = np.concatenate((exterior_facet_local_ids, interior_facet_local_ids), dtype=np.int32)
-            exterior_facet_node_map = mesh.coordinates.exterior_facet_node_map().values_with_halo
-            interior_facet_node_map = mesh.coordinates.interior_facet_node_map()
-            interior_facet_node_map = interior_facet_node_map.values_with_halo[:, :interior_facet_node_map.arity // 2]
-            facet_node_map = np.concatenate((exterior_facet_node_map, interior_facet_node_map), dtype=np.int32)
-            mask = np.zeros(facet_node_map.shape, dtype=bool)
-            for mask_row, facet_local_id in enumerate(facet_local_ids):
-                mask[mask_row, topology[tdim - 1][facet_local_id]] = True
-            connectivity = facet_node_map[mask].reshape(-1, len(topology[tdim - 1][0]))
-            if dim == tdim - 1:
-                pass
-            elif dim == tdim - 2:
-                tdim_cellname = mesh.ufl_cell().cellname()
-                cls._reorder_connectivity(connectivity, cls._tdim_cellname_to_dim_cellname[tdim_cellname, tdim - 1])
-                repeated_connectivity = np.roll(np.repeat(connectivity, repeats=2, axis=1), shift=-1, axis=1)
-                connectivity = repeated_connectivity.reshape(-1, 2)
-            else:  # pragma: no cover
-                raise RuntimeError("Invalid values of dim and tdim")
-        return connectivity  # type: ignore[no-any-return]
-
-    @staticmethod
-    def _reorder_connectivity(connectivity: np.typing.NDArray[np.int32], cellname: str) -> None:
-        """Reorder in-place a connectivity array according to vtk ordering."""
-        if cellname in ("point", "interval", "triangle", "tetrahedron"):
-            pass
-        elif cellname == "quadrilateral":
-            connectivity[:, [2, 3]] = connectivity[:, [3, 2]]
-        elif cellname == "hexahedron":
-            connectivity[:, [2, 3]] = connectivity[:, [3, 2]]
-            connectivity[:, [6, 7]] = connectivity[:, [7, 6]]
-        else:  # pragma: no cover
-            raise RuntimeError("Unsupported cellname")
-
-    @staticmethod
-    def _interpolate_to_P1_space(  # type: ignore[no-any-unimported] # noqa: N802
-        field: typing.Union[
-            firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], function_space_generator: typing.Callable[[firedrake.MeshGeometry], ufl.FunctionSpace]
-    ) -> firedrake.Function:
-        """Interpolate a firedrake Function or UFL Expression to a P1 space."""
-        if isinstance(field, tuple):
-            expression, function_space = field
-            mesh = function_space.mesh()
-        else:
-            assert isinstance(field, firedrake.Function)
-            expression = field
-            mesh = field.function_space().mesh()
-        return firedrake.interpolate(expression, function_space_generator(mesh))
+            (pyvista_grid, tdim), name, part, warp_factor, glyph_factor, grid_filter, **kwargs)

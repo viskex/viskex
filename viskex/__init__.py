@@ -5,24 +5,19 @@
 # SPDX-License-Identifier: MIT
 """viskex main module."""
 
+import importlib
+
+from viskex.base_converter import BaseConverter
 from viskex.base_plotter import BasePlotter
-from viskex.plotly_plotter import PlotlyPlotter
+from viskex.pyvista_converter import PyvistaConverter
 from viskex.pyvista_plotter import PyvistaPlotter
 
-try:
-    import dolfinx as dolfinx_check_availability
-except ImportError:
-    pass
-else:
-    del dolfinx_check_availability
+if importlib.util.find_spec("dolfinx"):
+    import viskex.dolfinx
+    from viskex.dolfinx_converter import DolfinxConverter
     from viskex.dolfinx_plotter import DolfinxPlotter
-    dolfinx = DolfinxPlotter
 
-try:
-    import firedrake as firedrake_check_availability
-except ImportError:
-    pass
-else:
-    del firedrake_check_availability
+if importlib.util.find_spec("firedrake"):
+    import viskex.firedrake
+    from viskex.firedrake_converter import FiredrakeConverter
     from viskex.firedrake_plotter import FiredrakePlotter
-    firedrake = FiredrakePlotter

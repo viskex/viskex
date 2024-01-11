@@ -7,3 +7,4 @@
 
 from viskex.utils.extract_part import extract_part
 from viskex.utils.scalar_type import ScalarType
+from viskex.utils.values_in import values_in

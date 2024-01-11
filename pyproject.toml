@@ -35,10 +35,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
 dependencies = [
-    "ipywidgets",
-    "kaleido",
     "numpy",
-    "plotly",
     "pyvista[jupyter]"
 ]
 
@@ -108,8 +105,6 @@ module = [
     "netgen.*",
     "petsc4py",
     "petsc4py.PETSc",
-    "plotly",
-    "plotly.*",
     "ufl"
 ]
 ignore_missing_imports = true

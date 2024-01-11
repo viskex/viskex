@@ -5,241 +5,280 @@
 # SPDX-License-Identifier: MIT
 """viskex plotter interfacing pyvista."""
 
+import importlib.util
 import os
 import typing
 
 import numpy as np
 import numpy.typing
 import pyvista
-import pyvista.trame.jupyter
 
 from viskex.base_plotter import BasePlotter
 
 pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
+pyvista.global_theme.color = "red"
+pyvista.global_theme.edge_color = "black"
+pyvista.global_theme.line_width = 2.0
 pyvista.global_theme.nan_color = "lightgrey"
+pyvista.global_theme.point_size = 10.0
+pyvista.global_theme.show_edges = False
+pyvista.global_theme.show_vertices = False
+
+_jupyter_backend = "client"
+if importlib.util.find_spec("google") and importlib.util.find_spec("google.colab"):  # pragma: no cover
+    _jupyter_backend = "html"
+if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
+    _jupyter_backend = "html"
+_jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
+assert _jupyter_backend in (
+    "client", "html", "server", "trame",  # trame backends
+    "static"  # static backend
+)
+pyvista.global_theme.jupyter_backend = _jupyter_backend
+del _jupyter_backend
 
 
-class PyvistaPlotter(BasePlotter[
-    typing.Tuple[pyvista.UnstructuredGrid, int],
-    typing.Tuple[pyvista.UnstructuredGrid, int],
-    typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
-    typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]  # type: ignore[no-any-unimported]
+class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
+    typing.Tuple[pyvista.UnstructuredGrid, int], typing.Tuple[pyvista.UnstructuredGrid, int],
+    typing.Tuple[pyvista.UnstructuredGrid, int], pyvista.UnstructuredGrid,
+    pyvista.Plotter
 ]):
     """viskex plotter interfacing pyvista."""
 
-    _jupyter_backend = "client"
-    try:
-        import google.colab
-    except ImportError:
-        pass
-    else:  # pragma: no cover
-        _jupyter_backend = "html"
-    if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
-        _jupyter_backend = "html"
-    if "PYTEST_CURRENT_TEST" in os.environ:
-        _jupyter_backend = "none"
-    _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
-    assert _jupyter_backend in (
-        "client", "html", "server", "trame",  # trame backends
-        "static",  # static backend
-        "none"  # do-nothing backend
-    )
-
-    cell_color = "red"
-    edge_color = "black"
-
     @classmethod
-    def plot_mesh(  # type: ignore[no-any-unimported, override]
-        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
+    def plot_mesh(  # type: ignore[no-any-unimported]
+        cls, mesh: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+    ) -> pyvista.Plotter:
         """
-        Plot a 2D or 3D mesh, stored in a pyvista.UnstructuredGrid.
+        Plot a mesh stored in a pyvista.UnstructuredGrid.
 
         Parameters
         ----------
         mesh
-            A pyvista unstructured grid to be plotted.
+            A pair containing the pyvista unstructured grid to be plotted and its topological dimension.
         dim
             Plot entities associated to this dimension. If not provided, the topological dimension is used.
+        grid_filter
+            A filter to be applied to the grid representing the mesh before it is passed to pyvista.Plotter.add_mesh.
+            If not provided, no filter will be applied.
         kwargs
             Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
         Returns
         -------
         :
-            A pyvista widget representing a plot of the 2D or 3D mesh.
+            A pyvista plotter representing a plot of the mesh.
         """
-        (mesh, tdim) = mesh_tdim
-        assert dim is None
-        plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"color": cls.cell_color, "edge_color": cls.edge_color, "show_edges": True}
-        default_kwargs.update(kwargs)
-        plotter.add_mesh(mesh, **default_kwargs)
+        grid, tdim = mesh
+        if dim is None:
+            dim = tdim
+
+        # Filter the input grid
+        if grid_filter is not None:
+            grid = grid_filter(grid)
+
+        # Create plotter
+        plotter = pyvista.Plotter()
+
+        # Terminate early if the grid is empty
+        if not grid.n_points:
+            return plotter
+
+        # Determine whether cell data or point data have active scalars associated to the mesh
+        active_scalars_name = {
+            data_key: data.active_scalars_name
+            for (data_key, data) in (("cell", grid.cell_data), ("point", grid.point_data))
+        }
+
+        # Reset to default cell color if scalar data have a single value
+        if "cmap" not in kwargs:
+            for data in (grid.cell_data, grid.point_data):
+                if data.active_scalars is not None and not np.isnan(data.active_scalars).all():
+                    if np.nanmin(data.active_scalars) == np.nanmax(data.active_scalars):
+                        kwargs["cmap"] = [pyvista.global_theme.color.name]
+                        break
+
+        # Determine whether to show vertices: this happens by default in 1D, or when plotting points.
+        show_vertices = kwargs.get("show_vertices", None)
+        if show_vertices is None:
+            if dim == 0:
+                # No need to show vertices, since the grid itself is already composed by them
+                show_vertices = False
+            elif tdim < 2:
+                show_vertices = True
+            else:
+                show_vertices = False
+        if show_vertices:
+            kwargs.pop("show_vertices", None)
+            if dim == 0:
+                if active_scalars_name["cell"] is not None:
+                    # Do not override colors provided by cell data
+                    vertex_color = None
+                else:
+                    vertex_color = kwargs.pop("color", pyvista.global_theme.color)
+            else:
+                if active_scalars_name["point"] is not None:
+                    # Do not override colors provided by point data
+                    vertex_color = None
+                else:
+                    vertex_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+
+        # Determine whether to show edges: this happens by default in 2D when plotting cells or in 3D
+        # when plotting cells or faces.
+        show_edges = kwargs.get("show_edges", None)
+        if show_edges is None:
+            if tdim > 1 and dim > 1:
+                show_edges = True
+            else:
+                show_edges = False
+        if show_edges:
+            kwargs.pop("show_edges", None)
+            edge_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+
+        # Add grids to the plotter
+        # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
+        # because they lack support for high order meshes
+        plotter.add_mesh(grid, **kwargs)
+        if show_vertices:
+            plotter.add_mesh(grid.points, color=vertex_color)
+        if show_edges:
+            plotter.add_mesh(grid.extract_all_edges(), color=edge_color)  # type: ignore[no-untyped-call]
         plotter.add_axes()
-        if tdim == 2:
+
+        # Reset camera position in 1D and 2D
+        if tdim < 3:
             plotter.camera_position = "xy"
-        return cls._show_plotter(plotter)
+
+        return plotter
 
     @classmethod
-    def plot_mesh_entities(  # type: ignore[no-any-unimported, override]
-        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], dim: int, name: str,
-        indices: np.typing.NDArray[np.int32], values: np.typing.NDArray[np.int32],
+    def plot_scalar_field(  # type: ignore[no-any-unimported]
+        cls, scalar_field: typing.Tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
+        warp_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+    ) -> pyvista.Plotter:
         """
-        Plot `dim`-dimensional mesh entities of a 2D or 3D mesh.
-
-        Parameters
-        ----------
-        mesh
-            A pyvista unstructured grid to be plotted, alongisde its topological dimension.
-            Entities in the grid should already be `dim`-dimensional, e.g. if the entities to be plotted
-            are facets of a triangular mesh, then cells in the mesh must be segments.
-        dim
-            Plot entities associated to this dimension.
-        name
-            Name to be assigned to the field containing the mesh entities values.
-        indices
-            Array containing the IDs of the entities to be plotted.
-        values
-            Array containing the value to be associated to each of the entities in `indices`.
-
-        Returns
-        -------
-        :
-            A pyvista widget representing a plot of the mesh entities of the 2D or 3D mesh.
-        """
-        (mesh, tdim) = mesh_tdim
-        values_unique = np.unique(values)
-        all_values = np.full(mesh.n_cells, np.nan)
-        if values.shape[0] != all_values.shape[0]:
-            assert np.invert(np.isnan(values)).all(), "NaN is used as a placeholder for non-provided entities"
-        for (index, value) in zip(indices, values):
-            all_values[index] = value
-
-        mesh.cell_data[name] = all_values
-        mesh.set_active_scalars(name)
-        plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
-        if values_unique.shape[0] == 1:
-            default_kwargs.update({"cmap": [cls.cell_color]})
-        default_kwargs.update(kwargs)
-        plotter.add_mesh(mesh, **default_kwargs)
-        plotter.add_axes()
-        if tdim == 2:
-            plotter.camera_position = "xy"
-        return cls._show_plotter(plotter)
-
-    @classmethod
-    def plot_scalar_field(  # type: ignore[no-any-unimported, override]
-        cls, mesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, int], name: str, warp_factor: float = 0.0,
-        part: str = "real", **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
-        """
-        Plot a 2D or 3D scalar field.
+        Plot a scalar field.
 
         Parameters
         ----------
         scalar_field
-            A pyvista unstructured grid to be plotted, alongisde its topological dimension.
+            A pair containing the pyvista unstructured grid to be plotted and its topological dimension.
             The grid must already have the scalar field to be plotted set as the active scalar.
         name
-            Name of the scalar field.
-        warp_factor
-            This argument is ignored for a field on 3D meshes.
-            For a 2D mesh, if provided then the factor is used to produce a warped representation
-            the field; if not provided then the scalar field will be plotted on the mesh.
+            This optional argument is never used.
         part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
-            The argument is ignored when plotting a real field.
+            This optional argument is never used.
+        warp_factor
+            If provided then the factor is used to produce a warped representation
+            the field; if not provided then the scalar field will be plotted on the mesh.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.Plotter.add_mesh.
+            If not provided, no filter will be applied.
+        kwargs
+            Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
         Returns
         -------
         :
-            A pyvista widget representing a plot of the 2D or 3D scalar field.
+            A pyvista plotter representing a plot of the scalar field.
         """
-        (mesh, tdim) = mesh_tdim
-        plotter = pyvista.Plotter(notebook=True)
-        default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
-        default_kwargs.update(kwargs)
+        grid, tdim = scalar_field
+
+        # Filter the input grid
+        if grid_filter is not None:
+            grid = grid_filter(grid)
+
+        # Warp the grid, if requested
         if warp_factor != 0.0:
             assert warp_factor > 0.0
-            assert tdim == 2
-            warped = mesh.warp_by_scalar(factor=warp_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(warped, **default_kwargs)
+            if tdim == 1:
+                normal = [0, 1, 0]
+            elif tdim == 2:
+                normal = [0, 0, 1]
+            else:
+                normal = None
+            warped_grid = grid.warp_by_scalar(factor=warp_factor, normal=normal)  # type: ignore[no-untyped-call]
+            warped_tdim = tdim + 1
         else:
-            plotter.add_mesh(mesh, **default_kwargs)
-            if tdim == 2:
-                plotter.camera_position = "xy"
-        plotter.add_axes()
-        return cls._show_plotter(plotter)
+            warped_grid = grid
+            warped_tdim = tdim
+
+        # Call mesh plotter, with grid_filter=None because it was already applied in this function
+        return cls.plot_mesh((warped_grid, warped_tdim), tdim, None, **kwargs)
 
     @classmethod
-    def plot_vector_field(  # type: ignore[no-any-unimported, override]
-        cls, mesh_edgemesh_tdim: typing.Tuple[pyvista.UnstructuredGrid, pyvista.UnstructuredGrid, int],
-        name: str, glyph_factor: float = 0.0, warp_factor: float = 0.0, part: str = "real",
+    def plot_vector_field(  # type: ignore[no-any-unimported]
+        cls, vector_field: typing.Tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
+        warp_factor: float = 0.0, glyph_factor: float = 0.0,
+        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
-    ) -> typing.Union[pyvista.Plotter, pyvista.trame.jupyter.Widget]:
+    ) -> pyvista.Plotter:
         """
-        Plot a 2D or 3D vector field.
+        Plot a vector field.
 
         Parameters
         ----------
-        mesh_edgemesh_tdim
-            A triplet containing the pyvista unstructured grid to be plotted, a further unstructured
-            grid representing its edges, and the topological dimension of the former grid.
+        vector_field
+            A pair containing the pyvista unstructured grid to be plotted and its topological dimension.
             The grid must already have the vector field to be plotted set as the active vector.
         name
-            Name of the quantity stored in the vector field.
-        glyph_factor
-            If provided, the vector field is represented using a gylph, scaled by this factor.
+            This optional argument is never used.
+        part
+            This optional argument is never used.
         warp_factor
             If provided then the factor is used to produce a warped representation of the field.
             If not provided then the magnitude of the vector field will be plotted on the mesh.
             The argument cannot be used if `glyph_factor` is also provided.
-        part
-            Part of the solution (real or imag) to be plotted. By default, the real part is plotted.
-            The argument is ignored when plotting a real field.
+        glyph_factor
+            If provided, the vector field is represented using a gylph, scaled by this factor.
+            The argument cannot be used if `warp_factor` is also provided.
+        grid_filter
+            A filter to be applied to the field representing the field before it is passed to pyvista.Plotter.add_mesh.
+            If not provided, no filter will be applied.
+        kwargs
+            Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
         Returns
         -------
         :
-            A pyvista widget representing a plot of the 2D or 3D vector field.
+            A pyvista plotter representing a plot of the vector field.
         """
-        (mesh, edgemesh, tdim) = mesh_edgemesh_tdim
-        plotter = pyvista.Plotter(notebook=True)
-        if glyph_factor == 0.0 and warp_factor == 0.0:
-            default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
-            default_kwargs.update(kwargs)
-            plotter.add_mesh(mesh, **default_kwargs)
-        elif glyph_factor == 0.0 and warp_factor != 0.0:
+        grid, tdim = vector_field
+
+        # Filter the input grid
+        if grid_filter is not None:
+            grid = grid_filter(grid)
+
+        # Warp the grid, if requested
+        if warp_factor != 0.0:
             assert warp_factor > 0.0
-            warped = mesh.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
-            default_kwargs = {"edge_color": cls.edge_color, "show_edges": True}
-            default_kwargs.update(kwargs)
-            plotter.add_mesh(warped, **default_kwargs)
+            assert glyph_factor == 0.0
+            warped_grid = grid.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
+            warped_tdim = tdim
+            warped_dim = tdim
         else:
+            if glyph_factor != 0.0:
+                # Show just mesh edges when adding glyphs
+                warped_grid = grid.extract_all_edges()  # type: ignore[no-untyped-call]
+                warped_dim = 1
+            else:
+                warped_grid = grid
+                warped_dim = tdim
+            warped_tdim = tdim
+
+        # Call mesh plotter, with grid_filter=None because it was already applied in this function
+        plotter = cls.plot_mesh((warped_grid, warped_tdim), warped_dim, None, **kwargs)
+
+        # Add glyphs to the plot, if request
+        if glyph_factor != 0.0:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
-            glyphs = mesh.glyph(orient=name, factor=glyph_factor)  # type: ignore[no-untyped-call]
-            glyphs.rename_array("GlyphScale", name)
-            plotter.add_mesh(glyphs)
-            default_kwargs = {"color": cls.edge_color}
-            default_kwargs.update(kwargs)
-            plotter.add_mesh(edgemesh, **default_kwargs)
-        if tdim == 2:
-            plotter.camera_position = "xy"
-        plotter.add_axes()
-        return cls._show_plotter(plotter)
+            glyphed_grid = grid.glyph(factor=glyph_factor)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(glyphed_grid)
 
-    @classmethod
-    def _show_plotter(cls, plotter: pyvista.Plotter) -> typing.Union[  # type: ignore[no-any-unimported]
-        pyvista.Plotter, pyvista.trame.jupyter.Widget
-    ]:
-        """Show pyvista Plotter using the requested backend."""
-        if cls._jupyter_backend == "none":
-            return plotter
-        else:
-            return plotter.show(jupyter_backend=cls._jupyter_backend, return_viewer=True)
+        return plotter
