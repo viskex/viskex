@@ -26,17 +26,23 @@ pyvista.global_theme.show_edges = False
 pyvista.global_theme.show_vertices = False
 
 _jupyter_backend = "client"
+_jupyter_notebook = None
 if importlib.util.find_spec("google") and importlib.util.find_spec("google.colab"):  # pragma: no cover
     _jupyter_backend = "html"
+    _jupyter_notebook = True
 if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
     _jupyter_backend = "html"
+    _jupyter_notebook = True
 _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
 assert _jupyter_backend in (
     "client", "html", "server", "trame",  # trame backends
     "static"  # static backend
 )
 pyvista.global_theme.jupyter_backend = _jupyter_backend
+if _jupyter_notebook is not None:
+    pyvista.global_theme.notebook = _jupyter_notebook
 del _jupyter_backend
+del _jupyter_notebook
 
 
 class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
