@@ -119,6 +119,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
                 show_vertices = False
         if show_vertices:
             kwargs.pop("show_vertices", None)
+            grid_points = pyvista.PolyData(grid.points)
             if dim == 0:
                 if active_scalars_name["cell"] is not None:
                     # Do not override colors provided by cell data
@@ -127,6 +128,8 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
                     vertex_color = kwargs.pop("color", pyvista.global_theme.color)
             else:
                 if active_scalars_name["point"] is not None:
+                    grid_points.point_data[active_scalars_name["point"]] = grid.point_data[
+                        active_scalars_name["point"]]
                     # Do not override colors provided by point data
                     vertex_color = None
                 else:
@@ -149,7 +152,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         # because they lack support for high order meshes
         plotter.add_mesh(grid, **kwargs)
         if show_vertices:
-            plotter.add_mesh(grid.points, color=vertex_color)
+            plotter.add_mesh(grid_points, color=vertex_color)
         if show_edges:
             plotter.add_mesh(grid.extract_all_edges(), color=edge_color)  # type: ignore[no-untyped-call]
         plotter.add_axes()
