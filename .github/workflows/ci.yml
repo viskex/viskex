@@ -236,7 +236,7 @@ jobs:
         run: |
           COVERAGE_FILE=.coverage_tutorials_parallel python3 -m pytest --coverage-source=viskex --np=2 tutorials
       - name: Store coverage reports as artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-${{ matrix.backend }}
           path: |
@@ -244,7 +244,7 @@ jobs:
           retention-days: 1
       - name: Upload tutorials logs as an artifact in case of failure
         if: failure() || cancelled()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: "tutorials-logs-${{ matrix.backend }}"
           path: |
@@ -264,7 +264,7 @@ jobs:
           rm /usr/lib/python3.*/EXTERNALLY-MANAGED
           python3 -m pip -q install coverage[toml]
       - name: Download coverage reports from artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
       - name: Combine coverage reports (unit tests)
         run: |
           python3 -m coverage combine coverage-*/.coverage_unit*
