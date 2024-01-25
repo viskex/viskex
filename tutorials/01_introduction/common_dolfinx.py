@@ -107,8 +107,8 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
         [typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]],
         typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]
     ]
-) -> typing.Tuple[
-    dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+) -> tuple[
+    dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
 ]:
     """Prepare scalar field cases."""
     scalar_function_space = dolfinx.fem.functionspace(mesh, ("CG", 2))
@@ -124,8 +124,8 @@ def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
         [typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]],
         typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]
     ]
-) -> typing.Tuple[
-    dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+) -> tuple[
+    dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
 ]:
     """Prepare vector field cases."""
     vector_function_space = dolfinx.fem.functionspace(mesh, ("CG", 2, (mesh.geometry.dim, )))

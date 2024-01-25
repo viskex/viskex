@@ -75,7 +75,7 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
     scalar_field: typing.Union[
-        firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
+        firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
     ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
     **kwargs: typing.Any  # noqa: ANN401
@@ -115,7 +115,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
     vector_field: typing.Union[
-        firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
+        firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
     ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
     **kwargs: typing.Any  # noqa: ANN401

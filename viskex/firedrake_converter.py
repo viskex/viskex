@@ -18,14 +18,14 @@ from viskex.utils import extract_part
 
 class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     firedrake.MeshGeometry,
-    typing.Union[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]
+    typing.Union[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]
 ]):
     """viskex converter interfacing firedrake."""
 
     # Conversion from UFL cell name and is_linear (True/False) to vtk cell type. Replicates the cells attribute
     # at the beginning of firedrake/output.py, with the exception that the boolean attribute is reversed
     # (this code uses is_linear, firedrake uses not is_linear)
-    _ufl_cellname_to_vtk_celltype: typing.ClassVar[typing.Dict[typing.Tuple[str, bool], int]] = {
+    _ufl_cellname_to_vtk_celltype: typing.ClassVar[dict[tuple[str, bool], int]] = {
         ("point", True): 1,
         ("point", False): 1,
         ("interval", True): 3,
@@ -45,7 +45,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     # no permutation is required. Replicates part of the implementation in the function get_topology
     # in firedrake/output.py
     _ufl_cellname_to_vtk_permutation: typing.ClassVar[
-        typing.Dict[typing.Tuple[str, bool], typing.Callable[[typing.Any], typing.Optional[typing.List[int]]]]
+        dict[tuple[str, bool], typing.Callable[[typing.Any], typing.Optional[list[int]]]]
     ] = {
         ("point", True): lambda ufl_element: None,
         ("point", False): lambda ufl_element: None,
@@ -63,7 +63,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     # Conversion from UFL cell name of a mesh and topological dimension of an entity, to the UFL cell name
     # of the entity. Replicates the _sub_entity_celltypes attriute in ufl/cell.py.
-    _tdim_cellname_to_dim_cellname: typing.ClassVar[typing.Dict[typing.Tuple[str, int], str]] = {
+    _tdim_cellname_to_dim_cellname: typing.ClassVar[dict[tuple[str, int], str]] = {
         ("point", 0): "point",
         ("interval", 1): "interval",
         ("interval", 0): "point",
@@ -230,7 +230,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     @classmethod
     def convert_field(  # type: ignore[no-any-unimported]
         cls, field: typing.Union[
-            firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
+            firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
         ], name: str, part: str = "real"
     ) -> pyvista.UnstructuredGrid:
         """

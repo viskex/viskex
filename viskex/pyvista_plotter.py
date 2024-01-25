@@ -46,15 +46,15 @@ del _jupyter_notebook
 
 
 class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
-    typing.Tuple[pyvista.UnstructuredGrid, int], typing.Tuple[pyvista.UnstructuredGrid, int],
-    typing.Tuple[pyvista.UnstructuredGrid, int], pyvista.UnstructuredGrid,
+    tuple[pyvista.UnstructuredGrid, int], tuple[pyvista.UnstructuredGrid, int],
+    tuple[pyvista.UnstructuredGrid, int], pyvista.UnstructuredGrid,
     pyvista.Plotter
 ]):
     """viskex plotter interfacing pyvista."""
 
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: typing.Tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
+        cls, mesh: tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
@@ -165,7 +165,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
-        cls, scalar_field: typing.Tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
+        cls, scalar_field: tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
         warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
@@ -222,7 +222,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
-        cls, vector_field: typing.Tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
+        cls, vector_field: tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
         warp_factor: float = 0.0, glyph_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401

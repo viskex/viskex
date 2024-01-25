@@ -69,7 +69,7 @@ def mark_boundaries(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
 def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
     mesh: firedrake.Mesh,
     expression: typing.Callable[[ufl.core.expr.Expr], ufl.core.expr.Expr]
-) -> typing.Tuple[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
+) -> tuple[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
     """Prepare scalar field cases."""
     scalar_function_space = firedrake.FunctionSpace(mesh, "CG", 2)
     scalar_field_ufl = expression(ufl.SpatialCoordinate(mesh))
@@ -80,7 +80,7 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
 def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
     mesh: firedrake.Mesh,
     expression: typing.Callable[[ufl.core.expr.Expr], ufl.core.expr.Expr]
-) -> typing.Tuple[firedrake.Function, typing.Tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
+) -> tuple[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
     """Prepare vector field cases."""
     vector_function_space = firedrake.VectorFunctionSpace(mesh, "CG", 2)
     vector_field_ufl = ufl.as_vector(expression(ufl.SpatialCoordinate(mesh)))

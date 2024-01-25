@@ -22,7 +22,7 @@ dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
 
 class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
+    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
 ]):
     """viskex converter interfacing dolfinx."""
 
@@ -92,7 +92,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     @classmethod
     def convert_field(  # type: ignore[no-any-unimported]
         cls, field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str, part: str = "real"
     ) -> pyvista.UnstructuredGrid:
         """

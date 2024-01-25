@@ -20,8 +20,8 @@ from viskex.pyvista_plotter import PyvistaPlotter
 
 class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
-    typing.Union[dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
     pyvista.UnstructuredGrid,
     pyvista.Plotter
 ]):
@@ -90,7 +90,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
         cls, scalar_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
@@ -134,7 +134,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
         cls, vector_field: typing.Union[
-            dolfinx.fem.Function, typing.Tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
