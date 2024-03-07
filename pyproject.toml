@@ -96,6 +96,7 @@ module = [
     # "dolfinx",
     # "dolfinx.*",
     "firedrake",
+    "firedrake.*",
     "google",
     "google.colab",
     "ipyparallel",

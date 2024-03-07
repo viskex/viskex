@@ -8,6 +8,7 @@
 import typing
 
 import firedrake
+import firedrake.output
 import numpy as np
 import pyvista
 import ufl
@@ -50,15 +51,15 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         ("point", True): lambda ufl_element: None,
         ("point", False): lambda ufl_element: None,
         ("interval", True): lambda ufl_element: None,
-        ("interval", False): firedrake.paraview_reordering.vtk_lagrange_interval_reorder,
+        ("interval", False): firedrake.output.paraview_reordering.vtk_lagrange_interval_reorder,
         ("triangle", True): lambda ufl_element: None,
-        ("triangle", False): firedrake.paraview_reordering.vtk_lagrange_triangle_reorder,
+        ("triangle", False): firedrake.output.paraview_reordering.vtk_lagrange_triangle_reorder,
         ("quadrilateral", True): lambda ufl_element: [0, 2, 3, 1],
-        ("quadrilateral", False): firedrake.paraview_reordering.vtk_lagrange_quad_reorder,
+        ("quadrilateral", False): firedrake.output.paraview_reordering.vtk_lagrange_quad_reorder,
         ("tetrahedron", True): lambda ufl_element: None,
-        ("tetrahedron", False): firedrake.paraview_reordering.vtk_lagrange_tet_reorder,
+        ("tetrahedron", False): firedrake.output.paraview_reordering.vtk_lagrange_tet_reorder,
         ("hexahedron", True): lambda ufl_element: [0, 2, 3, 1, 4, 6, 7, 5],
-        ("hexahedron", False): firedrake.paraview_reordering.vtk_lagrange_hex_reorder
+        ("hexahedron", False): firedrake.output.paraview_reordering.vtk_lagrange_hex_reorder
     }
 
     # Conversion from UFL cell name of a mesh and topological dimension of an entity, to the UFL cell name
@@ -136,7 +137,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
         # Permute connectivity information according to vtk ordering. The implementation is inspired by
         # the function get_topology in firedrake/output.py
-        mesh_is_linear = firedrake.output.is_linear(mesh.coordinates.function_space())
+        mesh_is_linear = firedrake.output.vtk_output.is_linear(mesh.coordinates.function_space())
         tdim_cellname = mesh.ufl_cell().cellname()
         dim_cellname = cls._tdim_cellname_to_dim_cellname[tdim_cellname, dim]
         permutation = cls._ufl_cellname_to_vtk_permutation[dim_cellname, mesh_is_linear](
