@@ -137,7 +137,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
 
         # Attach the field to the pyvista unstructured grid
-        with interpolated_field.vector.localForm() as values:
+        with interpolated_field.x.petsc_vec.localForm() as values:
             (values, name) = extract_part(values.array.copy(), name, part)
             if function_space.dofmap.index_map_bs > 1:
                 values = values.reshape(-1, function_space.dofmap.index_map_bs)
