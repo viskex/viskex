@@ -49,6 +49,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
         # Convert the dolfinx mesh to a pyvista unstructured grid
         mesh.topology.create_connectivity(dim, dim)
+        mesh.topology.create_connectivity(dim, mesh.topology.dim)
         num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
         cell_entities = np.arange(num_cells, dtype=np.int32)
         pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, cell_entities)
