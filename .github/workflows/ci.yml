@@ -85,7 +85,7 @@ jobs:
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
               apt install -y -qq xvfb
-              rm /home/firedrake/firedrake/lib/python3.10/site-packages/petsc4py/py.typed
+              rm /home/firedrake/firedrake/lib/python3.12/site-packages/petsc4py/py.typed
               FIREDRAKE_BIN="/home/firedrake/firedrake/bin"
               ln -s $FIREDRAKE_BIN/mpiexec $FIREDRAKE_BIN/mpirun
               echo $FIREDRAKE_BIN >> $GITHUB_PATH
@@ -96,7 +96,7 @@ jobs:
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
               apt install -y -qq xvfb
-              rm /home/firedrake/firedrake/lib/python3.10/site-packages/petsc4py/py.typed
+              rm /home/firedrake/firedrake/lib/python3.12/site-packages/petsc4py/py.typed
               FIREDRAKE_BIN="/home/firedrake/firedrake/bin"
               ln -s $FIREDRAKE_BIN/mpiexec $FIREDRAKE_BIN/mpirun
               echo $FIREDRAKE_BIN >> $GITHUB_PATH
