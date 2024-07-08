@@ -28,7 +28,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     """viskex plotter interfacing dolfinx."""
 
     @classmethod
-    def plot_mesh(  # type: ignore[no-any-unimported]
+    def plot_mesh(
         cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
@@ -57,7 +57,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topology.dim), dim, grid_filter, **kwargs)
 
     @classmethod
-    def plot_mesh_tags(  # type: ignore[no-any-unimported]
+    def plot_mesh_tags(
         cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401

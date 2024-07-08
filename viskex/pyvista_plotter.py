@@ -15,12 +15,12 @@ import pyvista
 
 from viskex.base_plotter import BasePlotter
 
-pyvista.set_plot_theme("document")
+pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
-pyvista.global_theme.color = "red"
-pyvista.global_theme.edge_color = "black"
+pyvista.global_theme.color = "red"  # type: ignore[assignment]
+pyvista.global_theme.edge_color = "black"  # type: ignore[assignment]
 pyvista.global_theme.line_width = 2.0
-pyvista.global_theme.nan_color = "lightgrey"
+pyvista.global_theme.nan_color = "lightgrey"  # type: ignore[assignment]
 pyvista.global_theme.point_size = 10.0
 pyvista.global_theme.show_edges = False
 pyvista.global_theme.show_vertices = False
@@ -45,7 +45,7 @@ del _jupyter_backend
 del _jupyter_notebook
 
 
-class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
+class PyvistaPlotter(BasePlotter[
     tuple[pyvista.UnstructuredGrid, int], tuple[pyvista.UnstructuredGrid, int],
     tuple[pyvista.UnstructuredGrid, int], pyvista.UnstructuredGrid,
     pyvista.Plotter
@@ -53,7 +53,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     """viskex plotter interfacing pyvista."""
 
     @classmethod
-    def plot_mesh(  # type: ignore[no-any-unimported]
+    def plot_mesh(
         cls, mesh: tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
         **kwargs: typing.Any  # noqa: ANN401
@@ -87,7 +87,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             grid = grid_filter(grid)
 
         # Create plotter
-        plotter = pyvista.Plotter()
+        plotter = pyvista.Plotter()  # type: ignore[no-untyped-call]
 
         # Terminate early if the grid is empty
         if not grid.n_points:
@@ -150,12 +150,12 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         # Add grids to the plotter
         # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
         # because they lack support for high order meshes
-        plotter.add_mesh(grid, **kwargs)
+        plotter.add_mesh(grid, **kwargs)  # type: ignore[no-untyped-call]
         if show_vertices:
-            plotter.add_mesh(grid_points, color=vertex_color)
+            plotter.add_mesh(grid_points, color=vertex_color)  # type: ignore[no-untyped-call]
         if show_edges:
             plotter.add_mesh(grid.extract_all_edges(), color=edge_color)  # type: ignore[no-untyped-call]
-        plotter.add_axes()
+        plotter.add_axes()  # type: ignore[call-arg]
 
         # Reset camera position in 1D and 2D
         if tdim < 3:
@@ -164,7 +164,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         return plotter
 
     @classmethod
-    def plot_scalar_field(  # type: ignore[no-any-unimported]
+    def plot_scalar_field(
         cls, scalar_field: tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
         warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
@@ -221,7 +221,7 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         return cls.plot_mesh((warped_grid, warped_tdim), tdim, None, **kwargs)
 
     @classmethod
-    def plot_vector_field(  # type: ignore[no-any-unimported]
+    def plot_vector_field(
         cls, vector_field: tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
         warp_factor: float = 0.0, glyph_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
@@ -288,6 +288,6 @@ class PyvistaPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
             glyphed_grid = grid.glyph(factor=glyph_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(glyphed_grid)
+            plotter.add_mesh(glyphed_grid)  # type: ignore[no-untyped-call]
 
         return plotter

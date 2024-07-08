@@ -23,7 +23,7 @@ def values_in(
         data = grid.cell_data.active_scalars
         assert data is not None
         not_equal_to_values, = np.where(~np.isin(data, values))
-        data[not_equal_to_values] = np.nan
+        data[not_equal_to_values] = np.nan  # type: ignore[index]
         grid.cell_data[name] = data
         return grid
 

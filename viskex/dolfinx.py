@@ -40,7 +40,8 @@ def plot_mesh(
     :
         A pyvista widget representing a plot of the mesh.
     """
-    return DolfinxPlotter.plot_mesh(mesh, dim, grid_filter, **kwargs).show()  # type: ignore[no-any-return]
+    return DolfinxPlotter.plot_mesh(  # type: ignore[no-any-return]
+        mesh, dim, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_mesh_tags(
@@ -71,7 +72,7 @@ def plot_mesh_tags(
         A pyvista widget representing a plot of the mesh entities.
     """
     return DolfinxPlotter.plot_mesh_tags(  # type: ignore[no-any-return]
-        mesh, mesh_tags, name, grid_filter, **kwargs).show()
+        mesh, mesh_tags, name, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -111,7 +112,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the scalar field.
     """
     return DolfinxPlotter.plot_scalar_field(  # type: ignore[no-any-return]
-        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()
+        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -155,4 +156,5 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the vector field.
     """
     return DolfinxPlotter.plot_vector_field(  # type: ignore[no-any-return]
-        vector_field, name, part, warp_factor, glyph_factor, grid_filter, **kwargs).show()
+        vector_field, name, part, warp_factor, glyph_factor,  # type: ignore[no-untyped-call]
+        grid_filter, **kwargs).show()
