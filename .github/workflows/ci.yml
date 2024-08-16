@@ -39,7 +39,7 @@ jobs:
               apt install -y -qq xvfb
               echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/local/lib/python3.11/site-packages/petsc4py/py.typed
+              rm /usr/local/lib/python3.12/site-packages/petsc4py/py.typed
           - backend: petsc4py-complex
             container: numericalpdes/base_images:petsc4py-complex
             setup_git: ""
@@ -49,7 +49,7 @@ jobs:
               apt install -y -qq xvfb
               echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/local/lib/python3.11/site-packages/petsc4py/py.typed
+              rm /usr/local/lib/python3.12/site-packages/petsc4py/py.typed
           - backend: dolfinx-real
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             setup_git: ""
