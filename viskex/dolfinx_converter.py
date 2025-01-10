@@ -122,7 +122,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
             expression, function_space = field
             interpolated_field = dolfinx.fem.Function(function_space)
             interpolated_field.interpolate(
-                dolfinx.fem.Expression(expression, function_space.element.interpolation_points()))
+                dolfinx.fem.Expression(expression, function_space.element.interpolation_points))
         else:
             interpolated_field = field
             function_space = field.function_space
