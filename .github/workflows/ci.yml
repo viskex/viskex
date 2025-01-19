@@ -31,7 +31,7 @@ jobs:
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
               rm /usr/lib/python3.*/EXTERNALLY-MANAGED
           - backend: petsc4py-real
-            container: numericalpdes/base_images:petsc4py-real
+            container: ghcr.io/numericalpdes/petsc4py-real:latest
             setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
@@ -41,7 +41,7 @@ jobs:
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
               rm /usr/local/lib/python3.12/site-packages/petsc4py/py.typed
           - backend: petsc4py-complex
-            container: numericalpdes/base_images:petsc4py-complex
+            container: ghcr.io/numericalpdes/petsc4py-complex:latest
             setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
