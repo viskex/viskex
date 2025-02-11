@@ -246,7 +246,12 @@ jobs:
           done
       - name: Run tutorials (parallel)
         run: |
-          COVERAGE_FILE=.coverage_tutorials_parallel python3 -m pytest --coverage-source=viskex --np=2 tutorials
+          export DISPLAY=":99"
+          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "server" "static"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_tutorials_parallel_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex --np=2 tutorials
+          done
       - name: Store coverage reports as artifact
         uses: actions/upload-artifact@v4
         with:
