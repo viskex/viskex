@@ -296,10 +296,6 @@ jobs:
       notebook_branch: ${{ github.ref }}
       image_cache_branch: image_cache
       notebook_preparation: |
-        TMP_DIR=$(mktemp -d)
-        rsync -arvz --include='*firedrake*' --include='*/' --exclude='*' ./ ${TMP_DIR}/
-        ${DOCKER_SCRIPTS}/scripts/replace_ufl.sh ${TMP_DIR}
-        rsync -arvz ${TMP_DIR}/ ./
         python3 -m pip install .[tutorials]
       notebook_directory: tutorials
 
