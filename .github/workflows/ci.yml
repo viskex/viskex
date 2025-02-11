@@ -31,25 +31,37 @@ jobs:
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
               rm /usr/lib/python3.*/EXTERNALLY-MANAGED
           - backend: petsc4py-real
-            container: ghcr.io/numericalpdes/petsc4py-real:latest
-            setup_git: ""
+            container: debian:testing
+            setup_git: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq git
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
-              apt install -y -qq xvfb
+              apt install -y -qq libpetsc-real-dev python3-mpi4py python3-petsc4py-real python3-pip xvfb
               echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/local/lib/python3.12/site-packages/petsc4py/py.typed
+              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+              PETSC_DIR=/usr/lib/petscdir/petsc-real
+              rm $PETSC_DIR/lib/python3/dist-packages/petsc4py/py.typed
+              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
           - backend: petsc4py-complex
-            container: ghcr.io/numericalpdes/petsc4py-complex:latest
-            setup_git: ""
+            container: debian:testing
+            setup_git: |
+              export DEBIAN_FRONTEND="noninteractive"
+              apt update -y -q
+              apt install -y -qq git
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
-              apt install -y -qq xvfb
+              apt install -y -qq libpetsc-complex-dev python3-mpi4py python3-petsc4py-complex python3-pip xvfb
               echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
               echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/local/lib/python3.12/site-packages/petsc4py/py.typed
+              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+              PETSC_DIR=/usr/lib/petscdir/petsc-complex
+              rm $PETSC_DIR/lib/python3/dist-packages/petsc4py/py.typed
+              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
           - backend: dolfinx-real
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             setup_git: ""
