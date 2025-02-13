@@ -248,10 +248,16 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "html" "server" "static"; do
+          if [[ "${{ matrix.backend }}" == firedrake* ]]; then
+            VISKEX_PYVISTA_BACKENDS=("client")
+          else
+            VISKEX_PYVISTA_BACKENDS=("client" "html" "server" "static")
+          fi
+          for VISKEX_PYVISTA_BACKEND in "${VISKEX_PYVISTA_BACKENDS[@]}"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_parallel_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex --np=2 tutorials
           done
+        shell: bash
       - name: Store coverage reports as artifact
         uses: actions/upload-artifact@v4
         with:
