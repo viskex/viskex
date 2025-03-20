@@ -100,8 +100,6 @@ module = [
     "google",
     "google.colab",
     "ipyparallel",
-    "netgen",
-    "netgen.*",
     "petsc4py",
     "petsc4py.PETSc",
     "ufl"
