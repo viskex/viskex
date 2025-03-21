@@ -75,7 +75,7 @@ jobs:
               echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
               echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
               echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
-              rm /dolfinx-env/lib/python3.12/site-packages/petsc4py/py.typed
+              rm /dolfinx-env/lib/python3.*/site-packages/petsc4py/py.typed
           - backend: dolfinx-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             setup_git: ""
@@ -89,33 +89,27 @@ jobs:
               echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
               echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
               echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
-              rm /dolfinx-env/lib/python3.12/site-packages/petsc4py/py.typed
+              rm /dolfinx-env/lib/python3.*/site-packages/petsc4py/py.typed
           - backend: firedrake-real
-            container: firedrakeproject/firedrake
+            container: firedrakeproject/firedrake-vanilla-default
             setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
               apt install -y -qq xvfb
-              rm /home/firedrake/firedrake/lib/python3.12/site-packages/petsc4py/py.typed
-              FIREDRAKE_BIN="/home/firedrake/firedrake/bin"
-              ln -s $FIREDRAKE_BIN/mpiexec $FIREDRAKE_BIN/mpirun
-              echo $FIREDRAKE_BIN >> $GITHUB_PATH
+              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+              rm /usr/local/lib/python3.*/dist-packages/petsc4py/py.typed
           - backend: firedrake-complex
-            container: firedrakeproject/firedrake-complex
+            container: firedrakeproject/firedrake-vanilla-complex
             setup_git: ""
             setup_container: |
               export DEBIAN_FRONTEND="noninteractive"
               apt update -y -q
               apt install -y -qq xvfb
-              rm /home/firedrake/firedrake/lib/python3.12/site-packages/petsc4py/py.typed
-              FIREDRAKE_BIN="/home/firedrake/firedrake/bin"
-              ln -s $FIREDRAKE_BIN/mpiexec $FIREDRAKE_BIN/mpirun
-              echo $FIREDRAKE_BIN >> $GITHUB_PATH
+              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+              rm /usr/local/lib/python3.*/dist-packages/petsc4py/py.typed
       fail-fast: false
-    container:
-      image: ${{ matrix.container }}
-      options: --user root
+    container: ${{ matrix.container }}
     steps:
       - name: Setup git
         run: ${{ matrix.setup_git }}
