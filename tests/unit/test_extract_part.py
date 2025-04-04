@@ -6,14 +6,14 @@
 """Tests for viskex.utils.extract_part module."""
 
 import numpy as np
-import numpy.typing
+import numpy.typing as npt
 import pytest
 
 import viskex.utils
 
 
 @pytest.fixture
-def array() -> np.typing.NDArray[viskex.utils.ScalarType]:
+def array() -> npt.NDArray[viskex.utils.ScalarType]:
     """Create an array with dtype=viskex.utils.ScalarType."""
     array = np.zeros((3, ), dtype=viskex.utils.ScalarType)
     if np.issubdtype(array.dtype, np.complexfloating):
@@ -30,7 +30,7 @@ def array() -> np.typing.NDArray[viskex.utils.ScalarType]:
 @pytest.mark.skipif(
     np.issubdtype(viskex.utils.ScalarType, np.complexfloating),  # type: ignore[arg-type, unused-ignore]
     reason="Needs real numbers")
-def test_extract_part_real_array_real_part(array: np.typing.NDArray[viskex.utils.ScalarType]) -> None:
+def test_extract_part_real_array_real_part(array: npt.NDArray[viskex.utils.ScalarType]) -> None:
     """Test extraction of the real part from a complex array."""
     (array_part, name_part) = viskex.utils.extract_part(array, "array", "real")
     assert np.issubdtype(array.dtype, np.floating)
@@ -42,7 +42,7 @@ def test_extract_part_real_array_real_part(array: np.typing.NDArray[viskex.utils
 @pytest.mark.skipif(
     np.issubdtype(viskex.utils.ScalarType, np.complexfloating),  # type: ignore[arg-type, unused-ignore]
     reason="Needs real numbers")
-def test_extract_part_real_array_imaginary_part(array: np.typing.NDArray[viskex.utils.ScalarType]) -> None:
+def test_extract_part_real_array_imaginary_part(array: npt.NDArray[viskex.utils.ScalarType]) -> None:
     """Test extraction of the imaginary part from a complex array."""
     with pytest.raises(RuntimeError) as excinfo:
         viskex.utils.extract_part(array, "array", "imag")
@@ -51,7 +51,7 @@ def test_extract_part_real_array_imaginary_part(array: np.typing.NDArray[viskex.
 
 
 @pytest.mark.skipif(not np.issubdtype(viskex.utils.ScalarType, np.complexfloating), reason="Needs complex numbers")
-def test_extract_part_complex_array_real_part(array: np.typing.NDArray[viskex.utils.ScalarType]) -> None:
+def test_extract_part_complex_array_real_part(array: npt.NDArray[viskex.utils.ScalarType]) -> None:
     """Test extraction of the real part from a complex array."""
     (array_part, name_part) = viskex.utils.extract_part(array, "array", "real")
     assert not np.issubdtype(array.dtype, np.floating)
@@ -61,7 +61,7 @@ def test_extract_part_complex_array_real_part(array: np.typing.NDArray[viskex.ut
 
 
 @pytest.mark.skipif(not np.issubdtype(viskex.utils.ScalarType, np.complexfloating), reason="Needs complex numbers")
-def test_extract_part_complex_array_imaginary_part(array: np.typing.NDArray[viskex.utils.ScalarType]) -> None:
+def test_extract_part_complex_array_imaginary_part(array: npt.NDArray[viskex.utils.ScalarType]) -> None:
     """Test extraction of the imaginary part from a complex array."""
     (array_part, name_part) = viskex.utils.extract_part(array, "array", "imag")
     assert not np.issubdtype(array.dtype, np.floating)
@@ -70,7 +70,7 @@ def test_extract_part_complex_array_imaginary_part(array: np.typing.NDArray[visk
     assert name_part == "imag(array)"
 
 
-def test_extract_part_real_array_wrong_part(array: np.typing.NDArray[viskex.utils.ScalarType]) -> None:
+def test_extract_part_real_array_wrong_part(array: npt.NDArray[viskex.utils.ScalarType]) -> None:
     """Test extraction of an incorrect part, which is neither real nor imag."""
     with pytest.raises(RuntimeError) as excinfo:
         viskex.utils.extract_part(array, "array", "wrong_part")

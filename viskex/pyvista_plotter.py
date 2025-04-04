@@ -10,7 +10,6 @@ import os
 import typing
 
 import numpy as np
-import numpy.typing
 import pyvista
 
 from viskex.base_plotter import BasePlotter

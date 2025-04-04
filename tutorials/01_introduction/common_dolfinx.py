@@ -10,16 +10,17 @@ import typing
 import dolfinx.fem
 import dolfinx.mesh
 import numpy as np
+import numpy.typing as npt
 import ufl
 
 
 def mark_subdomains(mesh: dolfinx.mesh.Mesh) -> dolfinx.mesh.MeshTags:
     """Mark left and right subdomains in a given mesh with values 1 and 2, respectively."""
-    def left_subdomain(x: np.typing.NDArray[np.float64]) -> np.typing.NDArray[np.bool_]:
+    def left_subdomain(x: npt.NDArray[np.float64]) -> npt.NDArray[np.bool_]:
         """Condition that defines the left subdomain."""
         return x[0] <= 1.0 / 3.0  # type: ignore[no-any-return]
 
-    def right_subdomain(x: np.typing.NDArray[np.float64]) -> np.typing.NDArray[np.bool_]:
+    def right_subdomain(x: npt.NDArray[np.float64]) -> npt.NDArray[np.bool_]:
         """Condition that defines the right subdomain."""
         return x[0] >= 2.0 / 3.0  # type: ignore[no-any-return]
 
@@ -46,11 +47,11 @@ def mark_boundaries(mesh: dolfinx.mesh.Mesh, subdomains: dolfinx.mesh.MeshTags) 
     Furthermore, boundary facets on the left and right boundaries are associated with values 3 and 4,
     respectively.
     """
-    def left(x: np.typing.NDArray[np.float64]) -> np.typing.NDArray[np.bool_]:
+    def left(x: npt.NDArray[np.float64]) -> npt.NDArray[np.bool_]:
         """Condition that defines the left boundary."""
         return abs(x[0] - 0.) < np.finfo(float).eps  # type: ignore[no-any-return]
 
-    def right(x: np.typing.NDArray[np.float64]) -> np.typing.NDArray[np.bool_]:
+    def right(x: npt.NDArray[np.float64]) -> npt.NDArray[np.bool_]:
         """Condition that defines the right boundary."""
         return abs(x[0] - 1.) < np.finfo(float).eps  # type: ignore[no-any-return]
 
@@ -104,8 +105,8 @@ def mark_boundaries(mesh: dolfinx.mesh.Mesh, subdomains: dolfinx.mesh.MeshTags) 
 def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
     mesh: dolfinx.mesh.Mesh,
     expression: typing.Callable[
-        [typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]],
-        typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]
+        [typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]],
+        typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]
     ]
 ) -> tuple[
     dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
@@ -121,8 +122,8 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
 def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
     mesh: dolfinx.mesh.Mesh,
     expression: typing.Callable[
-        [typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]],
-        typing.Union[np.typing.NDArray[np.float64], ufl.core.expr.Expr]
+        [typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]],
+        typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]
     ]
 ) -> tuple[
     dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
