@@ -76,6 +76,7 @@ jobs:
               echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
               echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
               rm /dolfinx-env/lib/python3.*/site-packages/petsc4py/py.typed
+              rm /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
           - backend: dolfinx-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             setup_git: ""
@@ -90,6 +91,7 @@ jobs:
               echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
               echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
               rm /dolfinx-env/lib/python3.*/site-packages/petsc4py/py.typed
+              rm /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
           - backend: firedrake-real
             container: firedrakeproject/firedrake-vanilla-default
             setup_git: ""
