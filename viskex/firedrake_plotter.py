@@ -55,8 +55,7 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         if tdim == 3 and dim == 1:
             # Firedrake does not offer edge (dim = 1) to vertices connectivity. Convert the case with
             # facet (dim = 2) to vertices connectivity, and then ask vtk to extract edges.
-            pyvista_grid = FiredrakeConverter.convert_mesh(
-                mesh, dim + 1).extract_all_edges()  # type: ignore[no-untyped-call]
+            pyvista_grid = FiredrakeConverter.convert_mesh(mesh, dim + 1).extract_all_edges()
         else:
             pyvista_grid = FiredrakeConverter.convert_mesh(mesh, dim)
         plotter = PyvistaPlotter.plot_mesh((pyvista_grid, tdim), dim, grid_filter, **kwargs)

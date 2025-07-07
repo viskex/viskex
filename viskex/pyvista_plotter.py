@@ -16,10 +16,10 @@ from viskex.base_plotter import BasePlotter
 
 pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
-pyvista.global_theme.color = "red"  # type: ignore[assignment]
-pyvista.global_theme.edge_color = "black"  # type: ignore[assignment]
+pyvista.global_theme.color = "red"
+pyvista.global_theme.edge_color = "black"
 pyvista.global_theme.line_width = 2.0
-pyvista.global_theme.nan_color = "lightgrey"  # type: ignore[assignment]
+pyvista.global_theme.nan_color = "lightgrey"
 pyvista.global_theme.point_size = 10.0
 pyvista.global_theme.show_edges = False
 pyvista.global_theme.show_vertices = False
@@ -149,11 +149,11 @@ class PyvistaPlotter(BasePlotter[
         # Add grids to the plotter
         # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
         # because they lack support for high order meshes
-        plotter.add_mesh(grid, **kwargs)  # type: ignore[no-untyped-call]
+        plotter.add_mesh(grid, **kwargs)
         if show_vertices:
-            plotter.add_mesh(grid_points, color=vertex_color)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(grid_points, color=vertex_color)
         if show_edges:
-            plotter.add_mesh(grid.extract_all_edges(), color=edge_color)  # type: ignore[no-untyped-call]
+            plotter.add_mesh(grid.extract_all_edges(), color=edge_color)
         plotter.add_axes()  # type: ignore[call-arg]
 
         # Reset camera position in 1D and 2D
@@ -210,7 +210,7 @@ class PyvistaPlotter(BasePlotter[
                 normal = [0, 0, 1]
             else:
                 normal = None
-            warped_grid = grid.warp_by_scalar(factor=warp_factor, normal=normal)  # type: ignore[no-untyped-call]
+            warped_grid = grid.warp_by_scalar(factor=warp_factor, normal=normal)
             warped_tdim = tdim + 1
         else:
             warped_grid = grid
@@ -266,13 +266,13 @@ class PyvistaPlotter(BasePlotter[
         if warp_factor != 0.0:
             assert warp_factor > 0.0
             assert glyph_factor == 0.0
-            warped_grid = grid.warp_by_vector(factor=warp_factor)  # type: ignore[no-untyped-call]
+            warped_grid = grid.warp_by_vector(factor=warp_factor)
             warped_tdim = tdim
             warped_dim = tdim
         else:
             if glyph_factor != 0.0:
                 # Show just mesh edges when adding glyphs
-                warped_grid = grid.extract_all_edges()  # type: ignore[no-untyped-call]
+                warped_grid = grid.extract_all_edges()
                 warped_dim = 1
             else:
                 warped_grid = grid
@@ -286,7 +286,7 @@ class PyvistaPlotter(BasePlotter[
         if glyph_factor != 0.0:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
-            glyphed_grid = grid.glyph(factor=glyph_factor)  # type: ignore[no-untyped-call]
-            plotter.add_mesh(glyphed_grid)  # type: ignore[no-untyped-call]
+            glyphed_grid = grid.glyph(factor=glyph_factor)
+            plotter.add_mesh(glyphed_grid)
 
         return plotter
