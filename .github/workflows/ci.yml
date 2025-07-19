@@ -44,10 +44,28 @@ jobs:
           - backend: dolfinx-nightly-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             petsc_arch: complex
-          - backend: firedrake-real
+          - backend: firedrake-2025.4.0-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.4.0.post0
+            petsc_arch: real
+          - backend: firedrake-2025.4.0-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.4.0.post0
+            petsc_arch: complex
+          - backend: firedrake-2025.4.1-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.4.1
+            petsc_arch: real
+          - backend: firedrake-2025.4.1-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.4.1
+            petsc_arch: complex
+          - backend: firedrake-2025.4.2-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.4.2
+            petsc_arch: real
+          - backend: firedrake-2025.4.2-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.4.2
+            petsc_arch: complex
+          - backend: firedrake-nightly-real
             container: firedrakeproject/firedrake-vanilla-default
             petsc_arch: real
-          - backend: firedrake-complex
+          - backend: firedrake-nightly-complex
             container: firedrakeproject/firedrake-vanilla-complex
             petsc_arch: complex
       fail-fast: false
