@@ -258,7 +258,8 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         # Interpolate the field if it is provided as an UFL expression
         if isinstance(field, tuple):
             expression, function_space = field
-            interpolated_field = firedrake.interpolate(expression, function_space)
+            interpolated_field = firedrake.Function(function_space)
+            interpolated_field.interpolate(expression)
         else:
             interpolated_field = field
             function_space = field.function_space()
@@ -272,7 +273,8 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
                 function_space.mesh(), function_space.ufl_element())
         else:
             field_vector_function_space = function_space
-        mesh_coordinates = firedrake.interpolate(function_space.mesh().coordinates, field_vector_function_space)
+        mesh_coordinates = firedrake.Function(field_vector_function_space)
+        mesh_coordinates.interpolate(function_space.mesh().coordinates)
         mesh = firedrake.Mesh(mesh_coordinates)
 
         # Convert the firedrake mesh to a pyvista unstructured grid
