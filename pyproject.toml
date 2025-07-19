@@ -100,8 +100,8 @@ module = [
     "google",
     "google.colab",
     "ipyparallel",
-    "petsc4py",
-    "petsc4py.PETSc",
+    # "petsc4py",
+    # "petsc4py.PETSc",
     "ufl"
 ]
 ignore_missing_imports = true
