@@ -19,99 +19,61 @@ jobs:
         include:
           - backend: none
             container: debian:testing
-            setup_git: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq git
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq python3-mpi4py python3-pip xvfb
-              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
-              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            petsc_arch: none
           - backend: petsc4py-real
             container: debian:testing
-            setup_git: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq git
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq libpetsc-real-dev python3-mpi4py python3-petsc4py-real python3-pip xvfb
-              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
-              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
-              PETSC_DIR=/usr/lib/petscdir/petsc-real
-              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
+            petsc_arch: real
           - backend: petsc4py-complex
             container: debian:testing
-            setup_git: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq git
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq libpetsc-complex-dev python3-mpi4py python3-petsc4py-complex python3-pip xvfb
-              echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
-              echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
-              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
-              PETSC_DIR=/usr/lib/petscdir/petsc-complex
-              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
+            petsc_arch: complex
           - backend: dolfinx-real
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
-            setup_git: ""
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq xvfb
-              . /usr/local/bin/dolfinx-real-mode
-              echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
-              echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
-              echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
-              echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
-              echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
-              rm /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
+            petsc_arch: real
           - backend: dolfinx-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
-            setup_git: ""
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq xvfb
-              . /usr/local/bin/dolfinx-complex-mode
-              echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
-              echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
-              echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
-              echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
-              echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
-              rm /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
+            petsc_arch: complex
           - backend: firedrake-real
             container: firedrakeproject/firedrake-vanilla-default
-            setup_git: ""
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq xvfb
-              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            petsc_arch: real
           - backend: firedrake-complex
             container: firedrakeproject/firedrake-vanilla-complex
-            setup_git: ""
-            setup_container: |
-              export DEBIAN_FRONTEND="noninteractive"
-              apt update -y -q
-              apt install -y -qq xvfb
-              rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            petsc_arch: complex
       fail-fast: false
     container: ${{ matrix.container }}
     steps:
       - name: Setup git
-        run: ${{ matrix.setup_git }}
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq git
       - uses: actions/checkout@v4
       - name: Setup container
-        run: ${{ matrix.setup_container }}
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq xvfb
+          if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
+            . /usr/local/bin/dolfinx-${{ matrix.petsc_arch }}-mode
+            echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
+            echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+            echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+            echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+            rm /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
+          elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
+            rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+          else
+            apt install -y -qq python3-mpi4py python3-pip
+            echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
+            echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
+            rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            if [[ "${{ matrix.backend }}" == "petsc4py"* ]]; then
+              apt install -y -qq libpetsc-${{ matrix.petsc_arch }}-dev python3-petsc4py-${{ matrix.petsc_arch }}
+              PETSC_DIR=/usr/lib/petscdir/petsc-${{ matrix.petsc_arch }}
+              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
+            fi
+          fi
+        shell: bash
       - name: Install viskex
         run: |
           if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
