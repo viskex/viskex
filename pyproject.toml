@@ -15,7 +15,7 @@ description = "Interactive visualization for firedrake and FEniCSx"
 license = {file = "LICENSE"}
 requires-python = ">=3.9"
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
@@ -45,10 +45,10 @@ funding = "https://github.com/sponsors/francesco-ballarin"
 
 [project.optional-dependencies]
 backend_dolfinx = [
-    "fenics-dolfinx"
+    "fenics-dolfinx >=0.10.0.dev0, <0.11.0"
 ]
 backend_firedrake = [
-    "firedrake"
+    "firedrake >=2025.4.0, <2025.5.0"
 ]
 docs = [
     "sphinx"
