@@ -1,0 +1,33 @@
+name: Image cache testing
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+jobs:
+  image_cache:
+    uses: viskex/image_cache_tester/.github/workflows/workflow_call.yml@main
+    with:
+      notebook_repository: viskex/viskex
+      notebook_branch: ${{ github.ref }}
+      image_cache_branch: image_cache
+      notebook_preparation: |
+        python3 -m pip install .[tutorials]
+      notebook_directory: tutorials
+
+  warn:
+    runs-on: ubuntu-latest
+    if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: Warn if scheduled workflow is about to be disabled
+        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
+        with:
+          workflow-filename: image_cache.yml
+          days-elapsed: 55

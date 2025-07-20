@@ -383,17 +383,6 @@ jobs:
           python3 -m coverage combine coverage-*/.coverage_tutorials*
           python3 -m coverage report --show-missing --skip-covered
 
-  image_cache:
-    needs: [test]
-    uses: viskex/image_cache_tester/.github/workflows/workflow_call.yml@main
-    with:
-      notebook_repository: viskex/viskex
-      notebook_branch: ${{ github.ref }}
-      image_cache_branch: image_cache
-      notebook_preparation: |
-        python3 -m pip install .[tutorials]
-      notebook_directory: tutorials
-
   warn:
     runs-on: ubuntu-latest
     if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
