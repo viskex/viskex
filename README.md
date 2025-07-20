@@ -7,4 +7,4 @@
 
 **viskex** is freely available under the MIT license.
 
-Visit [viskex.github.io](https://viskex.github.io/) for more information.
+Visit [viskex.github.io](https://viskex.github.io/) for installation instructions and additional information.
