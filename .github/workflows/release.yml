@@ -82,6 +82,7 @@ jobs:
               uses: viskex/viskex/.github/workflows/ci.yml@v${VERSION}
               with:
                 ref: v${VERSION}
+                combine_coverage: false
 
             test_${VERSION_DASHES}_installing_from_pypi_versioned:
               uses: viskex/viskex/.github/workflows/ci.yml@v${VERSION}
@@ -90,6 +91,7 @@ jobs:
                 index: PyPI
                 index_version: ${VERSION}
                 expected_index_version: ${VERSION}
+                combine_coverage: false
 
             test_${VERSION_DASHES}_installing_from_pypi_unversioned:
               uses: viskex/viskex/.github/workflows/ci.yml@v${VERSION}
@@ -97,6 +99,7 @@ jobs:
                 ref: v${VERSION}
                 index: PyPI
                 expected_index_version: ${VERSION}
+                combine_coverage: false
 
             warn:
           EOF
@@ -123,18 +126,21 @@ jobs:
     uses: viskex/viskex/.github/workflows/ci.yml@main
     with:
       ref: pre${{ github.event.inputs.version }}
+      combine_coverage: false
 
   test_branch_for_release_installing_from_github:
     needs: [prepare_branches]
     uses: viskex/viskex/.github/workflows/ci.yml@main
     with:
       ref: v${{ github.event.inputs.version }}
+      combine_coverage: false
 
   test_branch_post_release_installing_from_github:
     needs: [prepare_branches]
     uses: viskex/viskex/.github/workflows/ci.yml@main
     with:
       ref: post${{ github.event.inputs.version }}
+      combine_coverage: false
 
   publish_release_to_testpypi:
     needs: [test_branch_pre_release_installing_from_github, test_branch_for_release_installing_from_github, test_branch_post_release_installing_from_github]

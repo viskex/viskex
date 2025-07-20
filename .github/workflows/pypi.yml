@@ -134,6 +134,7 @@ jobs:
       index: ${{ needs.process_inputs.outputs.index }}
       index_version: ${{ needs.build_distributions.outputs.version }}
       expected_index_version: ${{ needs.build_distributions.outputs.version }}
+      combine_coverage: false
 
   warn:
     runs-on: ubuntu-latest
