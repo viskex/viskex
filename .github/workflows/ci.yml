@@ -1,4 +1,4 @@
-name: viskex CI
+name: CI
 
 on:
   push:
