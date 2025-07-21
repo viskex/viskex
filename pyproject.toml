@@ -48,10 +48,10 @@ issues = "https://github.com/viskex/viskex/issues"
 funding = "https://github.com/sponsors/francesco-ballarin"
 
 [project.optional-dependencies]
-backend_dolfinx = [
+backend-dolfinx = [
     "fenics-dolfinx >= 0.8.0"
 ]
-backend_firedrake = [
+backend-firedrake = [
     "firedrake >= 2025.4.0"
 ]
 docs = [
