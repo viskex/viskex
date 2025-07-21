@@ -35,9 +35,13 @@ if "kaggle" in os.environ.get("KAGGLE_URL_BASE", ""):  # pragma: no cover
 _jupyter_backend = os.getenv("VISKEX_PYVISTA_BACKEND", _jupyter_backend)
 assert _jupyter_backend in (
     "client", "html", "server", "trame",  # trame backends
-    "static"  # static backend
+    "static",  # static backend
+    "none"  # open VTK render window
 )
 pyvista.global_theme.jupyter_backend = _jupyter_backend
+if _jupyter_backend == "none":
+    assert _jupyter_notebook is None
+    _jupyter_notebook = False
 if _jupyter_notebook is not None:
     pyvista.global_theme.notebook = _jupyter_notebook
 del _jupyter_backend
