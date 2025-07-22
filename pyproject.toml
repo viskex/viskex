@@ -101,8 +101,6 @@ module = [
     # "dolfinx.*",
     "firedrake",
     "firedrake.*",
-    "google",
-    "google.colab",
     "ipyparallel",
     # "petsc4py",
     # "petsc4py.PETSc",
