@@ -152,12 +152,13 @@ class PyvistaPlotter(BasePlotter[
 
         # Add grids to the plotter
         # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
-        # because they lack support for high order meshes
+        # because they lack support for high order meshes. Edge extraction follows pyvista discussion #5777.
         plotter.add_mesh(grid, **kwargs)
         if show_vertices:
             plotter.add_mesh(grid_points, color=vertex_color)
         if show_edges:
-            plotter.add_mesh(grid.extract_all_edges(), color=edge_color)
+            grid_edges = grid.separate_cells().extract_surface(nonlinear_subdivision=4).extract_feature_edges()
+            plotter.add_mesh(grid_edges, color=edge_color)
         plotter.add_axes()  # type: ignore[call-arg]
 
         # Reset camera position in 1D and 2D
