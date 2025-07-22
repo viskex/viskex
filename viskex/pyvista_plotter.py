@@ -157,7 +157,9 @@ class PyvistaPlotter(BasePlotter[
         if show_vertices:
             plotter.add_mesh(grid_points, color=vertex_color)
         if show_edges:
-            grid_edges = grid.separate_cells().extract_surface(nonlinear_subdivision=4).extract_feature_edges()
+            order = cls._infer_lagrange_cell_order(grid)
+            grid_edges = grid.separate_cells().extract_surface(
+                nonlinear_subdivision=order - 1).extract_feature_edges()
             plotter.add_mesh(grid_edges, color=edge_color)
         plotter.add_axes()  # type: ignore[call-arg]
 
@@ -295,3 +297,48 @@ class PyvistaPlotter(BasePlotter[
             plotter.add_mesh(glyphed_grid)
 
         return plotter
+
+    @classmethod
+    def _infer_lagrange_cell_order(cls, grid: pyvista.UnstructuredGrid) -> int:
+        """
+        Infers the polynomial order of a pyvista.UnstructuredGrid.
+
+        Parameters
+        ----------
+        grid
+            A pyvista unstructured grid.
+
+        Returns
+        -------
+        :
+            An integer representing the polynomial order of the grid.
+        """
+        # Get cell type information from the first cell, assuming that every cell has the same type
+        cell0 = grid.get_cell(0)
+        cell_type = cell0.type
+        num_points = cell0.n_points
+
+        # Determine order based on the number of points and the cell type
+        if cell_type in (1, 3, 5, 9, 10, 12):  # linear elements
+            order = 1
+        elif cell_type == 68:  # Lagrange curve
+            # num_points is equal to order + 1
+            order = num_points - 1
+        elif cell_type == 69:  # Lagrange triangle
+            # num_points is equal to (order + 1) * (order + 2) / 2
+            order = int((np.sqrt(8 * num_points + 1) - 3) / 2)
+        elif cell_type == 70:  # Lagrange quadrilateral
+            # num_points is equal to (order + 1) ** 2
+            order = int(np.sqrt(num_points)) - 1
+        elif cell_type == 71:  # Lagrange tetrahedron
+            # num_points is equal to (order + 1) * (order + 2) * (order + 3) / 6
+            order = 0
+            while ((order + 1) * (order + 2) * (order + 3)) // 6 < num_points:
+                order += 1
+        elif cell_type == 72:  # Lagrange hexahedron
+            # num_points is equal to (order + 1) ** 3
+            order = int(num_points ** (1 / 3)) - 1
+        else:
+            raise ValueError(f"Invalid cell type {cell_type}")
+
+        return order
