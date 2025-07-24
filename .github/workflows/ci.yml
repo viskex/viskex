@@ -238,13 +238,13 @@ jobs:
           fi
           if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
             MYPY_EXCLUDE+=('^viskex/dolfinx\\\\.py\$' '^viskex/dolfinx_converter\\\\.py\$' '^viskex/dolfinx_plotter\\\\.py\$' '^tutorials/.*/common_.*_dolfinx\\\\.py\$')
-            MYPY_FOLLOW_IMPORTS+=("viskex.dolfinx" "viskex.dolfinx_converter" "viskex.dolfinx_plotter" "common_01_dolfinx")
+            MYPY_FOLLOW_IMPORTS+=("viskex.dolfinx" "viskex.dolfinx_converter" "viskex.dolfinx_plotter" "common_01_dolfinx", "common_03_dolfinx")
             sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
             sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
           fi
           if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
             MYPY_EXCLUDE+=('^viskex/firedrake\\\\.py\$' '^viskex/firedrake_converter\\\\.py\$' '^viskex/firedrake_plotter\\\\.py\$' '^tutorials/.*/common_.*_firedrake\\\\.py\$')
-            MYPY_FOLLOW_IMPORTS+=("viskex.firedrake" "viskex.firedrake_converter" "viskex.firedrake_plotter" "common_01_firedrake")
+            MYPY_FOLLOW_IMPORTS+=("viskex.firedrake" "viskex.firedrake_converter" "viskex.firedrake_plotter" "common_01_firedrake", "common_03_firedrake")
           fi
           if [[ ${MYPY_EXCLUDE[@]} ]]; then
             MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"

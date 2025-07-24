@@ -52,9 +52,37 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         # Convert the dolfinx mesh to a pyvista unstructured grid
         mesh.topology.create_connectivity(dim, dim)
         mesh.topology.create_connectivity(dim, mesh.topology.dim)
-        num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
-        cell_entities = np.arange(num_cells, dtype=np.int32)
-        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, cell_entities)
+        num_entities = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
+        entities = np.arange(num_entities, dtype=np.int32)
+        pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(mesh, dim, entities)
+        if dim == 0:
+            # Perform additional tasks for dim == 0 because dolfinx.plot.vtk_mesh does not extract all points
+            # on high order meshes. This is because dolfinx.plot.vtk_mesh internally would execute a code like
+            #   num_points = mesh.topology.index_map(0).size_local + mesh.topology.index_map(0).num_ghosts
+            #   point_topology_entities = np.arange(num_points, dtype=np.int32)
+            #   point_geometry_entities = dolfinx.cpp.mesh.entities_to_geometry(
+            #       mesh._cpp_object, 0, point_topology_entities, False)
+            # However, since the topology only contains the mesh vertices (i.e., a subset of the mesh
+            # nodes in high order meshes) then len(point_geometry_entities) == len(point_geometry_entities)
+            # because dolfinx.cpp.mesh.entities_to_geometry iterates over all topology entities of dimension 0
+            # (i.e., mesh vertices) and will not be able to get mesh nodes which are not vertices.
+            # To work around this, determine the geometry IDs of all mesh nodes which are not vertices,
+            # and then manually add them as pyvista cells. Note that the ordering of such nodes is undefined
+            # from a topological point of view, hence those additional pyvista cells cannot reliabily be used
+            # to display information coming from e.g. mesh tags or solution functions. However, this is not
+            # currently an issue because mesh tags of topological dimension 0 only associated values to
+            # topological entities of dimension 0 (i.e., mesh vertices), and plotting of solution functions
+            # always uses the highest topological dimension (which will surely be larger than 0).
+            mesh_vertices = pyvista_cells[1::2]
+            mesh_nodes = np.arange(coordinates.shape[0], dtype=np.int32)
+            extra_nodes = np.setdiff1d(mesh_nodes, mesh_vertices, assume_unique=True)
+            if len(extra_nodes) > 0:  # high order mesh
+                mesh_nodes_topologically_ordered = np.concatenate([mesh_vertices, extra_nodes])
+                pyvista_cells = np.empty((mesh_nodes_topologically_ordered.size * 2,), dtype=np.int32)
+                pyvista_cells[0::2] = 1
+                pyvista_cells[1::2] = mesh_nodes_topologically_ordered
+                pyvista_cells = pyvista_cells.reshape(-1)
+                cell_types = np.full(mesh_nodes_topologically_ordered.size, cell_types[0], dtype=cell_types.dtype)
         return pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
 
     @classmethod
