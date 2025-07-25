@@ -187,6 +187,10 @@ def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimen
 
     # Assign physical groups
     for dim, key_to_entities in fragmented_ball.items():
+        if packaging.version.Version(dolfinx.__version__) < packaging.version.Version("0.10.0"):
+            # Old dolfinx does not support ridge and peak tags, so don't bother marking them
+            if dim <= dimension - 2:
+                continue
         for key, entity_ids in key_to_entities.items():
             physical_group_int = key_to_int(key)
             gmsh.model.addPhysicalGroup(dim, entity_ids, physical_group_int)
