@@ -272,12 +272,6 @@ jobs:
       - name: Run unit tests (parallel)
         run: |
           COVERAGE_FILE=.coverage_unit_parallel mpirun -n 2 python3 -m coverage run --source=viskex --parallel-mode -m pytest tests/unit
-      - name: Generate tutorial files
-        run: |
-          NO_TESTS_COLLECTED=5
-          python3 -m pytest --ipynb-action=create-notebooks tutorials || (($?==$NO_TESTS_COLLECTED))
-          python3 -m pytest --ipynb-action=create-notebooks --np=2 tutorials || (($?==$NO_TESTS_COLLECTED))
-        shell: bash
       - name: Update nbqa configuration
         run: |
           declare -a NBQA_EXCLUDE
