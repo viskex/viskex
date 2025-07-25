@@ -5,6 +5,8 @@
 # SPDX-License-Identifier: MIT
 """pytest configuration file for tutorials tests."""
 
+import re
+
 import nbvalx.pytest_hooks_notebooks
 import pytest
 
@@ -24,8 +26,8 @@ def pytest_sessionstart(session: pytest.Session) -> None:
 
 def pytest_runtest_setup(item: nbvalx.pytest_hooks_notebooks.IPyNbFile) -> None:
     """Check backend availability."""
-    # Get notebook name
-    notebook_name = item.parent.name
+    # Get notebook name, ignore nbvalx parametrization
+    notebook_name = re.sub(r"\[.*?\]", "", item.parent.name)
     # Check backend availability depending on the item name
     if notebook_name.endswith("dolfinx.ipynb"):
         pytest.importorskip("dolfinx")

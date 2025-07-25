@@ -110,6 +110,10 @@ module = [
 ]
 ignore_missing_imports = true
 
+[tool.nbqa.process_cells]
+mypy = ["register_current_parameters"]
+ruff = ["register_current_parameters"]
+
 [tool.pytest.ini_options]
 
 [tool.ruff]
