@@ -66,14 +66,14 @@ lint = [
 ]
 tests = [
     "coverage[toml]",
-    "nbvalx[unit-tests] >= 0.4.0",
+    "nbvalx[unit-tests] >= 0.4.1",
     "pytest"
 ]
 tutorials = [
     # "fenics-dolfinx",
     # "firedrake",
     "gmsh",
-    "nbvalx[notebooks] >= 0.4.0"
+    "nbvalx[notebooks] >= 0.4.1"
 ]
 
 [tool.coverage.paths]
