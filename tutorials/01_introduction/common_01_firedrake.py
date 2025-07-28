@@ -5,10 +5,12 @@
 # SPDX-License-Identifier: MIT
 """Common functions used across firedrake notebooks tests."""
 
+import importlib.metadata
 import typing
 
 import firedrake
 import numpy as np
+import packaging.version
 import ufl
 
 
@@ -27,7 +29,8 @@ def mark_subdomains(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     right_subdomain = firedrake.Function(subdomains_function_space).interpolate(
         firedrake.conditional(x[0] >= 2.0 / 3.0, 1.0, 0.0))
     mesh_with_subdomains = firedrake.RelabeledMesh(mesh, [left_subdomain, right_subdomain], [1, 2])
-    mesh_with_subdomains.init()
+    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.5.0.dev0"):
+        mesh_with_subdomains.init()
     return mesh_with_subdomains
 
 
@@ -62,7 +65,8 @@ def mark_boundaries(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     mesh.topology_dm.removeLabel(firedrake.cython.dmcommon.FACE_SETS_LABEL)
     mesh_with_boundaries = firedrake.RelabeledMesh(
         mesh, [left_boundary, right_boundary, left_subdomain, right_subdomain], [3, 4, 1, 2])
-    mesh_with_boundaries.init()
+    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.5.0.dev0"):
+        mesh_with_boundaries.init()
     return mesh_with_boundaries
 
 
