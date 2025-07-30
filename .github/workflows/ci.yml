@@ -342,7 +342,7 @@ jobs:
     runs-on: ubuntu-latest
     container: debian:testing
     needs: [test]
-    if: inputs.combine_coverage != false
+    if: github.event_name != 'workflow_call' || (github.event_name == 'workflow_call' && inputs.combine_coverage != false)
     steps:
       - uses: actions/checkout@v4
       - name: Setup container
