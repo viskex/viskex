@@ -59,6 +59,7 @@ class PyvistaPlotter(BasePlotter[
     def plot_mesh(
         cls, mesh: tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -73,6 +74,8 @@ class PyvistaPlotter(BasePlotter[
         grid_filter
             A filter to be applied to the grid representing the mesh before it is passed to pyvista.Plotter.add_mesh.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
@@ -90,7 +93,8 @@ class PyvistaPlotter(BasePlotter[
             grid = grid_filter(grid)
 
         # Create plotter
-        plotter = pyvista.Plotter()  # type: ignore[no-untyped-call]
+        if plotter is None:
+            plotter = pyvista.Plotter()  # type: ignore[no-untyped-call]
 
         # Terminate early if the grid is empty
         if not grid.n_points:
@@ -174,6 +178,7 @@ class PyvistaPlotter(BasePlotter[
         cls, scalar_field: tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
         warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -194,6 +199,9 @@ class PyvistaPlotter(BasePlotter[
         grid_filter
             A filter to be applied to the field representing the field before it is passed to pyvista.Plotter.add_mesh.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the scalar field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
@@ -224,13 +232,14 @@ class PyvistaPlotter(BasePlotter[
             warped_tdim = tdim
 
         # Call mesh plotter, with grid_filter=None because it was already applied in this function
-        return cls.plot_mesh((warped_grid, warped_tdim), tdim, None, **kwargs)
+        return cls.plot_mesh((warped_grid, warped_tdim), tdim, None, plotter, **kwargs)
 
     @classmethod
     def plot_vector_field(
         cls, vector_field: tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
         warp_factor: float = 0.0, glyph_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -255,6 +264,9 @@ class PyvistaPlotter(BasePlotter[
         grid_filter
             A filter to be applied to the field representing the field before it is passed to pyvista.Plotter.add_mesh.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the vector field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.Plotter.add_mesh.
 
@@ -287,9 +299,9 @@ class PyvistaPlotter(BasePlotter[
             warped_tdim = tdim
 
         # Call mesh plotter, with grid_filter=None because it was already applied in this function
-        plotter = cls.plot_mesh((warped_grid, warped_tdim), warped_dim, None, **kwargs)
+        plotter = cls.plot_mesh((warped_grid, warped_tdim), warped_dim, None, plotter, **kwargs)
 
-        # Add glyphs to the plot, if request
+        # Add glyphs to the plot, if requested
         if glyph_factor != 0.0:
             assert glyph_factor > 0.0
             assert warp_factor == 0.0

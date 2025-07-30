@@ -23,6 +23,7 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     def plot_mesh(
         cls, mesh: Mesh, dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
+        plotter: typing.Optional[OutputPlotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """
@@ -37,6 +38,8 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
         grid_filter
             A filter to be applied to the grid representing the mesh before it is passed to the plotting backend.
             If not provided, no filter will be applied.
+        plotter
+            The output plotter to which the mesh will be added. If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to the plotting backend.
 
@@ -52,6 +55,7 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     def plot_scalar_field(
         cls, scalar_field: ScalarFunction, name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
+        plotter: typing.Optional[OutputPlotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """
@@ -72,6 +76,9 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
         grid_filter
             A filter to be applied to the grid representing the field before it is pass to the plotting backend.
             If not provided, no filter will be applied.
+        plotter
+            The output plotter to which the scalar field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to the plotting backend.
 
@@ -87,6 +94,7 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     def plot_vector_field(
         cls, vector_field: VectorFunction, name: str = "vector", part: str = "real", warp_factor: float = 0.0,
         glyph_factor: float = 0.0, grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
+        plotter: typing.Optional[OutputPlotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """
@@ -111,6 +119,9 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
         grid_filter
             A filter to be applied to the grid representing the field before it is pass to the plotting backend.
             If not provided, no filter will be applied.
+        plotter
+            The output plotter to which the vector field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to the plotting backend.
 

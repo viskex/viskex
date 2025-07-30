@@ -18,6 +18,7 @@ from viskex.dolfinx_plotter import DolfinxPlotter
 def plot_mesh(
     mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -32,6 +33,8 @@ def plot_mesh(
     grid_filter
         A filter to be applied to the grid representing the mesh before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -41,12 +44,13 @@ def plot_mesh(
         A pyvista widget representing a plot of the mesh.
     """
     return DolfinxPlotter.plot_mesh(  # type: ignore[no-any-return]
-        mesh, dim, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        mesh, dim, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_mesh_tags(
     mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -63,6 +67,8 @@ def plot_mesh_tags(
     grid_filter
         A filter to be applied to the grid representing the mesh before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -72,7 +78,7 @@ def plot_mesh_tags(
         A pyvista widget representing a plot of the mesh entities.
     """
     return DolfinxPlotter.plot_mesh_tags(  # type: ignore[no-any-return]
-        mesh, mesh_tags, name, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        mesh, mesh_tags, name, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -80,6 +86,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
     ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -103,6 +110,9 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the field representing the field before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the scalar field will be added.
+        If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -112,7 +122,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the scalar field.
     """
     return DolfinxPlotter.plot_scalar_field(  # type: ignore[no-any-return]
-        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -120,6 +130,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
         dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
     ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -147,6 +158,9 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the field representing the field before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the vector field will be added.
+        If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -157,4 +171,4 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     """
     return DolfinxPlotter.plot_vector_field(  # type: ignore[no-any-return]
         vector_field, name, part, warp_factor, glyph_factor,  # type: ignore[no-untyped-call]
-        grid_filter, **kwargs).show()
+        grid_filter, plotter, **kwargs).show()

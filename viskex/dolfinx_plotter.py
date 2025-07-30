@@ -31,6 +31,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     def plot_mesh(
         cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -45,6 +46,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         grid_filter
             A filter to be applied to the grid representing the mesh before it is passed to pyvista.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.
 
@@ -54,12 +57,14 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A pyvista plotter representing a plot of the mesh.
         """
         pyvista_grid = DolfinxConverter.convert_mesh(mesh, dim)
-        return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topology.dim), dim, grid_filter, **kwargs)
+        return PyvistaPlotter.plot_mesh(
+            (pyvista_grid, mesh.topology.dim), dim, grid_filter, plotter, **kwargs)
 
     @classmethod
     def plot_mesh_tags(
         cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -76,6 +81,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         grid_filter
             A filter to be applied to the grid representing the mesh before it is passed to pyvista.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.
 
@@ -85,7 +92,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A pyvista plotter representing a plot of the mesh entities.
         """
         pyvista_grid = DolfinxConverter.convert_mesh_tags(mesh, mesh_tags, name)
-        return PyvistaPlotter.plot_mesh((pyvista_grid, mesh.topology.dim), mesh_tags.dim, grid_filter, **kwargs)
+        return PyvistaPlotter.plot_mesh(
+            (pyvista_grid, mesh.topology.dim), mesh_tags.dim, grid_filter, plotter, **kwargs)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -93,6 +101,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -116,6 +125,9 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         grid_filter
             A filter to be applied to the field representing the field before it is passed to pyvista.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the scalar field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.
 
@@ -129,7 +141,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         else:
             tdim = scalar_field.function_space.mesh.topology.dim
         pyvista_grid = DolfinxConverter.convert_field(scalar_field, name, part)
-        return PyvistaPlotter.plot_scalar_field((pyvista_grid, tdim), name, part, warp_factor, grid_filter, **kwargs)
+        return PyvistaPlotter.plot_scalar_field(
+            (pyvista_grid, tdim), name, part, warp_factor, grid_filter, plotter, **kwargs)
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -137,6 +150,7 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
             dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
         ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
         grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+        plotter: typing.Optional[pyvista.Plotter] = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -164,6 +178,9 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         grid_filter
             A filter to be applied to the field representing the field before it is passed to pyvista.
             If not provided, no filter will be applied.
+        plotter
+            The pyvista plotter to which the vector field will be added.
+            If not provided, a new plotter will be created.
         kwargs
             Additional keyword arguments to be passed to pyvista.
 
@@ -179,4 +196,4 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
         assert tdim in (2, 3)
         pyvista_grid = DolfinxConverter.convert_field(vector_field, name, part)
         return PyvistaPlotter.plot_vector_field(
-            (pyvista_grid, tdim), name, part, warp_factor, glyph_factor, grid_filter, **kwargs)
+            (pyvista_grid, tdim), name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs)

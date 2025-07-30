@@ -17,6 +17,7 @@ from viskex.firedrake_plotter import FiredrakePlotter
 def plot_mesh(  # type: ignore[no-any-unimported]
     mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -31,6 +32,8 @@ def plot_mesh(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the grid representing the mesh before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -40,12 +43,13 @@ def plot_mesh(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the mesh.
     """
     return FiredrakePlotter.plot_mesh(  # type: ignore[no-any-return]
-        mesh, dim, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        mesh, dim, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_mesh_sets(  # type: ignore[no-any-unimported]
     mesh: firedrake.MeshGeometry, dim: int, name: str = "mesh sets",
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -62,6 +66,8 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the grid representing the mesh before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -71,7 +77,7 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the mesh entities.
     """
     return FiredrakePlotter.plot_mesh_sets(  # type: ignore[no-any-return]
-        mesh, dim, name, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        mesh, dim, name, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -79,6 +85,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
     ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -102,6 +109,9 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the field representing the field before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the scalar field will be added.
+        If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -111,7 +121,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         A pyvista widget representing a plot of the scalar field.
     """
     return FiredrakePlotter.plot_scalar_field(  # type: ignore[no-any-return]
-        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+        scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()  # type: ignore[no-untyped-call]
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -119,6 +129,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
         firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
     ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
     grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
+    plotter: typing.Optional[pyvista.Plotter] = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -147,6 +158,9 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     grid_filter
         A filter to be applied to the field representing the field before it is passed to pyvista.
         If not provided, no filter will be applied.
+    plotter
+        The pyvista plotter to which the vector field will be added.
+        If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
 
@@ -157,4 +171,4 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     """
     return FiredrakePlotter.plot_vector_field(  # type: ignore[no-any-return]
         vector_field, name, part, warp_factor, glyph_factor,
-        grid_filter, **kwargs).show()   # type: ignore[no-untyped-call]
+        grid_filter, plotter, **kwargs).show()   # type: ignore[no-untyped-call]
