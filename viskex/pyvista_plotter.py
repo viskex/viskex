@@ -13,6 +13,7 @@ import numpy as np
 import pyvista
 
 from viskex.base_plotter import BasePlotter
+from viskex.utils import add_point_markers, update_camera_with_mesh
 
 pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
@@ -70,7 +71,8 @@ class PyvistaPlotter(BasePlotter[
         mesh
             A pair containing the pyvista unstructured grid to be plotted and its topological dimension.
         dim
-            Plot entities associated to this dimension. If not provided, the topological dimension is used.
+            The pyvista unstructured grid provided in the first input argument is contains entities of maximum
+            topological dimension equal to dim. If not provided, the topological dimension is assumed.
         grid_filter
             A filter to be applied to the grid representing the mesh before it is passed to pyvista.Plotter.add_mesh.
             If not provided, no filter will be applied.
@@ -100,47 +102,34 @@ class PyvistaPlotter(BasePlotter[
         if not grid.n_points:
             return plotter
 
-        # Determine whether cell data or point data have active scalars associated to the mesh
-        active_scalars_name = {
-            data_key: data.active_scalars_name
-            for (data_key, data) in (("cell", grid.cell_data), ("point", grid.point_data))
-        }
+        # Determine whether cell/point data have active scalars/vectors/tensors associated to the mesh
+        active_data: list[dict[str, typing.Any]] = []
+        field_types = ("scalars", "vectors")
+        for location, location_data in (("cell", grid.cell_data), ("point", grid.point_data)):
+            for field_type in field_types:
+                field_name = getattr(location_data, f"active_{field_type}_name")
+                if field_name is not None:
+                    array = getattr(location_data, f"active_{field_type}")
+                    if np.isnan(array).all():
+                        array_range: typing.Optional[tuple[typing.Any, ...]] = None
+                    else:
+                        array_min = np.nanmin(array)
+                        array_max = np.nanmax(array)
+                        if array_min == array_max:
+                            array_range = (array_min, )
+                        else:
+                            array_range = (array_min, array_max)
+                    active_data.append({
+                        "location": location, "field_type": field_type,
+                        "name": field_name, "array": array, "range": array_range
+                    })
 
-        # Reset to default cell color if scalar data have a single value
-        if "cmap" not in kwargs:
-            for data in (grid.cell_data, grid.point_data):
-                if data.active_scalars is not None and not np.isnan(data.active_scalars).all():
-                    if np.nanmin(data.active_scalars) == np.nanmax(data.active_scalars):
-                        kwargs["cmap"] = [pyvista.global_theme.color.name]
-                        break
-
-        # Determine whether to show vertices: this happens by default in 1D, or when plotting points.
-        show_vertices = kwargs.get("show_vertices", None)
-        if show_vertices is None:
-            if dim == 0:
-                # No need to show vertices, since the grid itself is already composed by them
-                show_vertices = False
-            elif tdim < 2:
-                show_vertices = True
-            else:
-                show_vertices = False
-        if show_vertices:
-            kwargs.pop("show_vertices", None)
-            grid_points = pyvista.PolyData(grid.points)
-            if dim == 0:
-                if active_scalars_name["cell"] is not None:
-                    # Do not override colors provided by cell data
-                    vertex_color = None
-                else:
-                    vertex_color = kwargs.pop("color", pyvista.global_theme.color)
-            else:
-                if active_scalars_name["point"] is not None:
-                    grid_points.point_data[active_scalars_name["point"]] = grid.point_data[
-                        active_scalars_name["point"]]
-                    # Do not override colors provided by point data
-                    vertex_color = None
-                else:
-                    vertex_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+        # Reset to default cell color if active data have a single value
+        if (
+            "cmap" not in kwargs and len(active_data) > 0
+            and all(active_data_["range"] is None or len(active_data_["range"]) == 1 for active_data_ in active_data)
+        ):
+            kwargs["cmap"] = [pyvista.global_theme.color.name]
 
         # Determine whether to show edges: this happens by default in 2D when plotting cells or in 3D
         # when plotting cells or faces.
@@ -153,23 +142,91 @@ class PyvistaPlotter(BasePlotter[
         if show_edges:
             kwargs.pop("show_edges", None)
             edge_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+            line_width = kwargs.pop("line_width", pyvista.global_theme.line_width)
 
-        # Add grids to the plotter
-        # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
-        # because they lack support for high order meshes. Edge extraction follows pyvista discussion #5777.
-        plotter.add_mesh(grid, **kwargs)
+        # Determine whether to show vertices: this happens by default in 1D, or when plotting points.
+        show_vertices = kwargs.get("show_vertices", None)
+        if show_vertices is None:
+            if tdim < 2 or dim == 0:
+                show_vertices = True
+            else:
+                show_vertices = False
         if show_vertices:
-            plotter.add_mesh(grid_points, color=vertex_color)
+            kwargs.pop("show_vertices", None)
+            # Extract the mesh points
+            if dim > 0:
+                # Create a poly data grid which contains only the mesh points
+                grid_points: pyvista.DataSet = pyvista.PolyData(grid.points)
+                for active_data_ in active_data:
+                    if active_data_["location"] == "point":
+                        location_data_attribute = f"{active_data_['location']}_data"
+                        original_location_data = getattr(grid, location_data_attribute)
+                        copy_location_data = getattr(grid_points, location_data_attribute)
+                        field_name = active_data_["name"]
+                        copy_location_data[field_name] = original_location_data[field_name]
+                        active_field_type_setter = getattr(grid_points, f"set_active_{active_data_['field_type']}")
+                        active_field_type_setter(field_name)
+            else:
+                # Simply reuse the provided grid, since it already contains only points
+                grid_points = grid
+            # Determine the vertex color, unless array values are being plotted
+            if dim > 0:
+                if len(active_data) > 0 and any(active_data_["location"] == "point" for active_data_ in active_data):
+                    vertex_color = None
+                else:
+                    vertex_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+            else:
+                if len(active_data) > 0 and any(active_data_["location"] == "cell" for active_data_ in active_data):
+                    vertex_color = None
+                else:
+                    vertex_color = kwargs.pop("color", pyvista.global_theme.color)
+            # Determine the dimension of the point markers, either 1 (segments), 2 (squares) or 3 (cubes)
+            if dim > 0:
+                point_markers_dim = tdim
+            else:
+                if tdim == 1:
+                    # Plotting vertices of a 1D mesh without the cells: use squares intead of segments
+                    # to make the markers more visibile
+                    point_markers_dim = 2
+                else:
+                    point_markers_dim = tdim
+            # Determine the default point size.
+            point_size = kwargs.pop("point_size", pyvista.global_theme.point_size)
+
+        # Add grid to the plotter, except for the case dim == 0 that will be handled later
+        if dim > 0:
+            plotter.add_mesh(grid, **kwargs)
+
+        # Vertices and edges are manually added to plot, rather than using show_vertices and show_edges properties
+        # because the properties lack support for high order meshes.
+        # First of all, we add edges following pyvista discussion #5777.
         if show_edges:
             order = cls._infer_lagrange_cell_order(grid)
             grid_edges = grid.separate_cells().extract_surface(
                 nonlinear_subdivision=order - 1).extract_feature_edges()
-            plotter.add_mesh(grid_edges, color=edge_color)
+            plotter.add_mesh(grid_edges, line_width=line_width, color=edge_color)
+        # Then we also add vertices using a custom implementation in viskex.utils.add_point_markers which allows
+        # to give them a shape depending on the topological dimension.
+        if show_vertices:
+            # The custom implementation in viskex.utils.add_point_markers requires the camera to be up to date.
+            if dim > 0:
+                # There was surely a previous call to plotter.add_mesh(grid, ...)
+                plotter.reset_camera()  # type: ignore[call-arg]
+            else:
+                # There may not have been a previous call to add_mesh: update the camera as if grid was added
+                update_camera_with_mesh(plotter, grid)
+            add_point_markers(
+                plotter, grid_points, dim=point_markers_dim, point_size=point_size, point_color=vertex_color)
+            # Force a further camera update after grid points have been added.
+            plotter.reset_camera()  # type: ignore[call-arg]
+
+        # Add coordinate axes
         plotter.add_axes()  # type: ignore[call-arg]
 
-        # Reset camera position in 1D and 2D
+        # Set camera position in 1D and 2D
         if tdim < 3:
             plotter.camera_position = "xy"
+            plotter.enable_parallel_projection()  # type: ignore[call-arg]
 
         return plotter
 

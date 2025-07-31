@@ -3,8 +3,7 @@
 # This file is part of viskex.
 #
 # SPDX-License-Identifier: MIT
-"""viskex utils module."""
-
+"""Extract real or complex part from an array."""
 
 import numpy as np
 import numpy.typing as npt

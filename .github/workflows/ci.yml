@@ -268,10 +268,10 @@ jobs:
           cd docs && python3 -m sphinx -W -b html . build/html
       - name: Run unit tests (serial)
         run: |
-          COVERAGE_FILE=.coverage_unit_serial python3 -m coverage run --source=viskex -m pytest tests/unit
+          COVERAGE_FILE=.coverage_unit_serial PYVISTA_OFF_SCREEN=True python3 -m coverage run --source=viskex -m pytest tests/unit
       - name: Run unit tests (parallel)
         run: |
-          COVERAGE_FILE=.coverage_unit_parallel mpirun -n 2 python3 -m coverage run --source=viskex --parallel-mode -m pytest tests/unit
+          COVERAGE_FILE=.coverage_unit_parallel PYVISTA_OFF_SCREEN=True mpirun -n 2 python3 -m coverage run --source=viskex --parallel-mode -m pytest tests/unit
       - name: Update nbqa configuration
         run: |
           declare -a NBQA_EXCLUDE
