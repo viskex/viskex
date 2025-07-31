@@ -157,29 +157,20 @@ class PyvistaPlotter(BasePlotter[
             if dim > 0:
                 # Create a poly data grid which contains only the mesh points
                 grid_points: pyvista.DataSet = pyvista.PolyData(grid.points)
-                for active_data_ in active_data:
-                    if active_data_["location"] == "point":
-                        location_data_attribute = f"{active_data_['location']}_data"
-                        original_location_data = getattr(grid, location_data_attribute)
-                        copy_location_data = getattr(grid_points, location_data_attribute)
-                        field_name = active_data_["name"]
-                        copy_location_data[field_name] = original_location_data[field_name]
-                        active_field_type_setter = getattr(grid_points, f"set_active_{active_data_['field_type']}")
-                        active_field_type_setter(field_name)
             else:
                 # Simply reuse the provided grid, since it already contains only points
                 grid_points = grid
-            # Determine the vertex color, unless array values are being plotted
+            # Determine the vertex color and cmap, depending on wheter array values are being plotted
             if dim > 0:
-                if len(active_data) > 0 and any(active_data_["location"] == "point" for active_data_ in active_data):
-                    vertex_color = None
-                else:
-                    vertex_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+                vertex_color = kwargs.pop("edge_color", pyvista.global_theme.edge_color)
+                vertex_cmap = None
             else:
                 if len(active_data) > 0 and any(active_data_["location"] == "cell" for active_data_ in active_data):
                     vertex_color = None
+                    vertex_cmap = kwargs.get("cmap", None)  # use get and not pop since cmap is used by other plots too
                 else:
                     vertex_color = kwargs.pop("color", pyvista.global_theme.color)
+                    vertex_cmap = None
             # Determine the dimension of the point markers, either 1 (segments), 2 (squares) or 3 (cubes)
             if dim > 0:
                 point_markers_dim = tdim
@@ -216,7 +207,8 @@ class PyvistaPlotter(BasePlotter[
                 # There may not have been a previous call to add_mesh: update the camera as if grid was added
                 update_camera_with_mesh(plotter, grid)
             add_point_markers(
-                plotter, grid_points, dim=point_markers_dim, point_size=point_size, point_color=vertex_color)
+                plotter, grid_points, dim=point_markers_dim, point_size=point_size, point_color=vertex_color,
+                point_cmap=vertex_cmap)
             # Force a further camera update after grid points have been added.
             plotter.reset_camera()  # type: ignore[call-arg]
 

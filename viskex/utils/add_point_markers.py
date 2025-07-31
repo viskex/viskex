@@ -15,7 +15,8 @@ from viskex.utils.compute_screen_pixel_size_in_world import compute_screen_pixel
 
 def add_point_markers(
     plotter: pyvista.Plotter, mesh: pyvista.DataSet, dim: int, point_size: float,
-    point_color: typing.Optional[str] = None
+    point_color: typing.Optional[str] = None,
+    point_cmap: typing.Optional[typing.Union[str, list[str], pyvista.LookupTable]] = None
 ) -> None:
     """
     Add point markers (lines, squares, or cubes) at specified points in the plotter.
@@ -35,6 +36,9 @@ def add_point_markers(
     point_color
         If `point_color` is None and `mesh` has point scalars, the glyphs will be colored
         by that scalar data. Otherwise, the color provided in `point_color` will be used.
+    point_cmap
+        If `point_color` is None and `mesh` has point scalars, colormap to be used when plotting
+        scalar data. Otherwise, the value is ignored.
 
     Notes
     -----
@@ -75,13 +79,13 @@ def add_point_markers(
     # Determine coloring
     if point_color is not None:
         # Use provided point color
-        color_opts: dict[str, typing.Union[bool, float, str]] = {
+        color_opts: dict[str, typing.Any] = {
             "color": point_color,
             "smooth_shading": True,
             "ambient": 1.0,
             "specular": 0.0,
             "show_edges": False,
-            "lighting": True,
+            "lighting": True
         }
     else:
         # Use scalar coloring if available
@@ -137,7 +141,8 @@ def add_point_markers(
         color_opts = {
             "scalars": scalars,
             "show_edges": False,
-            "lighting": False
+            "lighting": False,
+            "cmap": point_cmap
         }
 
     # Add glyphs to the plotter
