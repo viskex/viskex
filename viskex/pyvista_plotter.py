@@ -363,7 +363,7 @@ class PyvistaPlotter(BasePlotter[
             assert glyph_factor > 0.0
             assert warp_factor == 0.0
             glyphed_grid = grid.glyph(factor=glyph_factor)
-            plotter.add_mesh(glyphed_grid)
+            plotter.add_mesh(glyphed_grid, show_scalar_bar=False)
 
         return plotter
 
