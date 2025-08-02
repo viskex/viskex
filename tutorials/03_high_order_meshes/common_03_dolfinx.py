@@ -12,7 +12,6 @@ import dolfinx.mesh
 import gmsh
 import mpi4py.MPI
 import numpy as np
-import numpy.typing as npt
 import packaging.version
 
 from common_03_none import get_key, key_to_int  # isort: skip
@@ -456,7 +455,7 @@ def _create_plane_in_3d_with_subdivided_boundary(
     return [surface]
 
 
-def _side_range(side: str, num_segments: int) -> npt.NDArray[np.float64]:
+def _side_range(side: str, num_segments: int) -> list[float]:
     """
     Return equispaced points in [-1, 0] if side is 'negative', else in [0, 1].
 
@@ -473,9 +472,9 @@ def _side_range(side: str, num_segments: int) -> npt.NDArray[np.float64]:
         1D array of coordinate points.
     """
     if side == "negative":
-        return np.linspace(-1.0, 0.0, num_segments + 1)
+        return np.linspace(-1.0, 0.0, num_segments + 1).tolist()  # type: ignore[no-any-return]
     else:
-        return np.linspace(0.0, 1.0, num_segments + 1)
+        return np.linspace(0.0, 1.0, num_segments + 1).tolist()  # type: ignore[no-any-return]
 
 
 def _get_or_add_point(coord: tuple[float, float, float], points_cache: dict[tuple[float, float, float], int]) -> int:
