@@ -11,12 +11,13 @@ jobs:
   # If main becomes incompatible with the latest version on PyPI then temporarily
   # comment out this test, and restore it on the next PyPI release.
 
-  test_main_branch_against_latest_release_from_pypi:
-    uses: viskex/viskex/.github/workflows/ci.yml@main
-    with:
-      ref: main
-      index: PyPI
-      combine_coverage: false
+  # TODO: commented out because of backward incompatible changes b4364f5. Re-enable when 0.2.0 is released
+  # test_main_branch_against_latest_release_from_pypi:
+  #  uses: viskex/viskex/.github/workflows/ci.yml@main
+  #  with:
+  #    ref: main
+  #    index: PyPI
+  #    combine_coverage: false
 
   # Test released versions on github or PyPI against the workflow on the corresponding git tag.
 
