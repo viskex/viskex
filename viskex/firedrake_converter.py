@@ -14,7 +14,7 @@ import pyvista
 import ufl
 
 from viskex.pyvista_converter import PyvistaConverter
-from viskex.utils import extract_part
+from viskex.utils.dtype import extract_part
 
 
 class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]

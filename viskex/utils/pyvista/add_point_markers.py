@@ -10,7 +10,7 @@ import typing
 import numpy as np
 import pyvista
 
-from viskex.utils.compute_screen_pixel_size_in_world import compute_screen_pixel_size_in_world
+from viskex.utils.pyvista.compute_screen_pixel_size_in_world import compute_screen_pixel_size_in_world
 
 
 def add_point_markers(

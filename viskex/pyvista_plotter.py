@@ -13,7 +13,7 @@ import numpy as np
 import pyvista
 
 from viskex.base_plotter import BasePlotter
-from viskex.utils import add_point_markers, update_camera_with_mesh
+from viskex.utils.pyvista import add_point_markers, update_camera_with_mesh
 
 pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
 pyvista.global_theme.cmap = "jet"
@@ -196,10 +196,10 @@ class PyvistaPlotter(BasePlotter[
             grid_edges = grid.separate_cells().extract_surface(
                 nonlinear_subdivision=order - 1).extract_feature_edges()
             plotter.add_mesh(grid_edges, line_width=line_width, color=edge_color)
-        # Then we also add vertices using a custom implementation in viskex.utils.add_point_markers which allows
-        # to give them a shape depending on the topological dimension.
+        # Then we also add vertices using a custom implementation in viskex.utils.pyvista.add_point_markers which
+        # allows to give them a shape depending on the topological dimension.
         if show_vertices:
-            # The custom implementation in viskex.utils.add_point_markers requires the camera to be up to date.
+            # The custom implementation in viskex.utils.pyvista.add_point_markers requires the camera to be up to date.
             if dim > 0:
                 # There was surely a previous call to plotter.add_mesh(grid, ...)
                 plotter.reset_camera()  # type: ignore[call-arg]

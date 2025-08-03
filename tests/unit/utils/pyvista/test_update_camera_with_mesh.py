@@ -3,12 +3,13 @@
 # This file is part of viskex.
 #
 # SPDX-License-Identifier: MIT
-"""Tests for viskex.utils.update_camera_with_mesh module."""
+"""Tests for viskex.utils.pyvista.update_camera_with_mesh module."""
 
 import numpy as np
 import pyvista
 
-import viskex.utils
+import viskex.utils.dtype
+import viskex.utils.pyvista
 
 
 def test_update_camera_with_mesh() -> None:
@@ -25,11 +26,11 @@ def test_update_camera_with_mesh() -> None:
     initial_clipping_range_1 = plotter_1.camera.clipping_range
 
     # Create mesh with points offset in space
-    points = np.array([[10, 0, 0], [10, 1, 1], [11, 1, 0]])
-    mesh = pyvista.PolyData(points)
+    points = np.array([[10, 0, 0], [10, 1, 1], [11, 1, 0]], dtype=viskex.utils.dtype.RealType)
+    mesh = pyvista.PolyData(points)  # type: ignore[arg-type, unused-ignore]
 
     # Call the update function (temporary add + camera update)
-    viskex.utils.update_camera_with_mesh(plotter_1, mesh)
+    viskex.utils.pyvista.update_camera_with_mesh(plotter_1, mesh)
     updated_position_1 = plotter_1.camera.position
     updated_focal_point_1 = plotter_1.camera.focal_point
     updated_clipping_range_1 = plotter_1.camera.clipping_range
@@ -49,10 +50,9 @@ def test_update_camera_with_mesh() -> None:
     updated_clipping_range_2 = plotter_2.camera.clipping_range
 
     # The two plotters should now have similar camera parameters
-    tol = 1e-12
-    assert np.allclose(updated_position_1, updated_position_2, atol=tol), "Camera positions differ"
-    assert np.allclose(updated_focal_point_1, updated_focal_point_2, atol=tol), "Camera focal points differ"
-    assert np.allclose(updated_clipping_range_1, updated_clipping_range_2, atol=tol), "Camera clipping ranges differ"
+    assert np.allclose(updated_position_1, updated_position_2), "Camera positions differ"
+    assert np.allclose(updated_focal_point_1, updated_focal_point_2), "Camera focal points differ"
+    assert np.allclose(updated_clipping_range_1, updated_clipping_range_2), "Camera clipping ranges differ"
 
     # Clean up
     plotter_1.close()  # type: ignore[no-untyped-call]

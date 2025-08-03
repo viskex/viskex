@@ -6,3 +6,5 @@ API reference
 
    viskex
    viskex.utils
+   viskex.utils.dtype
+   viskex.utils.pyvista

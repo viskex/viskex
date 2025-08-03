@@ -8,7 +8,7 @@
 import numpy as np
 import numpy.typing as npt
 
-from viskex.utils.scalar_type import ScalarType
+from viskex.utils.dtype.scalar_type import ScalarType
 
 
 def extract_part(

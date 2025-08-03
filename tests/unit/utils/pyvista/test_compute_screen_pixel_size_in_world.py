@@ -3,13 +3,14 @@
 # This file is part of viskex.
 #
 # SPDX-License-Identifier: MIT
-"""Tests for viskex.utils.compute_screen_pixel_size_in_world module."""
+"""Tests for viskex.utils.pyvista.compute_screen_pixel_size_in_world module."""
 
 import numpy as np
 import pytest
 import pyvista
 
-import viskex.utils
+import viskex.utils.dtype
+import viskex.utils.pyvista
 
 
 @pytest.mark.parametrize("parallel", [False, True])
@@ -40,8 +41,8 @@ def test_compute_screen_pixel_size_in_world(parallel: bool, dim: int) -> None:
     plotter = pyvista.Plotter(window_size=(600, 600))  # type: ignore[no-untyped-call]
 
     # Create a single point at origin
-    point = np.array([[0.0, 0.0, 0.0]])
-    cloud = pyvista.PolyData(point)
+    point = np.array([[0.0, 0.0, 0.0]], dtype=viskex.utils.dtype.RealType)
+    cloud = pyvista.PolyData(point)  # type: ignore[arg-type, unused-ignore]
 
     # Add the point using PyVista's point size
     point_size = 100.0
@@ -58,13 +59,16 @@ def test_compute_screen_pixel_size_in_world(parallel: bool, dim: int) -> None:
     plotter.reset_camera()  # type: ignore[call-arg]
 
     # Compute world-space size equivalent to screen pixels
-    pixel_size = viskex.utils.compute_screen_pixel_size_in_world(plotter, point=point[0])
+    pixel_size = viskex.utils.pyvista.compute_screen_pixel_size_in_world(plotter, point=point[0])
     square_size = point_size * pixel_size
 
     # Add a world-space geometry structure at the same location
     if dim == 1:
         # Use a line segment as "square"
-        line = pyvista.Line(point[0] - np.array([square_size / 2, 0, 0]), point[0] + np.array([square_size / 2, 0, 0]))
+        line = pyvista.Line(
+            point[0] - np.array([square_size / 2, 0, 0], dtype=viskex.utils.dtype.RealType),
+            point[0] + np.array([square_size / 2, 0, 0], dtype=viskex.utils.dtype.RealType)
+        )
         plotter.add_mesh(line, color="blue", line_width=3)
     elif dim == 2:
         square = pyvista.Plane(center=point[0], i_size=square_size, j_size=square_size)  # type: ignore[arg-type]

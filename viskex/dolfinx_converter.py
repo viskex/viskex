@@ -16,7 +16,7 @@ import pyvista
 import ufl
 
 from viskex.pyvista_converter import PyvistaConverter
-from viskex.utils import extract_part
+from viskex.utils.dtype import extract_part
 
 assert dolfinx.mesh.CellType.point not in dolfinx.plot._first_order_vtk
 dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1

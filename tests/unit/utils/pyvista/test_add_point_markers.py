@@ -3,7 +3,7 @@
 # This file is part of viskex.
 #
 # SPDX-License-Identifier: MIT
-"""Tests for viskex.utils.add_point_markers module."""
+"""Tests for viskex.utils.pyvista.add_point_markers module."""
 
 import typing
 import zlib
@@ -13,10 +13,11 @@ import numpy.typing as npt
 import pytest
 import pyvista
 
-import viskex.utils
+import viskex.utils.dtype
+import viskex.utils.pyvista
 
 
-def get_seed_from_points(points: npt.NDArray[np.float64]) -> int:
+def get_seed_from_points(points: npt.NDArray[viskex.utils.dtype.RealType]) -> int:
     """
     Compute a deterministic 32-bit integer seed based on the byte content of the points array.
 
@@ -39,7 +40,7 @@ def get_seed_from_points(points: npt.NDArray[np.float64]) -> int:
     return seed
 
 
-def create_wireframe_poly_data(points: npt.NDArray[np.float64]) -> pyvista.PolyData:
+def create_wireframe_poly_data(points: npt.NDArray[viskex.utils.dtype.RealType]) -> pyvista.PolyData:
     """
     Construct a wireframe polydata representing the edges of a regular grid from a flat point array.
 
@@ -106,7 +107,7 @@ def create_wireframe_poly_data(points: npt.NDArray[np.float64]) -> pyvista.PolyD
     return pyvista.PolyData(points_permuted, lines=lines_permuted)  # type: ignore[arg-type]
 
 
-def create_points_poly_data(points: npt.NDArray[np.float64]) -> pyvista.PolyData:
+def create_points_poly_data(points: npt.NDArray[viskex.utils.dtype.RealType]) -> pyvista.PolyData:
     """
     Create a pyvista polydata object consisting only of points (vertices).
 
@@ -146,7 +147,7 @@ def create_points_poly_data(points: npt.NDArray[np.float64]) -> pyvista.PolyData
     return pyvista.PolyData(points_permuted, verts=cells_permuted)  # type: ignore[arg-type]
 
 
-def create_unstructured_grid(points: npt.NDArray[np.float64]) -> pyvista.UnstructuredGrid:
+def create_unstructured_grid(points: npt.NDArray[viskex.utils.dtype.RealType]) -> pyvista.UnstructuredGrid:
     """
     Create an unstructured grid consisting solely of vertex cells from an array of points.
 
@@ -196,7 +197,8 @@ def create_unstructured_grid(points: npt.NDArray[np.float64]) -> pyvista.Unstruc
 ])
 @pytest.mark.parametrize("with_data", [False, True])
 def test_add_point_markers(
-    dim: int, point_markers_dim: int, create_data_set: typing.Callable[[npt.NDArray[np.float64]], pyvista.DataSet],
+    dim: int, point_markers_dim: int,
+    create_data_set: typing.Callable[[npt.NDArray[viskex.utils.dtype.RealType]], pyvista.DataSet],
     with_data: bool
 ) -> None:
     """
@@ -228,19 +230,27 @@ def test_add_point_markers(
 
     if dim == 0:
         # A polydata formed only by points
-        x = np.linspace(0, 1, 10)
+        x = np.linspace(0, 1, 10, dtype=viskex.utils.dtype.RealType)
         points = np.column_stack((x, np.zeros_like(x), np.zeros_like(x)))
     elif dim == 1:
         # Line along x-axis with 10 points
-        x = np.linspace(0, 1, 10)
+        x = np.linspace(0, 1, 10, dtype=viskex.utils.dtype.RealType)
         points = np.column_stack((x, np.zeros_like(x), np.zeros_like(x)))
     elif dim == 2:
         # 5 x 5 grid in XY plane
-        x, y = np.meshgrid(np.linspace(0, 1, 5), np.linspace(0, 1, 5))
+        x, y = np.meshgrid(
+            np.linspace(0, 1, 5, dtype=viskex.utils.dtype.RealType),
+            np.linspace(0, 1, 5, dtype=viskex.utils.dtype.RealType)
+        )
         points = np.column_stack((x.ravel(), y.ravel(), np.zeros_like(x).ravel()))
     elif dim == 3:
         # 3 x 3 x 3 grid in 3D
-        x, y, z = np.meshgrid(np.linspace(0, 1, 3), np.linspace(0, 1, 3), np.linspace(0, 1, 3), indexing="ij")
+        x, y, z = np.meshgrid(
+            np.linspace(0, 1, 3, dtype=viskex.utils.dtype.RealType),
+            np.linspace(0, 1, 3, dtype=viskex.utils.dtype.RealType),
+            np.linspace(0, 1, 3, dtype=viskex.utils.dtype.RealType),
+            indexing="ij"
+        )
         points = np.column_stack((x.ravel(), y.ravel(), z.ravel()))
     else:
         raise ValueError(f"Unsupported dimension {dim}")
@@ -275,8 +285,8 @@ def test_add_point_markers(
     if dim > 0:
         plotter.reset_camera()  # type: ignore[call-arg]
     else:
-        viskex.utils.update_camera_with_mesh(plotter, mesh)
-    viskex.utils.add_point_markers(
+        viskex.utils.pyvista.update_camera_with_mesh(plotter, mesh)
+    viskex.utils.pyvista.add_point_markers(
         plotter, mesh, dim=point_markers_dim, point_size=point_size,
         point_color=None if with_data else "red"
     )
