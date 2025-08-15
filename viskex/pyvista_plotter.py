@@ -86,7 +86,7 @@ class PyvistaPlotter(BasePlotter[
             grid = grid_filter(grid)
 
         # Create plotter
-        plotter = pyvista.Plotter()  # type: ignore[no-untyped-call]
+        plotter = pyvista.Plotter()
 
         # Terminate early if the grid is empty
         if not grid.n_points:

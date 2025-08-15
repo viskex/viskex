@@ -39,8 +39,8 @@ def plot_mesh(  # type: ignore[no-any-unimported]
     :
         A pyvista widget representing a plot of the mesh.
     """
-    return FiredrakePlotter.plot_mesh(  # type: ignore[no-any-return]
-        mesh, dim, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+    return FiredrakePlotter.plot_mesh(  # type: ignore[return-value]
+        mesh, dim, grid_filter, **kwargs).show()
 
 
 def plot_mesh_sets(  # type: ignore[no-any-unimported]
@@ -70,8 +70,8 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
     :
         A pyvista widget representing a plot of the mesh entities.
     """
-    return FiredrakePlotter.plot_mesh_sets(  # type: ignore[no-any-return]
-        mesh, dim, name, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+    return FiredrakePlotter.plot_mesh_sets(  # type: ignore[return-value]
+        mesh, dim, name, grid_filter, **kwargs).show()
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -110,8 +110,8 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     :
         A pyvista widget representing a plot of the scalar field.
     """
-    return FiredrakePlotter.plot_scalar_field(  # type: ignore[no-any-return]
-        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()  # type: ignore[no-untyped-call]
+    return FiredrakePlotter.plot_scalar_field(  # type: ignore[return-value]
+        scalar_field, name, part, warp_factor, grid_filter, **kwargs).show()
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -155,6 +155,5 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     :
         A pyvista widget representing a plot of the vector field.
     """
-    return FiredrakePlotter.plot_vector_field(  # type: ignore[no-any-return]
-        vector_field, name, part, warp_factor, glyph_factor,
-        grid_filter, **kwargs).show()   # type: ignore[no-untyped-call]
+    return FiredrakePlotter.plot_vector_field(  # type: ignore[return-value]
+        vector_field, name, part, warp_factor, glyph_factor, grid_filter, **kwargs).show()
