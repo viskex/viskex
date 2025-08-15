@@ -38,7 +38,7 @@ def compute_screen_pixel_size_in_world(
     if camera.GetParallelProjection():
         # Orthographic projection: world height = 2 * parallel scale
         world_height = 2 * camera.GetParallelScale()
-        return world_height / height_px  # type: ignore[no-any-return]
+        return world_height / height_px
     else:
         # Perspective projection
         if point is None:

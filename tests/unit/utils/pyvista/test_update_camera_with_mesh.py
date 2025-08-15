@@ -20,7 +20,7 @@ def test_update_camera_with_mesh() -> None:
     after adding the mesh permanently to a new plotter.
     """
     # Create initial plotter without any mesh
-    plotter_1 = pyvista.Plotter(off_screen=True)  # type: ignore[no-untyped-call]
+    plotter_1 = pyvista.Plotter(off_screen=True)
     initial_position_1 = plotter_1.camera.position
     initial_focal_point_1 = plotter_1.camera.focal_point
     initial_clipping_range_1 = plotter_1.camera.clipping_range
@@ -41,7 +41,7 @@ def test_update_camera_with_mesh() -> None:
     assert not np.allclose(updated_clipping_range_1, initial_clipping_range_1), "Camera clipping range did not update"
 
     # Create a second plotter and permanently add the mesh
-    plotter_2 = pyvista.Plotter(off_screen=True)  # type: ignore[no-untyped-call]
+    plotter_2 = pyvista.Plotter(off_screen=True)
     plotter_2.add_mesh(mesh)
     plotter_2.reset_camera()  # type: ignore[call-arg]
 
@@ -55,5 +55,5 @@ def test_update_camera_with_mesh() -> None:
     assert np.allclose(updated_clipping_range_1, updated_clipping_range_2), "Camera clipping ranges differ"
 
     # Clean up
-    plotter_1.close()  # type: ignore[no-untyped-call]
-    plotter_2.close()  # type: ignore[no-untyped-call]
+    plotter_1.close()
+    plotter_2.close()

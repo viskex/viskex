@@ -226,7 +226,7 @@ def test_add_point_markers(
     with_data
         Whether to attach scalar data and use colormapping instead of fixed color.
     """
-    plotter = pyvista.Plotter(shape=(1, 2), window_size=(1200, 600))  # type: ignore[no-untyped-call]
+    plotter = pyvista.Plotter(shape=(1, 2), window_size=[1200, 600])
 
     if dim == 0:
         # A polydata formed only by points
@@ -306,4 +306,4 @@ def test_add_point_markers(
 
     if not pyvista.OFF_SCREEN:
         plotter.link_views()
-        plotter.show()  # type: ignore[no-untyped-call]
+        plotter.show()

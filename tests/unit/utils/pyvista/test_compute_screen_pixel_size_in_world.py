@@ -38,7 +38,7 @@ def test_compute_screen_pixel_size_in_world(parallel: bool, dim: int) -> None:
     dim
         The spatial dimension of the points (1, 2, or 3).
     """
-    plotter = pyvista.Plotter(window_size=(600, 600))  # type: ignore[no-untyped-call]
+    plotter = pyvista.Plotter(window_size=[600, 600])
 
     # Create a single point at origin
     point = np.array([[0.0, 0.0, 0.0]], dtype=viskex.utils.dtype.RealType)
@@ -71,7 +71,7 @@ def test_compute_screen_pixel_size_in_world(parallel: bool, dim: int) -> None:
         )
         plotter.add_mesh(line, color="blue", line_width=3)
     elif dim == 2:
-        square = pyvista.Plane(center=point[0], i_size=square_size, j_size=square_size)  # type: ignore[arg-type]
+        square = pyvista.Plane(center=point[0], i_size=square_size, j_size=square_size)
         plotter.add_mesh(square, color="blue", style="wireframe", line_width=2)
     else:  # dim == 3
         cube = pyvista.Cube(
@@ -79,6 +79,6 @@ def test_compute_screen_pixel_size_in_world(parallel: bool, dim: int) -> None:
         plotter.add_mesh(cube, color="blue", style="wireframe", line_width=2)
 
     mode = "Orthographic" if parallel else "Perspective"
-    plotter.add_text(f"{mode} projection, dim={dim}", font_size=10)  # type: ignore[no-untyped-call]
+    plotter.add_text(f"{mode} projection, dim={dim}", font_size=10)
     if not pyvista.OFF_SCREEN:
-        plotter.show()  # type: ignore[no-untyped-call]
+        plotter.show()

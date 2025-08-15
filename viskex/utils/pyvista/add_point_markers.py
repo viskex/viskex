@@ -66,7 +66,7 @@ def add_point_markers(
     if dim == 1:
         source = pyvista.Line((0, -glyph_size / 2, 0), (0, glyph_size / 2, 0))
     elif dim == 2:
-        source = pyvista.Plane(center=(0, 0, 0), i_size=glyph_size, j_size=glyph_size)  # type: ignore[arg-type]
+        source = pyvista.Plane(center=(0, 0, 0), i_size=glyph_size, j_size=glyph_size)
     elif dim == 3:
         source = pyvista.Cube(
             center=(0, 0, 0), x_length=glyph_size, y_length=glyph_size, z_length=glyph_size, clean=False)
