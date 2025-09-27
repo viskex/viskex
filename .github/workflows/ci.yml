@@ -130,6 +130,8 @@ jobs:
             rm -f /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
           elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
             rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            rm -f /usr/local/lib/python3.*/dist-packages/ufl/py.typed
+            rm -f /opt/fenics-ufl/ufl/py.typed
           else
             apt install -y -qq python3-mpi4py python3-pip
             echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
