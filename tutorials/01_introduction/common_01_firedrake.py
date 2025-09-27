@@ -83,7 +83,7 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
 
 def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
     mesh: firedrake.Mesh,
-    expression: typing.Callable[[ufl.core.expr.Expr], ufl.core.expr.Expr]
+    expression: typing.Callable[[ufl.core.expr.Expr], tuple[ufl.core.expr.Expr, ...]]
 ) -> tuple[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
     """Prepare vector field cases."""
     vector_function_space = firedrake.VectorFunctionSpace(mesh, "CG", 2)
