@@ -76,7 +76,7 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
 ) -> tuple[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
     """Prepare scalar field cases."""
     scalar_function_space = firedrake.FunctionSpace(mesh, "CG", 2)
-    scalar_field_ufl = expression(ufl.SpatialCoordinate(mesh))
+    scalar_field_ufl = expression(ufl.SpatialCoordinate(mesh))  # type: ignore[no-untyped-call, unused-ignore]
     scalar_field = firedrake.Function(scalar_function_space).interpolate(scalar_field_ufl)
     return scalar_field, (scalar_field_ufl, scalar_function_space)
 
@@ -87,6 +87,6 @@ def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
 ) -> tuple[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]:
     """Prepare vector field cases."""
     vector_function_space = firedrake.VectorFunctionSpace(mesh, "CG", 2)
-    vector_field_ufl = ufl.as_vector(expression(ufl.SpatialCoordinate(mesh)))
+    vector_field_ufl = ufl.as_vector(expression(ufl.SpatialCoordinate(mesh)))  # type: ignore[no-untyped-call, unused-ignore]
     vector_field = firedrake.Function(vector_function_space).interpolate(vector_field_ufl)
     return vector_field, (vector_field_ufl, vector_function_space)
