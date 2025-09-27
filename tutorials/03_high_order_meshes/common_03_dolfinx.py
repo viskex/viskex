@@ -85,7 +85,7 @@ def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: i
 
     # Convert to dolfinx format
     if packaging.version.Version(dolfinx.__version__) >= packaging.version.Version("0.10.0"):
-        mesh, cell_tags, facet_tags, ridge_tags, peak_tags, physical_groups = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
+        mesh, cell_tags, facet_tags, _ridge_tags, _peak_tags, _physical_groups = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
             gmsh.model, comm, rank=0, gdim=1)
     else:
         mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
@@ -205,7 +205,7 @@ def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimen
 
     # Convert to dolfinx format
     if packaging.version.Version(dolfinx.__version__) >= packaging.version.Version("0.10.0"):
-        mesh, cell_tags, facet_tags, ridge_tags, peak_tags, physical_groups = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
+        mesh, cell_tags, facet_tags, ridge_tags, peak_tags, _physical_groups = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
             gmsh.model, comm, rank=0, gdim=dimension)
     else:
         mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[misc, unused-ignore]
