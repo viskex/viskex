@@ -14,7 +14,7 @@ import vtkmodules.vtkRenderingCore
 
 
 def compute_screen_pixel_size_in_world(
-    plotter: pyvista.Plotter, point: typing.Optional[npt.NDArray[typing.Any]] = None
+    plotter: pyvista.Plotter, point: npt.NDArray[typing.Any] | None = None
 ) -> float:
     """
     Compute the world-space size that corresponds to 1 screen pixel at a given point.

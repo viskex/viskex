@@ -18,8 +18,8 @@ from viskex.pyvista_plotter import PyvistaPlotter
 
 class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     firedrake.MeshGeometry,
-    typing.Union[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
-    typing.Union[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]],
+    firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
+    firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
     pyvista.UnstructuredGrid,
     pyvista.Plotter
 ]):
@@ -27,9 +27,9 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, mesh: firedrake.MeshGeometry, dim: int | None = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -67,8 +67,8 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_mesh_sets(  # type: ignore[no-any-unimported]
         cls, mesh: firedrake.MeshGeometry, dim: int, name: str = "mesh sets",
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -101,11 +101,10 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
-        cls, scalar_field: typing.Union[
-            firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, scalar_field: firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
+        name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -150,11 +149,10 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
-        cls, vector_field: typing.Union[
-            firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, vector_field: firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
+        name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """

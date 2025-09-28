@@ -19,7 +19,7 @@ from viskex.utils.dtype import extract_part
 
 class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     firedrake.MeshGeometry,
-    typing.Union[firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]]
+    firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
 ]):
     """viskex converter interfacing firedrake."""
 
@@ -46,7 +46,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     # no permutation is required. Replicates part of the implementation in the function get_topology
     # in firedrake/output.py
     _ufl_cellname_to_vtk_permutation: typing.ClassVar[
-        dict[tuple[str, bool], typing.Callable[[typing.Any], typing.Optional[list[int]]]]
+        dict[tuple[str, bool], typing.Callable[[typing.Any], list[int] | None]]
     ] = {
         ("point", True): lambda ufl_element: None,
         ("point", False): lambda ufl_element: None,
@@ -86,7 +86,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def convert_mesh(  # type: ignore[no-any-unimported]
-        cls, mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None
+        cls, mesh: firedrake.MeshGeometry, dim: int | None = None
     ) -> pyvista.UnstructuredGrid:
         """
         Convert a mesh stored in firedrake.MeshGeometry object.
@@ -230,9 +230,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def convert_field(  # type: ignore[no-any-unimported]
-        cls, field: typing.Union[
-            firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-        ], name: str, part: str = "real"
+        cls, field: firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace], name: str, part: str = "real"
     ) -> pyvista.UnstructuredGrid:
         """
         Convert a field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.

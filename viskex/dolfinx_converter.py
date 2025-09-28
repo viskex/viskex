@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 """viskex converter interfacing dolfinx."""
 
-import typing
 
 import dolfinx
 import dolfinx.mesh
@@ -24,12 +23,12 @@ dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
 
 class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]]
+    dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
 ]):
     """viskex converter interfacing dolfinx."""
 
     @classmethod
-    def convert_mesh(cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None) -> pyvista.UnstructuredGrid:
+    def convert_mesh(cls, mesh: dolfinx.mesh.Mesh, dim: int | None = None) -> pyvista.UnstructuredGrid:
         """
         Convert a mesh stored in dolfinx.mesh.Mesh object.
 
@@ -122,9 +121,8 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def convert_field(  # type: ignore[no-any-unimported]
-        cls, field: typing.Union[
-            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str, part: str = "real"
+        cls, field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+        name: str, part: str = "real"
     ) -> pyvista.UnstructuredGrid:
         """
         Convert a field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.

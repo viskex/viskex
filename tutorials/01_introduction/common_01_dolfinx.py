@@ -105,8 +105,8 @@ def mark_boundaries(mesh: dolfinx.mesh.Mesh, subdomains: dolfinx.mesh.MeshTags) 
 def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
     mesh: dolfinx.mesh.Mesh,
     expression: typing.Callable[
-        [typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]],
-        typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]
+        [npt.NDArray[np.float64] | ufl.core.expr.Expr],
+        npt.NDArray[np.float64] | ufl.core.expr.Expr
     ]
 ) -> tuple[
     dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
@@ -122,8 +122,8 @@ def prepare_scalar_field_cases(  # type: ignore[no-any-unimported]
 def prepare_vector_field_cases(  # type: ignore[no-any-unimported]
     mesh: dolfinx.mesh.Mesh,
     expression: typing.Callable[
-        [typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]],
-        typing.Union[npt.NDArray[np.float64], ufl.core.expr.Expr]
+        [npt.NDArray[np.float64] | ufl.core.expr.Expr],
+        npt.NDArray[np.float64] | ufl.core.expr.Expr
     ]
 ) -> tuple[
     dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]

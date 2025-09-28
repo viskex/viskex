@@ -20,8 +20,8 @@ from viskex.pyvista_plotter import PyvistaPlotter
 
 class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     dolfinx.mesh.Mesh,
-    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
-    typing.Union[dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]],
+    dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+    dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
     pyvista.UnstructuredGrid,
     pyvista.Plotter
 ]):
@@ -29,9 +29,9 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_mesh(
-        cls, mesh: dolfinx.mesh.Mesh, dim: typing.Optional[int] = None,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, mesh: dolfinx.mesh.Mesh, dim: int | None = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -63,8 +63,8 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
     @classmethod
     def plot_mesh_tags(
         cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -97,11 +97,10 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
-        cls, scalar_field: typing.Union[
-            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, scalar_field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+        name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -146,11 +145,10 @@ class DolfinxPlotter(BasePlotter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def plot_vector_field(  # type: ignore[no-any-unimported]
-        cls, vector_field: typing.Union[
-            dolfinx.fem.Function, tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
-        ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, vector_field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+        name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """

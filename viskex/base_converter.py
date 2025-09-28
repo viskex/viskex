@@ -18,7 +18,7 @@ class BaseConverter(abc.ABC, typing.Generic[Mesh, Field, OutputMesh]):
 
     @classmethod
     @abc.abstractmethod
-    def convert_mesh(cls, mesh: Mesh, dim: typing.Optional[int] = None) -> OutputMesh:
+    def convert_mesh(cls, mesh: Mesh, dim: int | None = None) -> OutputMesh:
         """
         Convert a mesh.
 

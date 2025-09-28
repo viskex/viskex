@@ -5,7 +5,6 @@
 # SPDX-License-Identifier: MIT
 """Common functions used across dolfinx tutorials for high order meshes."""
 
-import typing
 
 import dolfinx.io
 import dolfinx.mesh
@@ -101,7 +100,7 @@ def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: i
 
 def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tuple[
     dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
-    typing.Optional[dolfinx.mesh.MeshTags]
+    dolfinx.mesh.MeshTags | None
 ]:
     """
     Create a mesh of the unit disk using gmsh.
@@ -136,7 +135,7 @@ def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tu
 
 def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimension: int = 3) -> tuple[
     dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
-    typing.Optional[dolfinx.mesh.MeshTags], typing.Optional[dolfinx.mesh.MeshTags]
+    dolfinx.mesh.MeshTags | None, dolfinx.mesh.MeshTags | None
 ]:
     """
     Create a mesh of the unit ball of the provided dimension (default: 3) using gmsh.

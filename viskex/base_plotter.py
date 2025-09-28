@@ -21,9 +21,9 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     @classmethod
     @abc.abstractmethod
     def plot_mesh(
-        cls, mesh: Mesh, dim: typing.Optional[int] = None,
-        grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
-        plotter: typing.Optional[OutputPlotter] = None,
+        cls, mesh: Mesh, dim: int | None = None,
+        grid_filter: typing.Callable[[OutputMesh], OutputMesh] | None = None,
+        plotter: OutputPlotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """
@@ -54,8 +54,8 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     @abc.abstractmethod
     def plot_scalar_field(
         cls, scalar_field: ScalarFunction, name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
-        plotter: typing.Optional[OutputPlotter] = None,
+        grid_filter: typing.Callable[[OutputMesh], OutputMesh] | None = None,
+        plotter: OutputPlotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """
@@ -93,8 +93,8 @@ class BasePlotter(abc.ABC, typing.Generic[Mesh, ScalarFunction, VectorFunction, 
     @abc.abstractmethod
     def plot_vector_field(
         cls, vector_field: VectorFunction, name: str = "vector", part: str = "real", warp_factor: float = 0.0,
-        glyph_factor: float = 0.0, grid_filter: typing.Optional[typing.Callable[[OutputMesh], OutputMesh]] = None,
-        plotter: typing.Optional[OutputPlotter] = None,
+        glyph_factor: float = 0.0, grid_filter: typing.Callable[[OutputMesh], OutputMesh] | None = None,
+        plotter: OutputPlotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> OutputPlotter:
         """

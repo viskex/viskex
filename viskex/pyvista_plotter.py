@@ -58,9 +58,9 @@ class PyvistaPlotter(BasePlotter[
 
     @classmethod
     def plot_mesh(
-        cls, mesh: tuple[pyvista.UnstructuredGrid, int], dim: typing.Optional[int] = None,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        cls, mesh: tuple[pyvista.UnstructuredGrid, int], dim: int | None = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -111,7 +111,7 @@ class PyvistaPlotter(BasePlotter[
                 if field_name is not None:
                     array = getattr(location_data, f"active_{field_type}")
                     if np.isnan(array).all():
-                        array_range: typing.Optional[tuple[typing.Any, ...]] = None
+                        array_range: tuple[typing.Any, ...] | None = None
                     else:
                         array_min = np.nanmin(array)
                         array_max = np.nanmax(array)
@@ -226,8 +226,8 @@ class PyvistaPlotter(BasePlotter[
     def plot_scalar_field(
         cls, scalar_field: tuple[pyvista.UnstructuredGrid, int], name: str = "scalar", part: str = "real",
         warp_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """
@@ -287,8 +287,8 @@ class PyvistaPlotter(BasePlotter[
     def plot_vector_field(
         cls, vector_field: tuple[pyvista.UnstructuredGrid, int], name: str = "vector", part: str = "real",
         warp_factor: float = 0.0, glyph_factor: float = 0.0,
-        grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-        plotter: typing.Optional[pyvista.Plotter] = None,
+        grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+        plotter: pyvista.Plotter | None = None,
         **kwargs: typing.Any  # noqa: ANN401
     ) -> pyvista.Plotter:
         """

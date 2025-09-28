@@ -15,8 +15,8 @@ from viskex.utils.pyvista.compute_screen_pixel_size_in_world import compute_scre
 
 def add_point_markers(
     plotter: pyvista.Plotter, mesh: pyvista.DataSet, dim: int, point_size: float,
-    point_color: typing.Optional[str] = None,
-    point_cmap: typing.Optional[typing.Union[str, list[str], pyvista.LookupTable]] = None
+    point_color: str | None = None,
+    point_cmap: str | list[str] | pyvista.LookupTable | None = None
 ) -> None:
     """
     Add point markers (lines, squares, or cubes) at specified points in the plotter.

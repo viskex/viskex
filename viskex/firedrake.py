@@ -15,9 +15,9 @@ from viskex.firedrake_plotter import FiredrakePlotter
 
 
 def plot_mesh(  # type: ignore[no-any-unimported]
-    mesh: firedrake.MeshGeometry, dim: typing.Optional[int] = None,
-    grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-    plotter: typing.Optional[pyvista.Plotter] = None,
+    mesh: firedrake.MeshGeometry, dim: int | None = None,
+    grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+    plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -48,8 +48,8 @@ def plot_mesh(  # type: ignore[no-any-unimported]
 
 def plot_mesh_sets(  # type: ignore[no-any-unimported]
     mesh: firedrake.MeshGeometry, dim: int, name: str = "mesh sets",
-    grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-    plotter: typing.Optional[pyvista.Plotter] = None,
+    grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+    plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -81,11 +81,10 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
-    scalar_field: typing.Union[
-        firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-    ], name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
-    grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-    plotter: typing.Optional[pyvista.Plotter] = None,
+    scalar_field: firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
+    name: str = "scalar", part: str = "real", warp_factor: float = 0.0,
+    grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+    plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """
@@ -125,11 +124,10 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
-    vector_field: typing.Union[
-        firedrake.Function, tuple[ufl.core.expr.Expr, ufl.FunctionSpace]
-    ], name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
-    grid_filter: typing.Optional[typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]] = None,
-    plotter: typing.Optional[pyvista.Plotter] = None,
+    vector_field: firedrake.Function | tuple[ufl.core.expr.Expr, ufl.FunctionSpace],
+    name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
+    grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
+    plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
 ) -> pyvista.trame.jupyter.Widget:
     """

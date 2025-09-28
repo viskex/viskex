@@ -13,7 +13,7 @@ import pyvista
 
 
 def values_in(
-    values: typing.Union[list[typing.Any], npt.NDArray[typing.Any]]
+    values: list[typing.Any] | npt.NDArray[typing.Any]
 ) -> typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid]:
     """Limit cell data in the pyvista grid to specific values."""
     def _(grid: pyvista.UnstructuredGrid) -> pyvista.UnstructuredGrid:
