@@ -86,12 +86,6 @@ jobs:
           - backend: firedrake-2025.4.2-complex
             container: firedrakeproject/firedrake-vanilla-complex:2025.4.2
             petsc_arch: complex
-          - backend: firedrake-latest-real
-            container: firedrakeproject/firedrake-vanilla-default:latest
-            petsc_arch: real
-          - backend: firedrake-latest-complex
-            container: firedrakeproject/firedrake-vanilla-complex:latest
-            petsc_arch: complex
       fail-fast: false
     container: ${{ matrix.container }}
     steps:
