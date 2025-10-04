@@ -86,6 +86,18 @@ jobs:
           - backend: firedrake-2025.4.2-complex
             container: firedrakeproject/firedrake-vanilla-complex:2025.4.2
             petsc_arch: complex
+          - backend: firedrake-2025.4.3-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.4.3
+            petsc_arch: real
+          - backend: firedrake-2025.4.3-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.4.3
+            petsc_arch: complex
+          - backend: firedrake-2025.10.0-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.10.0
+            petsc_arch: real
+          - backend: firedrake-2025.10.0-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.10.0
+            petsc_arch: complex
           - backend: firedrake-latest-real
             container: firedrakeproject/firedrake-vanilla-default:latest
             petsc_arch: real
