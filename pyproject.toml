@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "viskex"
-version = "0.2.0"
+version = "0.2.dev1"
 authors = [
     {name = "Francesco Ballarin", email = "francesco.ballarin@unicatt.it"},
 ]
