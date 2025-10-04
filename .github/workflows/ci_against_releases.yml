@@ -44,6 +44,29 @@ jobs:
       expected_index_version: 0.1.0.post0
       combine_coverage: false
 
+  test_0_2_0_installing_from_github:
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0
+    with:
+      ref: v0.2.0
+      combine_coverage: false
+
+  test_0_2_0_installing_from_pypi_versioned:
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0
+    with:
+      ref: v0.2.0
+      index: PyPI
+      index_version: 0.2.0
+      expected_index_version: 0.2.0
+      combine_coverage: false
+
+  test_0_2_0_installing_from_pypi_unversioned:
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0
+    with:
+      ref: v0.2.0
+      index: PyPI
+      expected_index_version: 0.2.0
+      combine_coverage: false
+
   warn:
     runs-on: ubuntu-latest
     if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
