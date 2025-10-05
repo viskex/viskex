@@ -1,0 +1,342 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - main
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: "The branch, tag or SHA to checkout"
+        type: string
+      index:
+        description: "The package index, e.g. PyPI or TestPyPI, from which to install the package. If empty, the package will not be installed from any package index, but from the current git clone"
+        type: string
+      index_version:
+        description: "The version of the package to be installed from the package index. If empty, the latest compatible version will be installed. Only used when index is non empty."
+        type: string
+      expected_index_version:
+        description: "The expected version of the package when installed from the package index. If emtpy, no check is carried out. Only used when index is non empty."
+        type: string
+      combine_coverage:
+        description: "Boolean indicating whether to combine coverage or not"
+        type: boolean
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - backend: dolfinx-v0.8.0-real
+            container: ghcr.io/fenics/dolfinx/dolfinx:v0.8.0
+            petsc_arch: real
+          - backend: dolfinx-v0.8.0-complex
+            container: ghcr.io/fenics/dolfinx/dolfinx:v0.8.0
+            petsc_arch: complex
+      fail-fast: false
+    container: ${{ matrix.container }}
+    steps:
+      - name: Setup git
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq git
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Setup container
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq xvfb
+          if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
+            . /usr/local/bin/dolfinx-${{ matrix.petsc_arch }}-mode
+            echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
+            echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> $GITHUB_ENV
+            echo "PYTHONPATH=$PYTHONPATH" >> $GITHUB_ENV
+            echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH" >> $GITHUB_ENV
+            echo "CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+            rm -f /dolfinx-env/lib/python3.*/site-packages/ufl/py.typed
+          elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
+            rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+          else
+            apt install -y -qq python3-mpi4py python3-pip
+            echo "OMPI_ALLOW_RUN_AS_ROOT=1" >> $GITHUB_ENV
+            echo "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1" >> $GITHUB_ENV
+            rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+            if [[ "${{ matrix.backend }}" == "petsc4py"* ]]; then
+              apt install -y -qq libpetsc-${{ matrix.petsc_arch }}-dev python3-petsc4py-${{ matrix.petsc_arch }}
+              PETSC_DIR=/usr/lib/petscdir/petsc-${{ matrix.petsc_arch }}
+              echo "PETSC_DIR=$PETSC_DIR" >> $GITHUB_ENV
+            fi
+          fi
+          if [[ "${{ matrix.backend }}" == "dolfinx-v0.8.0"* ]]; then
+            python3 -m pip uninstall -y mypy ruff
+          fi
+        shell: bash
+      - name: Wait for package index availability (PyPI and TestPyPI only)
+        if: inputs.index != '' && inputs.index_version != ''
+        run: |
+          INDEX=${{ inputs.index }}
+          INDEX_VERSION=${{ inputs.index_version }}
+          PACKAGE_NAME="viskex"
+          if [[ "${INDEX}" == "TestPyPI" ]]; then
+            INDEX_URL=https://test.pypi.org
+          elif [[ "${INDEX}" == "PyPI" ]]; then
+            INDEX_URL=https://pypi.org
+          else
+            echo "Invalid package index" && exit 1
+          fi
+          COUNTER=0
+          INDEX_VERSION_FOUND=0
+          while [[ ${INDEX_VERSION_FOUND} -ne 1 ]]; do
+            python3 -m pip install --no-cache-dir --index-url ${INDEX_URL}/simple/ ${PACKAGE_NAME}==0 2> all_${PACKAGE_NAME}_versions || true
+            if grep -q ${INDEX_VERSION} all_${PACKAGE_NAME}_versions; then
+              INDEX_VERSION_FOUND=1
+            fi
+            [[ ${INDEX_VERSION_FOUND} -ne 1 && ${COUNTER} -eq 5 ]] && echo "Giving up on finding version ${INDEX_VERSION} on ${INDEX_URL}" && exit 1
+            [[ ${INDEX_VERSION_FOUND} -ne 1 ]] && echo "Cannot find version ${INDEX_VERSION} on ${INDEX_URL}, attempt ${COUNTER}: trying again after a short pause" && sleep 10
+            [[ ${INDEX_VERSION_FOUND} -eq 1 ]] && echo "Found version ${INDEX_VERSION} on ${INDEX_URL}, attempt ${COUNTER}"
+            COUNTER=$((COUNTER+1))
+          done
+        shell: bash
+      - name: Install viskex (PyPI and TestPyPI only)
+        if: inputs.index != ''
+        run: |
+          INDEX=${{ inputs.index }}
+          INDEX_VERSION=${{ inputs.index_version }}
+          EXPECTED_INDEX_VERSION=${{ inputs.expected_index_version }}
+          PACKAGE_NAME="viskex"
+          if [[ "${INDEX}" == "TestPyPI" ]]; then
+            INDEX_FLAGS="--no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/"
+          elif [[ "${INDEX}" == "PyPI" ]]; then
+            INDEX_FLAGS="--no-cache-dir"
+          else
+            echo "Invalid package index" && exit 1
+          fi
+          if [[ -n "${INDEX_VERSION}" ]]; then
+            PACKAGE_VERSION="==${INDEX_VERSION}"
+            echo "Installing version ${INDEX_VERSION} from ${INDEX}"
+          else
+            PACKAGE_VERSION=""
+            echo "Installing latest compatible version from ${INDEX}"
+          fi
+          if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
+            PACKAGE_EXTRAS="backend_dolfinx,docs,lint,tests,tutorials"
+          elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
+            PACKAGE_EXTRAS="backend_firedrake,docs,lint,tests,tutorials"
+          else
+            PACKAGE_EXTRAS="docs,lint,tests,tutorials"
+          fi
+          python3 -m pip install ${INDEX_FLAGS} ${PACKAGE_NAME}[${PACKAGE_EXTRAS}]${PACKAGE_VERSION}
+          if [[ -n "${EXPECTED_INDEX_VERSION}" ]]; then
+            ACTUAL_INDEX_VERSION=$(python3 -c 'import importlib.metadata; print(importlib.metadata.version("viskex"))')
+            if [[ "${ACTUAL_INDEX_VERSION}" != "${EXPECTED_INDEX_VERSION}" ]]; then
+              echo "Error: installed ${PACKAGE_NAME} version is ${ACTUAL_INDEX_VERSION}, while expected version is ${EXPECTED_INDEX_VERSION}"
+              exit 1
+            fi
+          fi
+        shell: bash
+      - name: Install viskex (git clone only)
+        if: inputs.index == ''
+        run: |
+          if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
+            PACKAGE_EXTRAS="backend_dolfinx,docs,lint,tests,tutorials"
+          elif [[ "${{ matrix.backend }}" == "firedrake"* ]]; then
+            PACKAGE_EXTRAS="backend_firedrake,docs,lint,tests,tutorials"
+          else
+            PACKAGE_EXTRAS="docs,lint,tests,tutorials"
+          fi
+          python3 -m pip install .[${PACKAGE_EXTRAS}]
+        shell: bash
+      - name: Clean build files (git clone only)
+        if: inputs.index == ''
+        run: |
+          git config --global --add safe.directory $PWD
+          git clean -xdf
+      - name: Update ruff configuration
+        run: |
+          declare -a RUFF_EXCLUDE
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            RUFF_EXCLUDE+=("viskex/dolfinx.py" "viskex/dolfinx_converter.py" "viskex/dolfinx_plotter.py" "tutorials/**/common_dolfinx.py")
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            RUFF_EXCLUDE+=("viskex/firedrake.py" "viskex/firedrake_converter.py" "viskex/firedrake_plotter.py" "tutorials/**/common_firedrake.py")
+          fi
+          if [[ ${RUFF_EXCLUDE[@]} ]]; then
+            RUFF_EXCLUDE_STRING="${RUFF_EXCLUDE[@]}"
+            RUFF_EXCLUDE_STRING="\"${RUFF_EXCLUDE_STRING// /\", \"}\""
+            sed -i "s@\[tool\.ruff\]@[tool.ruff]\nexclude = [${RUFF_EXCLUDE_STRING}]@g" pyproject.toml
+          fi
+        shell: bash
+      - name: Update mypy configuration
+        run: |
+          declare -a MYPY_EXCLUDE
+          declare -a MYPY_FOLLOW_IMPORTS
+          if [[ "${{ matrix.backend }}" == "none" ]]; then
+            sed -i 's@    # "petsc4py",@    "petsc4py",@g' pyproject.toml
+            sed -i 's@    # "petsc4py.PETSc",@    "petsc4py.PETSc",@g' pyproject.toml
+          fi
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            MYPY_EXCLUDE+=('^viskex/dolfinx\\\\.py\$' '^viskex/dolfinx_converter\\\\.py\$' '^viskex/dolfinx_plotter\\\\.py\$' '^tutorials/.*/common_dolfinx\\\\.py\$')
+            MYPY_FOLLOW_IMPORTS+=("viskex.dolfinx" "viskex.dolfinx_converter" "viskex.dolfinx_plotter" "common_dolfinx")
+            sed -i 's@    # "dolfinx",@    "dolfinx",@g' pyproject.toml
+            sed -i 's@    # "dolfinx.*",@    "dolfinx.*",@g' pyproject.toml
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            MYPY_EXCLUDE+=('^viskex/firedrake\\\\.py\$' '^viskex/firedrake_converter\\\\.py\$' '^viskex/firedrake_plotter\\\\.py\$' '^tutorials/.*/common_firedrake\\\\.py\$')
+            MYPY_FOLLOW_IMPORTS+=("viskex.firedrake" "viskex.firedrake_converter" "viskex.firedrake_plotter" "common_firedrake")
+          fi
+          if [[ ${MYPY_EXCLUDE[@]} ]]; then
+            MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE[@]}"
+            MYPY_EXCLUDE_STRING="${MYPY_EXCLUDE_STRING// /|}"
+            sed -i "s@\[tool\.mypy\]@[tool.mypy]\nexclude = \"(${MYPY_EXCLUDE_STRING})\"@g" pyproject.toml
+            MYPY_FOLLOW_IMPORTS_STRING="${MYPY_FOLLOW_IMPORTS[@]}"
+            MYPY_FOLLOW_IMPORTS_STRING="\"${MYPY_FOLLOW_IMPORTS_STRING// /\", \"}\""
+            echo "[[tool.mypy.overrides]]" >> pyproject.toml
+            echo "module = [${MYPY_FOLLOW_IMPORTS_STRING}]" >> pyproject.toml
+            echo 'follow_imports = "skip"' >> pyproject.toml
+          fi
+          cat pyproject.toml
+        shell: bash
+      - name: Run ruff on python files
+        run: |
+          python3 -m ruff check .
+      - name: Run isort on python files
+        run: |
+          python3 -m isort --check --diff .
+      - name: Run mypy on python files
+        run: |
+          python3 -m mypy --exclude=conftest.py .
+          python3 -m mypy tests/unit/conftest.py
+          python3 -m mypy tutorials/conftest.py
+      - name: Run yamllint on workflows
+        run: |
+          python3 -m yamllint -d "{extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" .
+      - name: Run documentation generation
+        run: |
+          cd docs && python3 -m sphinx -W -b html . build/html
+      - name: Run unit tests (serial)
+        run: |
+          COVERAGE_FILE=.coverage_unit_serial python3 -m coverage run --source=viskex -m pytest tests/unit
+      - name: Run unit tests (parallel)
+        run: |
+          COVERAGE_FILE=.coverage_unit_parallel mpirun -n 2 python3 -m coverage run --source=viskex --parallel-mode -m pytest tests/unit
+      - name: Generate tutorial files
+        run: |
+          NO_TESTS_COLLECTED=5
+          python3 -m pytest --ipynb-action=create-notebooks tutorials || (($?==$NO_TESTS_COLLECTED))
+          python3 -m pytest --ipynb-action=create-notebooks --np=2 tutorials || (($?==$NO_TESTS_COLLECTED))
+        shell: bash
+      - name: Update nbqa configuration
+        run: |
+          declare -a NBQA_EXCLUDE
+          if [[ "${{ matrix.backend }}" != "dolfinx"* ]]; then
+            NBQA_EXCLUDE+=('^tutorials/.*/tutorial_.*_dolfinx')
+          fi
+          if [[ "${{ matrix.backend }}" != "firedrake"* ]]; then
+            NBQA_EXCLUDE+=('^tutorials/.*/tutorial_.*_firedrake')
+          fi
+          if [[ ${NBQA_EXCLUDE[@]} ]]; then
+            NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE[@]}"
+            NBQA_EXCLUDE_STRING="${NBQA_EXCLUDE_STRING// /|}"
+            echo "[tool.nbqa.exclude]" >> pyproject.toml
+            echo "ruff = \"(${NBQA_EXCLUDE_STRING})\"" >> pyproject.toml
+            echo "mypy = \"(${NBQA_EXCLUDE_STRING})\"" >> pyproject.toml
+          fi
+        shell: bash
+      - name: Run ruff on tutorial files
+        run: |
+          python3 -m nbqa ruff .
+      - name: Run isort on tutorial files
+        run: |
+          python3 -m nbqa isort --check --diff .
+      - name: Run mypy on tutorial files
+        run: |
+          python3 -m nbqa mypy .
+      - name: Check for stray outputs, counts and metadata in ipynb files
+        uses: RBniCS/check-jupyter-metadata-action@main
+        with:
+          pattern: "**/*.ipynb"
+      - name: Run tutorials (serial)
+        run: |
+          export DISPLAY=":99"
+          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
+          for VISKEX_PYVISTA_BACKEND in "client" "html" "server" "static"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_tutorials_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tutorials
+          done
+      - name: Run tutorials (parallel)
+        run: |
+          export DISPLAY=":99"
+          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
+          if [[ "${{ matrix.backend }}" == firedrake* ]]; then
+            VISKEX_PYVISTA_BACKENDS=("client")
+          else
+            VISKEX_PYVISTA_BACKENDS=("client" "html" "server" "static")
+          fi
+          for VISKEX_PYVISTA_BACKEND in "${VISKEX_PYVISTA_BACKENDS[@]}"; do
+            echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
+            COVERAGE_FILE=.coverage_tutorials_parallel_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex --np=2 tutorials
+          done
+        shell: bash
+      - name: Store coverage reports as artifact
+        if: inputs.combine_coverage != false
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.backend }}
+          path: |
+            .coverage*
+          include-hidden-files: true
+          retention-days: 1
+      - name: Upload tutorials logs as an artifact in case of failure
+        if: failure() || cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "tutorials-logs-${{ matrix.backend }}"
+          path: |
+            tutorials/**/.ipynb_pytest/**/*.log*
+          include-hidden-files: true
+
+  combine_coverage:
+    runs-on: ubuntu-latest
+    container: debian:testing
+    needs: [test]
+    if: inputs.combine_coverage != false
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup container
+        run: |
+          export DEBIAN_FRONTEND="noninteractive"
+          apt update -y -q
+          apt install -y -qq python3-pip
+          rm /usr/lib/python3.*/EXTERNALLY-MANAGED
+          python3 -m pip -q install coverage[toml]
+      - name: Download coverage reports from artifacts
+        uses: actions/download-artifact@v4
+      - name: Combine coverage reports (unit tests)
+        run: |
+          python3 -m coverage combine coverage-*/.coverage_unit*
+          python3 -m coverage report --show-missing --skip-covered
+      - name: Combine coverage reports (tutorials)
+        run: |
+          python3 -m coverage combine coverage-*/.coverage_tutorials*
+          python3 -m coverage report --show-missing --skip-covered
+
+  warn:
+    runs-on: ubuntu-latest
+    if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: Warn if scheduled workflow is about to be disabled
+        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
+        with:
+          workflow-filename: ci_unversioned_only.yml
+          days-elapsed: 55
