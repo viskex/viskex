@@ -1,14 +1,6 @@
 name: CI
 
 on:
-  push:
-    branches:
-      - "**"
-  pull_request:
-    branches:
-      - main
-  schedule:
-    - cron: "0 2 * * *"
   workflow_dispatch:
   workflow_call:
     inputs:
@@ -330,13 +322,3 @@ jobs:
         run: |
           python3 -m coverage combine coverage-*/.coverage_tutorials*
           python3 -m coverage report --show-missing --skip-covered
-
-  warn:
-    runs-on: ubuntu-latest
-    if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
-    steps:
-      - name: Warn if scheduled workflow is about to be disabled
-        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
-        with:
-          workflow-filename: ci_unversioned_only.yml
-          days-elapsed: 55
