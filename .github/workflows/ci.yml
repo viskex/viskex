@@ -110,12 +110,6 @@ jobs:
           - backend: firedrake-dev-release-complex
             container: firedrakeproject/firedrake-vanilla-complex:dev-release
             petsc_arch: complex
-          - backend: firedrake-dev-main-real
-            container: firedrakeproject/firedrake-vanilla-default:dev-main
-            petsc_arch: real
-          - backend: firedrake-dev-main-complex
-            container: firedrakeproject/firedrake-vanilla-complex:dev-main
-            petsc_arch: complex
       fail-fast: false
     container: ${{ matrix.container }}
     steps:
