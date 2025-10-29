@@ -16,7 +16,10 @@ import ufl
 
 def mark_subdomains(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # type: ignore[no-any-unimported]
     """Mark left and right subdomains in a given mesh with values 1 and 2, respectively."""
-    cellname = mesh.ufl_cell().cellname()
+    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.11.0.dev0"):
+        cellname = mesh.ufl_cell().cellname()
+    else:
+        cellname = mesh.ufl_cell().cellname
     if cellname in ("interval", "triangle", "tetrahedron"):
         subdomains_function_space = firedrake.FunctionSpace(mesh, "DP", 0)
     elif cellname in ("quadrilateral", "hexahedron"):
@@ -42,7 +45,10 @@ def mark_boundaries(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     Furthermore, boundary facets on the left and right boundaries are associated with values 3 and 4,
     respectively.
     """
-    cellname = mesh.ufl_cell().cellname()
+    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.11.0.dev0"):
+        cellname = mesh.ufl_cell().cellname()
+    else:
+        cellname = mesh.ufl_cell().cellname
     if cellname in ("interval", ):
         boundaries_function_space = firedrake.FunctionSpace(mesh, "P", 1)
     elif cellname in ("triangle", "quadrilateral", "tetrahedron"):

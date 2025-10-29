@@ -5,9 +5,11 @@
 # SPDX-License-Identifier: MIT
 """viskex plotter interfacing firedrake."""
 
+import importlib.metadata
 import typing
 
 import firedrake
+import packaging.version
 import pyvista
 import ufl
 
@@ -54,7 +56,13 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
         :
             A pyvista plotter representing a plot of the mesh.
         """
-        tdim = mesh.topological_dimension()
+        if (
+            packaging.version.Version(importlib.metadata.version("firedrake"))
+            < packaging.version.Version("2025.11.0.dev0")
+        ):
+            tdim = mesh.topological_dimension()
+        else:
+            tdim = mesh.topological_dimension
         if tdim == 3 and dim == 1:
             # Firedrake does not offer edge (dim = 1) to vertices connectivity. Convert the case with
             # facet (dim = 2) to vertices connectivity, and then ask vtk to extract edges.
@@ -96,8 +104,14 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A pyvista plotter representing a plot of the mesh entities.
         """
         pyvista_grid = FiredrakeConverter.convert_mesh_sets(mesh, dim, name)
-        return PyvistaPlotter.plot_mesh(
-            (pyvista_grid, mesh.topological_dimension()), dim, grid_filter, plotter, **kwargs)
+        if (
+            packaging.version.Version(importlib.metadata.version("firedrake"))
+            < packaging.version.Version("2025.11.0.dev0")
+        ):
+            tdim = mesh.topological_dimension()
+        else:
+            tdim = mesh.topological_dimension
+        return PyvistaPlotter.plot_mesh((pyvista_grid, tdim), dim, grid_filter, plotter, **kwargs)
 
     @classmethod
     def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -140,9 +154,16 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A pyvista plotter representing a plot of the scalar field.
         """
         if isinstance(scalar_field, tuple):
-            tdim = scalar_field[1].mesh().topological_dimension()
+            mesh = scalar_field[1].mesh()
         else:
-            tdim = scalar_field.function_space().mesh().topological_dimension()
+            mesh = scalar_field.function_space().mesh()
+        if (
+            packaging.version.Version(importlib.metadata.version("firedrake"))
+            < packaging.version.Version("2025.11.0.dev0")
+        ):
+            tdim = mesh.topological_dimension()
+        else:
+            tdim = mesh.topological_dimension
         pyvista_grid = FiredrakeConverter.convert_field(scalar_field, name, part)
         return PyvistaPlotter.plot_scalar_field(
             (pyvista_grid, tdim), name, part, warp_factor, grid_filter, plotter, **kwargs)
@@ -193,9 +214,16 @@ class FiredrakePlotter(BasePlotter[  # type: ignore[no-any-unimported]
             A pyvista plotter representing a plot of the vector field.
         """
         if isinstance(vector_field, tuple):
-            tdim = vector_field[1].mesh().topological_dimension()
+            mesh = vector_field[1].mesh()
         else:
-            tdim = vector_field.function_space().mesh().topological_dimension()
+            mesh = vector_field.function_space().mesh()
+        if (
+            packaging.version.Version(importlib.metadata.version("firedrake"))
+            < packaging.version.Version("2025.11.0.dev0")
+        ):
+            tdim = mesh.topological_dimension()
+        else:
+            tdim = mesh.topological_dimension
         assert tdim in (2, 3)
         pyvista_grid = FiredrakeConverter.convert_field(vector_field, name, part)
         return PyvistaPlotter.plot_vector_field(
