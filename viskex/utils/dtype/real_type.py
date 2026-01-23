@@ -12,4 +12,4 @@ try:
 except ImportError:
     RealType = np.float64
 else:
-    RealType = petsc4py.PETSc.RealType  # type: ignore[attr-defined, misc, unused-ignore]
+    RealType = petsc4py.PETSc.RealType  # type: ignore[assignment, attr-defined, misc, unused-ignore]

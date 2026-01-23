@@ -12,4 +12,4 @@ try:
 except ImportError:
     ScalarType = np.float64
 else:
-    ScalarType = petsc4py.PETSc.ScalarType  # type: ignore[attr-defined, misc, unused-ignore]
+    ScalarType = petsc4py.PETSc.ScalarType  # type: ignore[assignment, attr-defined, misc, unused-ignore]
