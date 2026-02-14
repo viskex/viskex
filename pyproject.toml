@@ -37,7 +37,8 @@ classifiers = [
 dependencies = [
     "numpy",
     "packaging",
-    "pyvista[jupyter] >= 0.47.0"
+    "pyvista[jupyter] >= 0.47.0",
+    "trame-vtk < 2.10.3" # Delete this dependency when https://github.com/Kitware/trame-vtk/issues/101 is closed
 ]
 
 [project.urls]
