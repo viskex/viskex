@@ -42,13 +42,13 @@ jobs:
       matrix:
         include:
           - backend: none
-            container: debian:unstable
+            container: debian:testing
             petsc_arch: none
           - backend: petsc4py-real
-            container: debian:unstable
+            container: debian:testing
             petsc_arch: real
           - backend: petsc4py-complex
-            container: debian:unstable
+            container: debian:testing
             petsc_arch: complex
           - backend: dolfinx-v0.9.0-real
             container: ghcr.io/fenics/dolfinx/dolfinx:v0.9.0
@@ -137,7 +137,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND="noninteractive"
           apt update -y -q
-          apt install -y -qq libosmesa6-dev
+          apt install -y -qq libegl1 libgl1-mesa-dri
           if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
             . /usr/local/bin/dolfinx-${{ matrix.petsc_arch }}-mode
             echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
