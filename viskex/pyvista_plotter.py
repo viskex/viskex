@@ -194,7 +194,7 @@ class PyvistaPlotter(BasePlotter[
         if show_edges:
             order = cls._infer_lagrange_cell_order(grid)
             grid_edges = grid.separate_cells().extract_surface(
-                nonlinear_subdivision=order - 1).extract_feature_edges()
+                algorithm="dataset_surface", nonlinear_subdivision=order - 1).extract_feature_edges()
             plotter.add_mesh(grid_edges, line_width=line_width, color=edge_color)
         # Then we also add vertices using a custom implementation in viskex.utils.pyvista.add_point_markers which
         # allows to give them a shape depending on the topological dimension.
