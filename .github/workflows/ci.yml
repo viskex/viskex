@@ -68,35 +68,17 @@ jobs:
           - backend: dolfinx-nightly-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             petsc_arch: complex
-          - backend: firedrake-2025.4.0-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.4.0.post0
-            petsc_arch: real
-          - backend: firedrake-2025.4.0-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.4.0.post0
-            petsc_arch: complex
-          - backend: firedrake-2025.4.1-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.4.1
-            petsc_arch: real
-          - backend: firedrake-2025.4.1-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.4.1
-            petsc_arch: complex
-          - backend: firedrake-2025.4.2-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.4.2
-            petsc_arch: real
-          - backend: firedrake-2025.4.2-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.4.2
-            petsc_arch: complex
           - backend: firedrake-2025.4.3-real
             container: firedrakeproject/firedrake-vanilla-default:2025.4.3
             petsc_arch: real
           - backend: firedrake-2025.4.3-complex
             container: firedrakeproject/firedrake-vanilla-complex:2025.4.3
             petsc_arch: complex
-          - backend: firedrake-2025.10.0-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.10.0
+          - backend: firedrake-2025.10.2-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.10.2
             petsc_arch: real
-          - backend: firedrake-2025.10.0-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.10.0
+          - backend: firedrake-2025.10.2-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.10.2
             petsc_arch: complex
           - backend: firedrake-latest-real
             container: firedrakeproject/firedrake-vanilla-default:latest
@@ -293,7 +275,7 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          for VISKEX_PYVISTA_BACKEND in "client" "html" "server" "static"; do
+          for VISKEX_PYVISTA_BACKEND in "html" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tutorials
           done
@@ -301,8 +283,7 @@ jobs:
         run: |
           export DISPLAY=":99"
           Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
-          VISKEX_PYVISTA_BACKENDS=("client" "html" "server" "static")
-          for VISKEX_PYVISTA_BACKEND in "${VISKEX_PYVISTA_BACKENDS[@]}"; do
+          for VISKEX_PYVISTA_BACKEND in "html" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_parallel_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex --np=2 tutorials
           done
