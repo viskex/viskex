@@ -86,7 +86,7 @@ jobs:
         run: |
           export DEBIAN_FRONTEND="noninteractive"
           apt update -y -q
-          apt install -y -qq xvfb
+          apt install -y -qq libegl1 libgl1-mesa-dri
           if [[ "${{ matrix.backend }}" == "dolfinx"* ]]; then
             . /usr/local/bin/dolfinx-${{ matrix.petsc_arch }}-mode
             echo "PETSC_ARCH=$PETSC_ARCH" >> $GITHUB_ENV
@@ -252,16 +252,12 @@ jobs:
           pattern: "**/*.ipynb"
       - name: Run tutorials (serial)
         run: |
-          export DISPLAY=":99"
-          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
           for VISKEX_PYVISTA_BACKEND in "html" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_serial_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex tutorials
           done
       - name: Run tutorials (parallel)
         run: |
-          export DISPLAY=":99"
-          Xvfb $DISPLAY -screen 0 1024x768x24 > /dev/null 2>&1 &
           for VISKEX_PYVISTA_BACKEND in "html" "static"; do
             echo "Testing ${VISKEX_PYVISTA_BACKEND} pyvista backend"
             COVERAGE_FILE=.coverage_tutorials_parallel_${VISKEX_PYVISTA_BACKEND} VISKEX_PYVISTA_BACKEND=${VISKEX_PYVISTA_BACKEND} python3 -m pytest --coverage-source=viskex --np=2 tutorials
