@@ -21,62 +21,62 @@ jobs:
   # Test released versions on github or PyPI against the workflow on the corresponding git tag.
 
   test_0_1_0_installing_from_github:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.1.0.post2
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.1.0.post3
     with:
-      ref: v0.1.0.post2
+      ref: v0.1.0.post3
       combine_coverage: false
 
   test_0_1_0_installing_from_pypi_versioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.1.0.post2
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.1.0.post3
     with:
-      ref: v0.1.0.post2
+      ref: v0.1.0.post3
       index: PyPI
       index_version: 0.1.0.post0
       expected_index_version: 0.1.0.post0
       combine_coverage: false
 
   test_0_1_0_installing_from_pypi_unversioned:
-    uses: viskex/viskex/.github/workflows/ci_unversioned_only.yml@v0.1.0.post2
+    uses: viskex/viskex/.github/workflows/ci_unversioned_only.yml@v0.1.0.post3
     with:
-      ref: v0.1.0.post2
+      ref: v0.1.0.post3
       index: PyPI
       expected_index_version: 0.1.0.post0
       combine_coverage: false
 
   test_0_2_0_installing_from_github:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0.post1
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0.post2
     with:
-      ref: v0.2.0.post1
+      ref: v0.2.0.post2
       combine_coverage: false
 
   test_0_2_0_installing_from_pypi_versioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0.post1
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.0.post2
     with:
-      ref: v0.2.0.post1
+      ref: v0.2.0.post2
       index: PyPI
       index_version: 0.2.0
       expected_index_version: 0.2.0
       combine_coverage: false
 
   test_0_2_1_installing_from_github:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post0
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post1
     with:
-      ref: v0.2.1.post0
+      ref: v0.2.1.post1
       combine_coverage: false
 
   test_0_2_1_installing_from_pypi_versioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post0
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post1
     with:
-      ref: v0.2.1.post0
+      ref: v0.2.1.post1
       index: PyPI
       index_version: 0.2.1
       expected_index_version: 0.2.1
       combine_coverage: false
 
   test_0_2_1_installing_from_pypi_unversioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post0
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.1.post1
     with:
-      ref: v0.2.1.post0
+      ref: v0.2.1.post1
       index: PyPI
       expected_index_version: 0.2.1
       combine_coverage: false
