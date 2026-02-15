@@ -35,15 +35,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - backend: none
-            container: debian:testing
-            petsc_arch: none
-          - backend: petsc4py-real
-            container: debian:testing
-            petsc_arch: real
-          - backend: petsc4py-complex
-            container: debian:testing
-            petsc_arch: complex
           - backend: dolfinx-v0.8.0-real
             container: ghcr.io/fenics/dolfinx/dolfinx:v0.8.0
             petsc_arch: real
@@ -61,12 +52,6 @@ jobs:
             petsc_arch: real
           - backend: dolfinx-stable-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:stable
-            petsc_arch: complex
-          - backend: dolfinx-nightly-real
-            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
-            petsc_arch: real
-          - backend: dolfinx-nightly-complex
-            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             petsc_arch: complex
           - backend: firedrake-2025.4.3-real
             container: firedrakeproject/firedrake-vanilla-default:2025.4.3
