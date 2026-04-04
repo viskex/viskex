@@ -67,7 +67,7 @@ jobs:
           export DEBIAN_FRONTEND="noninteractive"
           apt update -y -q
           apt install -y -qq ca-certificates git
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
         with:
           ref: ${{ inputs.ref }}
       - name: Setup container
@@ -281,7 +281,7 @@ jobs:
         run: |
           python3 -m nbqa mypy .
       - name: Check for stray outputs, counts and metadata in ipynb files
-        uses: RBniCS/check-jupyter-metadata-action@main
+        uses: RBniCS/check-jupyter-metadata-action@6df653e5d45f7620d888c6a1bd85d07b4f903045  # v1.0.0
         with:
           pattern: "**/*.ipynb"
       - name: Run tutorials (serial)
@@ -299,7 +299,7 @@ jobs:
         shell: bash
       - name: Store coverage reports as artifact
         if: inputs.combine_coverage != false
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: coverage-${{ matrix.backend }}
           path: |
@@ -308,7 +308,7 @@ jobs:
           retention-days: 1
       - name: Upload tutorials logs as an artifact in case of failure
         if: failure() || cancelled()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4.6.2
         with:
           name: "tutorials-logs-${{ matrix.backend }}"
           path: |
@@ -321,7 +321,7 @@ jobs:
     needs: [test]
     if: inputs.combine_coverage != false
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
       - name: Setup container
         run: |
           export DEBIAN_FRONTEND="noninteractive"
@@ -330,7 +330,7 @@ jobs:
           rm /usr/lib/python3.*/EXTERNALLY-MANAGED
           python3 -m pip -q install coverage[toml]
       - name: Download coverage reports from artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4.3.0
       - name: Combine coverage reports (unit tests)
         run: |
           python3 -m coverage combine coverage-*/.coverage_unit*
@@ -339,13 +339,3 @@ jobs:
         run: |
           python3 -m coverage combine coverage-*/.coverage_tutorials*
           python3 -m coverage report --show-missing --skip-covered
-
-  warn:
-    runs-on: ubuntu-latest
-    if: github.repository == 'viskex/viskex' && github.ref == 'refs/heads/main' && github.event_name == 'schedule'
-    steps:
-      - name: Warn if scheduled workflow is about to be disabled
-        uses: fem-on-colab/warn-workflow-about-to-be-disabled-action@main
-        with:
-          workflow-filename: ci.yml
-          days-elapsed: 55
