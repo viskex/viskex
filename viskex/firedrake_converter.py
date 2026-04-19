@@ -5,13 +5,11 @@
 # SPDX-License-Identifier: MIT
 """viskex converter interfacing firedrake."""
 
-import importlib.metadata
 import typing
 
 import firedrake
 import firedrake.output
 import numpy as np
-import packaging.version
 import pyvista
 import ufl
 
@@ -105,13 +103,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         :
             A pyvista unstructured grid representing the mesh.
         """
-        if (
-            packaging.version.Version(importlib.metadata.version("firedrake"))
-            < packaging.version.Version("2025.11.0.dev0")
-        ):
-            tdim = mesh.topological_dimension()
-        else:
-            tdim = mesh.topological_dimension
+        tdim = mesh.topological_dimension
         if dim is None:
             dim = tdim
         assert dim <= tdim
@@ -146,13 +138,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         # Permute connectivity information according to vtk ordering. The implementation is inspired by
         # the function get_topology in firedrake/output.py
         mesh_is_linear = firedrake.output.vtk_output.is_linear(mesh.coordinates.function_space())
-        if (
-            packaging.version.Version(importlib.metadata.version("firedrake"))
-            < packaging.version.Version("2025.11.0.dev0")
-        ):
-            tdim_cellname = mesh.ufl_cell().cellname()
-        else:
-            tdim_cellname = mesh.ufl_cell().cellname
+        tdim_cellname = mesh.ufl_cell().cellname
         dim_cellname = cls._tdim_cellname_to_dim_cellname[tdim_cellname, dim]
         permutation = cls._ufl_cellname_to_vtk_permutation[dim_cellname, mesh_is_linear](
             mesh.coordinates.function_space().ufl_element())
@@ -192,13 +178,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         :
             A pyvista unstructured grid representing the mesh sets.
         """
-        if (
-            packaging.version.Version(importlib.metadata.version("firedrake"))
-            < packaging.version.Version("2025.11.0.dev0")
-        ):
-            tdim = mesh.topological_dimension()
-        else:
-            tdim = mesh.topological_dimension
+        tdim = mesh.topological_dimension
         assert dim <= tdim
 
         # Convert the firedrake mesh to a pyvista unstructured grid, extracting entities of dimension dim
@@ -296,13 +276,7 @@ class FiredrakeConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         mesh = firedrake.Mesh(mesh_coordinates)
 
         # Convert the firedrake mesh to a pyvista unstructured grid
-        if (
-            packaging.version.Version(importlib.metadata.version("firedrake"))
-            < packaging.version.Version("2025.11.0.dev0")
-        ):
-            tdim = mesh.topological_dimension()
-        else:
-            tdim = mesh.topological_dimension
+        tdim = mesh.topological_dimension
         pyvista_grid = cls.convert_mesh(mesh, tdim)
 
         # Attach the field to the pyvista unstructured grid

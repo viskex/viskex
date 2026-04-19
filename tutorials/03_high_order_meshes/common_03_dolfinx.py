@@ -11,7 +11,6 @@ import dolfinx.mesh
 import gmsh
 import mpi4py.MPI
 import numpy as np
-import packaging.version
 
 from common_03_none import get_key, key_to_int  # isort: skip
 
@@ -83,12 +82,8 @@ def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: i
     gmsh.model.mesh.setOrder(order)
 
     # Convert to dolfinx format
-    if packaging.version.Version(dolfinx.__version__) >= packaging.version.Version("0.10.0"):
-        mesh, cell_tags, facet_tags, _ridge_tags, _peak_tags, _physical_groups = dolfinx.io.gmsh.model_to_mesh(  # type: ignore[attr-defined, misc, unused-ignore]
-            gmsh.model, comm, rank=0, gdim=1)
-    else:
-        mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[attr-defined, misc, unused-ignore]
-            gmsh.model, comm, rank=0, gdim=1)
+    mesh, cell_tags, facet_tags, _ridge_tags, _peak_tags, _physical_groups = dolfinx.io.gmsh.model_to_mesh(
+        gmsh.model, comm, rank=0, gdim=1)
 
     assert cell_tags is not None
     assert facet_tags is not None
@@ -100,7 +95,7 @@ def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: i
 
 def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tuple[
     dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
-    dolfinx.mesh.MeshTags | None
+    dolfinx.mesh.MeshTags
 ]:
     """
     Create a mesh of the unit disk using gmsh.
@@ -127,7 +122,7 @@ def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tu
     facet_tags
         The mesh tags for facets.
     vertex_tags
-        The mesh tags for vertices. Only returned with dolfinx >= 0.10; older versions return None.
+        The mesh tags for vertices.
     """
     mesh, cell_tags, facet_tags, vertex_tags, _ = create_unit_ball(comm, order, num_segments, 2)
     return mesh, cell_tags, facet_tags, vertex_tags
@@ -135,7 +130,7 @@ def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tu
 
 def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimension: int = 3) -> tuple[
     dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
-    dolfinx.mesh.MeshTags | None, dolfinx.mesh.MeshTags | None
+    dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags | None
 ]:
     """
     Create a mesh of the unit ball of the provided dimension (default: 3) using gmsh.
@@ -164,9 +159,9 @@ def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimen
     facet_tags
         The mesh tags for facets.
     ridge_tags
-        The mesh tags for ridges. Only returned with dolfinx >= 0.10; older versions return None.
+        The mesh tags for ridges.
     peak_tags
-        The mesh tags for peaks. Only returned with dolfinx >= 0.10; older versions return None.
+        The mesh tags for peaks.
     """
     # Add new model
     gmsh.model.add(f"ball_{order}_{dimension}")
@@ -185,10 +180,6 @@ def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimen
 
     # Assign physical groups
     for dim, key_to_entities in fragmented_ball.items():
-        if packaging.version.Version(dolfinx.__version__) < packaging.version.Version("0.10.0"):
-            # Old dolfinx does not support ridge and peak tags, so don't bother marking them
-            if dim <= dimension - 2:
-                continue
         for key, entity_ids in key_to_entities.items():
             physical_group_int = key_to_int(key)
             gmsh.model.addPhysicalGroup(dim, entity_ids, physical_group_int)
@@ -203,17 +194,16 @@ def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimen
     gmsh.model.mesh.setOrder(order)
 
     # Convert to dolfinx format
-    if packaging.version.Version(dolfinx.__version__) >= packaging.version.Version("0.10.0"):
-        mesh, cell_tags, facet_tags, ridge_tags, peak_tags, _physical_groups = dolfinx.io.gmsh.model_to_mesh(  # type: ignore[attr-defined, misc, unused-ignore]
-            gmsh.model, comm, rank=0, gdim=dimension)
-    else:
-        mesh, cell_tags, facet_tags = dolfinx.io.gmshio.model_to_mesh(  # type: ignore[attr-defined, misc, unused-ignore]
-            gmsh.model, comm, rank=0, gdim=dimension)
-        ridge_tags = None
-        peak_tags = None
+    mesh, cell_tags, facet_tags, ridge_tags, peak_tags, _physical_groups = dolfinx.io.gmsh.model_to_mesh(  # type: ignore[attr-defined, misc, unused-ignore]
+        gmsh.model, comm, rank=0, gdim=dimension)
 
     assert cell_tags is not None
     assert facet_tags is not None
+    assert ridge_tags is not None
+    if dimension == 3:
+        assert peak_tags is not None
+    else:
+        assert peak_tags is None
 
     # Clean up gmsh model
     gmsh.clear()

@@ -5,21 +5,16 @@
 # SPDX-License-Identifier: MIT
 """Common functions used across firedrake notebooks tests."""
 
-import importlib.metadata
 import typing
 
 import firedrake
 import numpy as np
-import packaging.version
 import ufl
 
 
 def mark_subdomains(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # type: ignore[no-any-unimported]
     """Mark left and right subdomains in a given mesh with values 1 and 2, respectively."""
-    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.11.0.dev0"):
-        cellname = mesh.ufl_cell().cellname()
-    else:
-        cellname = mesh.ufl_cell().cellname
+    cellname = mesh.ufl_cell().cellname
     if cellname in ("interval", "triangle", "tetrahedron"):
         subdomains_function_space = firedrake.FunctionSpace(mesh, "DP", 0)
     elif cellname in ("quadrilateral", "hexahedron"):
@@ -32,8 +27,6 @@ def mark_subdomains(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     right_subdomain = firedrake.Function(subdomains_function_space).interpolate(
         firedrake.conditional(x[0] >= 2.0 / 3.0, 1.0, 0.0))
     mesh_with_subdomains = firedrake.RelabeledMesh(mesh, [left_subdomain, right_subdomain], [1, 2])
-    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.5.0.dev0"):
-        mesh_with_subdomains.init()
     return mesh_with_subdomains
 
 
@@ -45,10 +38,7 @@ def mark_boundaries(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     Furthermore, boundary facets on the left and right boundaries are associated with values 3 and 4,
     respectively.
     """
-    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.11.0.dev0"):
-        cellname = mesh.ufl_cell().cellname()
-    else:
-        cellname = mesh.ufl_cell().cellname
+    cellname = mesh.ufl_cell().cellname
     if cellname in ("interval", ):
         boundaries_function_space = firedrake.FunctionSpace(mesh, "P", 1)
     elif cellname in ("triangle", "quadrilateral", "tetrahedron"):
@@ -71,8 +61,6 @@ def mark_boundaries(mesh: firedrake.MeshGeometry) -> firedrake.MeshGeometry:  # 
     mesh.topology_dm.removeLabel(firedrake.cython.dmcommon.FACE_SETS_LABEL)
     mesh_with_boundaries = firedrake.RelabeledMesh(
         mesh, [left_boundary, right_boundary, left_subdomain, right_subdomain], [3, 4, 1, 2])
-    if packaging.version.Version(importlib.metadata.version("firedrake")) < packaging.version.Version("2025.5.0.dev0"):
-        mesh_with_boundaries.init()
     return mesh_with_boundaries
 
 

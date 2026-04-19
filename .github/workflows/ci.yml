@@ -50,12 +50,6 @@ jobs:
           - backend: petsc4py-complex
             container: debian:testing
             petsc_arch: complex
-          - backend: dolfinx-v0.9.0-real
-            container: ghcr.io/fenics/dolfinx/dolfinx:v0.9.0
-            petsc_arch: real
-          - backend: dolfinx-v0.9.0-complex
-            container: ghcr.io/fenics/dolfinx/dolfinx:v0.9.0
-            petsc_arch: complex
           - backend: dolfinx-v0.10.0-real
             container: ghcr.io/fenics/dolfinx/dolfinx:v0.10.0
             petsc_arch: real
@@ -74,17 +68,11 @@ jobs:
           - backend: dolfinx-nightly-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:nightly
             petsc_arch: complex
-          - backend: firedrake-2025.4.3-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.4.3
+          - backend: firedrake-2026.4.0-real
+            container: firedrakeproject/firedrake-vanilla-default:2026.4.0
             petsc_arch: real
-          - backend: firedrake-2025.4.3-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.4.3
-            petsc_arch: complex
-          - backend: firedrake-2025.10.2-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.10.2
-            petsc_arch: real
-          - backend: firedrake-2025.10.2-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.10.2
+          - backend: firedrake-2026.4.0-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2026.4.0
             petsc_arch: complex
           - backend: firedrake-latest-real
             container: firedrakeproject/firedrake-vanilla-default:latest

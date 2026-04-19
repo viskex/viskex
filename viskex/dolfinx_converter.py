@@ -10,7 +10,6 @@ import dolfinx
 import dolfinx.mesh
 import dolfinx.plot
 import numpy as np
-import packaging.version
 import pyvista
 import ufl
 
@@ -149,10 +148,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         if isinstance(field, tuple):
             expression, function_space = field
             interpolated_field = dolfinx.fem.Function(function_space)
-            if packaging.version.Version(dolfinx.__version__) >= packaging.version.Version("0.10.0"):
-                interpolation_points = function_space.element.interpolation_points
-            else:
-                interpolation_points = function_space.element.interpolation_points()  # type: ignore[operator, unused-ignore]
+            interpolation_points = function_space.element.interpolation_points
             interpolated_field.interpolate(dolfinx.fem.Expression(expression, interpolation_points))
         else:
             interpolated_field = field
