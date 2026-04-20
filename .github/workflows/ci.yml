@@ -53,47 +53,17 @@ jobs:
           - backend: dolfinx-v0.10.0-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:v0.10.0
             petsc_arch: complex
-          - backend: dolfinx-stable-real
-            container: ghcr.io/fenics/dolfinx/dolfinx:stable
-            petsc_arch: real
-          - backend: dolfinx-stable-complex
-            container: ghcr.io/fenics/dolfinx/dolfinx:stable
-            petsc_arch: complex
-          - backend: dolfinx-nightly-real
-            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
-            petsc_arch: real
-          - backend: dolfinx-nightly-complex
-            container: ghcr.io/fenics/dolfinx/dolfinx:nightly
-            petsc_arch: complex
           - backend: firedrake-2025.4.3-real
             container: firedrakeproject/firedrake-vanilla-default:2025.4.3
             petsc_arch: real
           - backend: firedrake-2025.4.3-complex
             container: firedrakeproject/firedrake-vanilla-complex:2025.4.3
             petsc_arch: complex
-          - backend: firedrake-2025.10.2-real
-            container: firedrakeproject/firedrake-vanilla-default:2025.10.2
+          - backend: firedrake-2025.10.4-real
+            container: firedrakeproject/firedrake-vanilla-default:2025.10.4
             petsc_arch: real
-          - backend: firedrake-2025.10.2-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2025.10.2
-            petsc_arch: complex
-          - backend: firedrake-latest-real
-            container: firedrakeproject/firedrake-vanilla-default:latest
-            petsc_arch: real
-          - backend: firedrake-latest-complex
-            container: firedrakeproject/firedrake-vanilla-complex:latest
-            petsc_arch: complex
-          - backend: firedrake-dev-release-real
-            container: firedrakeproject/firedrake-vanilla-default:dev-release
-            petsc_arch: real
-          - backend: firedrake-dev-release-complex
-            container: firedrakeproject/firedrake-vanilla-complex:dev-release
-            petsc_arch: complex
-          - backend: firedrake-dev-main-real
-            container: firedrakeproject/firedrake-vanilla-default:dev-main
-            petsc_arch: real
-          - backend: firedrake-dev-main-complex
-            container: firedrakeproject/firedrake-vanilla-complex:dev-main
+          - backend: firedrake-2025.10.4-complex
+            container: firedrakeproject/firedrake-vanilla-complex:2025.10.4
             petsc_arch: complex
       fail-fast: false
     container: ${{ matrix.container }}
