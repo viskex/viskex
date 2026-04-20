@@ -93,7 +93,9 @@ jobs:
             container: firedrakeproject/firedrake-vanilla-complex:dev-main
             petsc_arch: complex
       fail-fast: false
-    container: ${{ matrix.container }}
+    container:
+      image: ${{ matrix.container }}
+      options: --shm-size=1g
     steps:
       - name: Install git
         run: |
