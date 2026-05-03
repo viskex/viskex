@@ -82,24 +82,24 @@ jobs:
       combine_coverage: false
 
   test_0_2_2_installing_from_github:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2.post0
     with:
-      ref: v0.2.2
+      ref: v0.2.2.post0
       combine_coverage: false
 
   test_0_2_2_installing_from_pypi_versioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2.post0
     with:
-      ref: v0.2.2
+      ref: v0.2.2.post0
       index: PyPI
       index_version: 0.2.2
       expected_index_version: 0.2.2
       combine_coverage: false
 
   test_0_2_2_installing_from_pypi_unversioned:
-    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2
+    uses: viskex/viskex/.github/workflows/ci.yml@v0.2.2.post0
     with:
-      ref: v0.2.2
+      ref: v0.2.2.post0
       index: PyPI
       expected_index_version: 0.2.2
       combine_coverage: false
