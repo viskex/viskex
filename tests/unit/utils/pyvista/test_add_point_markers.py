@@ -104,7 +104,7 @@ def create_wireframe_poly_data(points: npt.NDArray[viskex.utils.dtype.RealType])
     lines_permuted[:, 1] = inv_perm[lines_np[:, 1]]
     lines_permuted[:, 2] = inv_perm[lines_np[:, 2]]
 
-    return pyvista.PolyData(points_permuted, lines=lines_permuted)  # type: ignore[arg-type]
+    return pyvista.PolyData(points_permuted, lines=lines_permuted)
 
 
 def create_points_poly_data(points: npt.NDArray[viskex.utils.dtype.RealType]) -> pyvista.PolyData:
@@ -144,7 +144,7 @@ def create_points_poly_data(points: npt.NDArray[viskex.utils.dtype.RealType]) ->
     cells_permuted[0::2] = 1  # cell size equal to 1
     cells_permuted[1::2] = rng.permutation(n_points)
 
-    return pyvista.PolyData(points_permuted, verts=cells_permuted)  # type: ignore[arg-type]
+    return pyvista.PolyData(points_permuted, verts=cells_permuted)
 
 
 def create_unstructured_grid(points: npt.NDArray[viskex.utils.dtype.RealType]) -> pyvista.UnstructuredGrid:
