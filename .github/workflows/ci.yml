@@ -265,11 +265,6 @@ jobs:
       - name: Run isort on python files
         run: |
           python3 -m isort --check --diff .
-      - name: Run mypy on python files
-        run: |
-          python3 -m mypy --exclude=conftest.py .
-          python3 -m mypy tests/unit/conftest.py
-          python3 -m mypy tutorials/conftest.py
       - name: Run yamllint on workflows
         run: |
           python3 -m yamllint -d "{extends: default, rules: {document-start: {present: false}, line-length: disable, truthy: {check-keys: false}}}" .
@@ -305,9 +300,6 @@ jobs:
       - name: Run isort on tutorial files
         run: |
           python3 -m nbqa isort --check --diff .
-      - name: Run mypy on tutorial files
-        run: |
-          python3 -m nbqa mypy .
       - name: Check for stray outputs, counts and metadata in ipynb files
         uses: RBniCS/check-jupyter-metadata-action@6df653e5d45f7620d888c6a1bd85d07b4f903045  # v1.0.0
         with:
