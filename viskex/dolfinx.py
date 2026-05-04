@@ -20,7 +20,7 @@ def plot_mesh(
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a mesh stored in dolfinx.mesh.Mesh object.
 
@@ -41,9 +41,9 @@ def plot_mesh(
     Returns
     -------
     :
-        A pyvista widget representing a plot of the mesh.
+        None
     """
-    return DolfinxPlotter.plot_mesh(  # type: ignore[return-value]
+    return DolfinxPlotter.plot_mesh(
         mesh, dim, grid_filter, plotter, **kwargs).show()
 
 
@@ -52,7 +52,7 @@ def plot_mesh_tags(
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot dolfinx.mesh.MeshTags.
 
@@ -75,9 +75,9 @@ def plot_mesh_tags(
     Returns
     -------
     :
-        A pyvista widget representing a plot of the mesh entities.
+        None
     """
-    return DolfinxPlotter.plot_mesh_tags(  # type: ignore[return-value]
+    return DolfinxPlotter.plot_mesh_tags(
         mesh, mesh_tags, name, grid_filter, plotter, **kwargs).show()
 
 
@@ -87,7 +87,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a scalar field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
@@ -118,9 +118,9 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the scalar field.
+        None
     """
-    return DolfinxPlotter.plot_scalar_field(  # type: ignore[return-value]
+    return DolfinxPlotter.plot_scalar_field(
         scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
 
 
@@ -130,7 +130,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a vector field stored in a dolfinx function, or a pair of UFL expression and dolfinx function space.
 
@@ -165,7 +165,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the vector field.
+        None
     """
-    return DolfinxPlotter.plot_vector_field(  # type: ignore[return-value]
+    return DolfinxPlotter.plot_vector_field(
         vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
