@@ -43,8 +43,8 @@ def plot_mesh(
     :
         None
     """
-    return DolfinxPlotter.plot_mesh(
-        mesh, dim, grid_filter, plotter, **kwargs).show()
+    DolfinxPlotter.plot_mesh(
+            mesh, dim, grid_filter, plotter, **kwargs).show()
 
 
 def plot_mesh_tags(
@@ -77,8 +77,8 @@ def plot_mesh_tags(
     :
         None
     """
-    return DolfinxPlotter.plot_mesh_tags(
-        mesh, mesh_tags, name, grid_filter, plotter, **kwargs).show()
+    DolfinxPlotter.plot_mesh_tags(
+            mesh, mesh_tags, name, grid_filter, plotter, **kwargs).show()
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -120,8 +120,8 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     :
         None
     """
-    return DolfinxPlotter.plot_scalar_field(
-        scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
+    DolfinxPlotter.plot_scalar_field(
+            scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -167,5 +167,5 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     :
         None
     """
-    return DolfinxPlotter.plot_vector_field(
-        vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
+    DolfinxPlotter.plot_vector_field(
+            vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
