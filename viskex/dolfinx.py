@@ -9,6 +9,7 @@ import typing
 
 import dolfinx.fem
 import dolfinx.mesh
+import dolfinx.typing
 import pyvista
 import ufl
 
@@ -16,7 +17,7 @@ from viskex.dolfinx_plotter import DolfinxPlotter
 
 
 def plot_mesh(
-    mesh: dolfinx.mesh.Mesh, dim: int | None = None,
+    mesh: dolfinx.mesh.Mesh[dolfinx.typing.Real], dim: int | None = None,
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
@@ -43,7 +44,7 @@ def plot_mesh(
 
 
 def plot_mesh_tags(
-    mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
+    mesh: dolfinx.mesh.Mesh[dolfinx.typing.Real], mesh_tags: dolfinx.mesh.MeshTags, name: str = "mesh tags",
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
@@ -72,7 +73,9 @@ def plot_mesh_tags(
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
-    scalar_field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace], name: str = "scalar",
+    scalar_field: dolfinx.fem.Function[dolfinx.typing.Scalar] | tuple[
+        ufl.core.expr.Expr, dolfinx.fem.FunctionSpace[dolfinx.typing.Real]],
+    name: str = "scalar",
     part: str = "real", warp_factor: float = 0.0,
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
@@ -110,7 +113,8 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
-    vector_field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+    vector_field: dolfinx.fem.Function[dolfinx.typing.Scalar] | tuple[
+        ufl.core.expr.Expr, dolfinx.fem.FunctionSpace[dolfinx.typing.Real]],
     name: str = "vector", part: str = "real", warp_factor: float = 0.0, glyph_factor: float = 0.0,
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,

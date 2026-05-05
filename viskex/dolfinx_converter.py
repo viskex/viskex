@@ -9,6 +9,7 @@
 import dolfinx
 import dolfinx.mesh
 import dolfinx.plot
+import dolfinx.typing
 import numpy as np
 import pyvista
 import ufl
@@ -21,13 +22,16 @@ dolfinx.plot._first_order_vtk[dolfinx.mesh.CellType.point] = 1
 
 
 class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
-    dolfinx.mesh.Mesh,
-    dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace]
+    dolfinx.mesh.Mesh[dolfinx.typing.Real],
+    dolfinx.fem.Function[dolfinx.typing.Scalar] | tuple[
+        ufl.core.expr.Expr, dolfinx.fem.FunctionSpace[dolfinx.typing.Real]]
 ]):
     """viskex converter interfacing dolfinx."""
 
     @classmethod
-    def convert_mesh(cls, mesh: dolfinx.mesh.Mesh, dim: int | None = None) -> pyvista.UnstructuredGrid:
+    def convert_mesh(
+        cls, mesh: dolfinx.mesh.Mesh[dolfinx.typing.Real], dim: int | None = None
+    ) -> pyvista.UnstructuredGrid:
         """
         Convert a mesh stored in dolfinx.mesh.Mesh object.
 
@@ -85,7 +89,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def convert_mesh_tags(
-        cls, mesh: dolfinx.mesh.Mesh, mesh_tags: dolfinx.mesh.MeshTags, name: str
+        cls, mesh: dolfinx.mesh.Mesh[dolfinx.typing.Real], mesh_tags: dolfinx.mesh.MeshTags, name: str
     ) -> pyvista.UnstructuredGrid:
         """
         Convert dolfinx.mesh.MeshTags.
@@ -120,7 +124,8 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
 
     @classmethod
     def convert_field(  # type: ignore[no-any-unimported]
-        cls, field: dolfinx.fem.Function | tuple[ufl.core.expr.Expr, dolfinx.fem.FunctionSpace],
+        cls, field: dolfinx.fem.Function[dolfinx.typing.Scalar] | tuple[
+            ufl.core.expr.Expr, dolfinx.fem.FunctionSpace[dolfinx.typing.Real]],
         name: str, part: str = "real"
     ) -> pyvista.UnstructuredGrid:
         """

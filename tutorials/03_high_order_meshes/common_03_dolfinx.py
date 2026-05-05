@@ -8,6 +8,7 @@
 
 import dolfinx.io
 import dolfinx.mesh
+import dolfinx.typing
 import gmsh
 import mpi4py.MPI
 import numpy as np
@@ -16,7 +17,7 @@ from common_03_none import get_key, key_to_int  # isort: skip
 
 
 def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tuple[
-    dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags
+    dolfinx.mesh.Mesh[dolfinx.typing.Real], dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags
 ]:
     """
     Create a mesh of the reference interval [-1, 1] using gmsh.
@@ -94,7 +95,7 @@ def create_reference_interval(comm: mpi4py.MPI.Comm, order: int, num_segments: i
     return mesh, cell_tags, facet_tags
 
 def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tuple[
-    dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
+    dolfinx.mesh.Mesh[np.float64], dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
     dolfinx.mesh.MeshTags
 ]:
     """
@@ -129,7 +130,7 @@ def create_unit_disk(comm: mpi4py.MPI.Comm, order: int, num_segments: int) -> tu
 
 
 def create_unit_ball(comm: mpi4py.MPI.Comm, order: int, num_segments: int, dimension: int = 3) -> tuple[
-    dolfinx.mesh.Mesh, dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
+    dolfinx.mesh.Mesh[np.float64], dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags,
     dolfinx.mesh.MeshTags, dolfinx.mesh.MeshTags | None
 ]:
     """
