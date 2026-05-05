@@ -37,11 +37,6 @@ def plot_mesh(
         The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
-
-    Returns
-    -------
-    :
-        None
     """
     DolfinxPlotter.plot_mesh(
             mesh, dim, grid_filter, plotter, **kwargs).show()
@@ -71,11 +66,6 @@ def plot_mesh_tags(
         The pyvista plotter to which the mesh will be added. If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
-
-    Returns
-    -------
-    :
-        None
     """
     DolfinxPlotter.plot_mesh_tags(
             mesh, mesh_tags, name, grid_filter, plotter, **kwargs).show()
@@ -114,11 +104,6 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
         If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
-
-    Returns
-    -------
-    :
-        None
     """
     DolfinxPlotter.plot_scalar_field(
             scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
@@ -161,11 +146,6 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
         If not provided, a new plotter will be created.
     kwargs
         Additional keyword arguments to be passed to pyvista.
-
-    Returns
-    -------
-    :
-        None
     """
     DolfinxPlotter.plot_vector_field(
             vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
