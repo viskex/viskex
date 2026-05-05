@@ -19,7 +19,7 @@ def plot_mesh(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a mesh stored in firedrake.MeshGeometry object.
 
@@ -40,10 +40,10 @@ def plot_mesh(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the mesh.
+        None
     """
-    return FiredrakePlotter.plot_mesh(  # type: ignore[return-value]
-        mesh, dim, grid_filter, plotter, **kwargs).show()
+    FiredrakePlotter.plot_mesh(
+            mesh, dim, grid_filter, plotter, **kwargs).show()
 
 
 def plot_mesh_sets(  # type: ignore[no-any-unimported]
@@ -51,7 +51,7 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a cell set or a face sets of a given firedrake mesh.
 
@@ -74,10 +74,10 @@ def plot_mesh_sets(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the mesh entities.
+        None
     """
-    return FiredrakePlotter.plot_mesh_sets(  # type: ignore[return-value]
-        mesh, dim, name, grid_filter, plotter, **kwargs).show()
+    FiredrakePlotter.plot_mesh_sets(
+            mesh, dim, name, grid_filter, plotter, **kwargs).show()
 
 
 def plot_scalar_field(  # type: ignore[no-any-unimported]
@@ -86,7 +86,7 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a scalar field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
 
@@ -117,10 +117,10 @@ def plot_scalar_field(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the scalar field.
+        None
     """
-    return FiredrakePlotter.plot_scalar_field(  # type: ignore[return-value]
-        scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
+    FiredrakePlotter.plot_scalar_field(
+            scalar_field, name, part, warp_factor, grid_filter, plotter, **kwargs).show()
 
 
 def plot_vector_field(  # type: ignore[no-any-unimported]
@@ -129,7 +129,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     grid_filter: typing.Callable[[pyvista.UnstructuredGrid], pyvista.UnstructuredGrid] | None = None,
     plotter: pyvista.Plotter | None = None,
     **kwargs: typing.Any  # noqa: ANN401
-) -> pyvista.trame.jupyter.Widget:
+) -> None:
     """
     Plot a vector field stored in a firedrake Function, or a pair of UFL Expression and firedrake FunctionSpace.
 
@@ -165,7 +165,7 @@ def plot_vector_field(  # type: ignore[no-any-unimported]
     Returns
     -------
     :
-        A pyvista widget representing a plot of the vector field.
+        None
     """
-    return FiredrakePlotter.plot_vector_field(  # type: ignore[return-value]
-        vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
+    FiredrakePlotter.plot_vector_field(
+            vector_field, name, part, warp_factor, glyph_factor, grid_filter, plotter, **kwargs).show()
