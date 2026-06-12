@@ -47,7 +47,7 @@ funding = "https://github.com/sponsors/francesco-ballarin"
 
 [project.optional-dependencies]
 backend-dolfinx = [
-    "fenics-dolfinx >= 0.11.0.dev0"
+    "fenics-dolfinx >= 0.11.0"
 ]
 backend-firedrake = [
     "firedrake >= 2026.4.0"
