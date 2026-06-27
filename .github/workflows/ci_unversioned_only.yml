@@ -47,12 +47,6 @@ jobs:
           - backend: dolfinx-v0.10.0-complex
             container: ghcr.io/fenics/dolfinx/dolfinx:v0.10.0
             petsc_arch: complex
-          - backend: firedrake-2026.4.0-real
-            container: firedrakeproject/firedrake-vanilla-default:2026.4.0
-            petsc_arch: real
-          - backend: firedrake-2026.4.0-complex
-            container: firedrakeproject/firedrake-vanilla-complex:2026.4.0
-            petsc_arch: complex
       fail-fast: false
     container:
       image: ${{ matrix.container }}
