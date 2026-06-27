@@ -63,4 +63,4 @@ def compute_screen_pixel_size_in_world(
         world_2 = np.array(display_to_world.GetComputedWorldValue(plotter.renderer))
 
         world_distance = np.linalg.norm(world_2 - world_1)
-        return world_distance / offset_px  # type: ignore[return-value]
+        return world_distance / offset_px  # type: ignore[no-any-return,return-value,unused-ignore]

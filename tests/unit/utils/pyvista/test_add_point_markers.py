@@ -238,7 +238,7 @@ def test_add_point_markers(
         points = np.column_stack((x, np.zeros_like(x), np.zeros_like(x)))
     elif dim == 2:
         # 5 x 5 grid in XY plane
-        x, y = np.meshgrid(
+        x, y = np.meshgrid(  # type: ignore[assignment,unused-ignore]
             np.linspace(0, 1, 5, dtype=viskex.utils.dtype.RealType),
             np.linspace(0, 1, 5, dtype=viskex.utils.dtype.RealType)
         )
