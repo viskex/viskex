@@ -11,13 +11,12 @@ jobs:
   # If main becomes incompatible with the latest version on PyPI then temporarily
   # comment out this test, and restore it on the next PyPI release.
 
-  # Temporarily commented out due to backward incompatibile typing changes in dolfinx, addressed in 929d9 but not yet released on PyPI. Restore when a new release of viskex is made on PyPI that depends on a version of dolfinx with the fix.
-  # test_main_branch_against_latest_release_from_pypi:
-  #   uses: viskex/viskex/.github/workflows/ci.yml@main
-  #   with:
-  #     ref: main
-  #     index: PyPI
-  #     combine_coverage: false
+  test_main_branch_against_latest_release_from_pypi:
+    uses: viskex/viskex/.github/workflows/ci.yml@main
+    with:
+      ref: main
+      index: PyPI
+      combine_coverage: false
 
   # Test released versions on github or PyPI against the workflow on the corresponding git tag.
 
