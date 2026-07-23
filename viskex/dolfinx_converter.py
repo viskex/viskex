@@ -166,7 +166,7 @@ class DolfinxConverter(PyvistaConverter[  # type: ignore[no-any-unimported]
         num_cells = mesh.topology.index_map(dim).size_local + mesh.topology.index_map(dim).num_ghosts
         cell_entities = np.arange(num_cells, dtype=np.int32)
         pyvista_cells, cell_types, coordinates = dolfinx.plot.vtk_mesh(
-            function_space, cell_entities)  # type: ignore[arg-type]
+            function_space, cell_entities)  # type: ignore[arg-type, unused-ignore]
         pyvista_grid = pyvista.UnstructuredGrid(pyvista_cells, cell_types, coordinates)
 
         # Attach the field to the pyvista unstructured grid
