@@ -159,7 +159,9 @@ jobs:
           else
             PACKAGE_EXTRAS="docs,lint,tests,tutorials"
           fi
-          python3 -m pip install ${INDEX_FLAGS} ${PACKAGE_NAME}[${PACKAGE_EXTRAS}]${PACKAGE_VERSION}
+          echo "pyvista<0.49" > pyvista_constraint.txt
+          CONSTRAINT_FLAGS="-c pyvista_constraint.txt"
+          python3 -m pip install ${INDEX_FLAGS} ${CONSTRAINT_FLAGS} ${PACKAGE_NAME}[${PACKAGE_EXTRAS}]${PACKAGE_VERSION}
           if [[ -n "${EXPECTED_INDEX_VERSION}" ]]; then
             ACTUAL_INDEX_VERSION=$(python3 -c 'import importlib.metadata; print(importlib.metadata.version("viskex"))')
             if [[ "${ACTUAL_INDEX_VERSION}" != "${EXPECTED_INDEX_VERSION}" ]]; then
@@ -178,7 +180,9 @@ jobs:
           else
             PACKAGE_EXTRAS="docs,lint,tests,tutorials"
           fi
-          python3 -m pip install .[${PACKAGE_EXTRAS}]
+          echo "pyvista<0.49" > pyvista_constraint.txt
+          CONSTRAINT_FLAGS="-c pyvista_constraint.txt"
+          python3 -m pip install ${CONSTRAINT_FLAGS} .[${PACKAGE_EXTRAS}]
         shell: bash
       - name: Clean build files (git clone only)
         if: (inputs || github.event.inputs).index == ''
