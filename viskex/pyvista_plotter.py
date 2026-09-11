@@ -15,7 +15,7 @@ import pyvista
 from viskex.base_plotter import BasePlotter
 from viskex.utils.pyvista import add_point_markers, update_camera_with_mesh
 
-pyvista.set_plot_theme("document")  # type: ignore[no-untyped-call]
+pyvista.set_plot_theme("document")
 pyvista.global_theme.cmap = "jet"
 pyvista.global_theme.color = "red"
 pyvista.global_theme.edge_color = "black"
